@@ -656,7 +656,7 @@ class Connection:
                 # if it is triggered by the pinger, then this RPC call will
                 # be cancelled when the pinger is cancelled by the reconnect,
                 # and we don't want the reconnect to be aborted halfway through
-                await jasyncio.wait([self.reconnect()])
+                await jasyncio.wait([jasyncio.create_task(self.reconnect())])
                 if self.monitor.status != Monitor.CONNECTED:
                     # reconnect failed; abort and shutdown
                     log.error('RPC: Automatic reconnect failed')
