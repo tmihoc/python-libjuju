@@ -440,7 +440,7 @@ class BundleHandler:
         return reference
 
 
-def is_local_charm(charm_url):
+def is_local_charm(charm_url: str):
     return charm_url.startswith('.') or charm_url.startswith('local:') or os.path.isabs(charm_url)
 
 

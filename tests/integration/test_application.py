@@ -280,7 +280,14 @@ async def test_local_refresh():
                                     branch="deadbeef", hash_="hash", id_="id", revision=12,
                                     base=client.Base("20.04", "ubuntu"))
 
-        await app.local_refresh(charm_origin=origin, path=charm_path)
+        await app.local_refresh(
+            charm_origin=origin,
+            force=False,
+            force_series=False,
+            force_units=False,
+            path=charm_path,
+            resources=None,
+        )
 
         assert origin == client.CharmOrigin(source="local", revision=0,
                                             base=client.Base("20.04", "ubuntu"))

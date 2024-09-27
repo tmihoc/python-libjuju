@@ -4,7 +4,7 @@
 import hashlib
 import json
 import logging
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 from pathlib import Path
 
 from typing_extensions import deprecated
@@ -12,7 +12,7 @@ from typing_extensions import deprecated
 from . import jasyncio, model, tag, utils
 from .annotationhelper import _get_annotations, _set_annotations
 from .bundle import get_charm_series, is_local_charm
-from .client import client
+from .client import client, _definitions
 from .errors import JujuApplicationConfigError, JujuError
 from .origin import Channel
 from .placement import parse as parse_placement
@@ -706,20 +706,28 @@ class Application(model.ModelEntity):
         return await app_facade.SetConstraints(application=self.name, constraints=constraints)
 
     async def refresh(
-            self, channel=None, force=False, force_series=False, force_units=False,
-            path=None, resources=None, revision=None, switch=None):
+            self,
+            channel: Optional[str] = None,
+            force: bool = False,
+            force_series: bool = False,
+            force_units: bool = False,
+            path: Optional[Union[Path, str]] = None,
+            resources: Optional[Dict[str, str]] = None,
+            revision: Optional[int] = None,
+            switch: Optional[str] = None,
+    ):
         """Refresh the charm for this application.
 
-        :param str channel: Channel to use when getting the charm from the
+        :param str|None channel: Channel to use when getting the charm from the
             charm store, e.g. 'development'
         :param bool force_series: Refresh even if series of deployed
             application is not supported by the new charm
         :param bool force_units: Refresh all units immediately, even if in
             error state
-        :param str path: Refresh to a charm located at path
-        :param dict resources: Dictionary of resource name/filepath pairs
-        :param int revision: Explicit refresh revision
-        :param str switch: Crossgrade charm url
+        :param Path|str|None path: Refresh to a charm located at path
+        :param dict[str,str]|None resources: Dictionary of resource name/filepath pairs
+        :param int|None revision: Explicit refresh revision
+        :param str|None switch: URL of a different charm to cross-grade to
 
         """
         if switch is not None and path is not None:
@@ -743,8 +751,17 @@ class Application(model.ModelEntity):
 
         current_origin = charm_url_origin_result.charm_origin
         if path is not None or (switch is not None and is_local_charm(switch)):
-            await self.local_refresh(current_origin, force, force_series,
-                                     force_units, path or switch, resources)
+            local_path = path or switch
+            assert local_path
+
+            await self.local_refresh(
+                charm_origin=current_origin,
+                force=force,
+                force_series=force_series,
+                force_units=force_units,
+                path=local_path,
+                resources=resources,
+            )
             return
 
         origin = _refresh_origin(current_origin, channel, revision)
@@ -870,9 +887,15 @@ class Application(model.ModelEntity):
     upgrade_charm = refresh
 
     async def local_refresh(
-            self, charm_origin=None, force=False, force_series=False,
-            force_units=False,
-            path=None, resources=None):
+            self,
+            *,
+            charm_origin: _definitions.CharmOrigin,
+            force: bool,
+            force_series: bool,
+            force_units: bool,
+            path: Union[Path, str],
+            resources: Optional[Dict[str, str]],
+    ):
         """Refresh the charm for this application with a local charm.
 
         :param dict charm_origin: The charm origin of the destination charm
@@ -882,7 +905,7 @@ class Application(model.ModelEntity):
             application is not supported by the new charm
         :param bool force_units: Refresh all units immediately, even if in
             error state
-        :param str path: Refresh to a charm located at path
+        :param Path|str path: Refresh to a charm located at path
         :param dict resources: Dictionary of resource name/filepath pairs
 
         """
@@ -890,8 +913,8 @@ class Application(model.ModelEntity):
 
         if isinstance(path, str) and path.startswith("local:"):
             path = path[6:]
-        path = Path(path)
-        charm_dir = path.expanduser().resolve()
+        local_path = Path(path)
+        charm_dir = local_path.expanduser().resolve()
         model_config = await self.get_config()
 
         series = (
@@ -907,7 +930,7 @@ class Application(model.ModelEntity):
             if default_series:
                 series = default_series.value
         charm_url = await self.model.add_local_charm_dir(charm_dir, series)
-        metadata = utils.get_local_charm_metadata(path)
+        metadata = utils.get_local_charm_metadata(local_path)
         if resources is not None:
             resources = await self.model.add_local_resources(self.entity_id,
                                                              charm_url,
@@ -956,14 +979,17 @@ class Application(model.ModelEntity):
         return await self.model.get_metrics(self.tag)
 
 
-def _refresh_origin(current_origin: client.CharmOrigin, channel=None, revision=None) -> client.CharmOrigin:
-    if channel is not None:
-        channel = Channel.parse(channel).normalize()
+def _refresh_origin(
+        current_origin: client.CharmOrigin,
+        channel: Optional[str] = None,
+        revision: Optional[int] = None,
+) -> client.CharmOrigin:
+    chan = None if channel is None else Channel.parse(channel).normalize()
 
     return client.CharmOrigin(
         source=current_origin.source,
-        track=channel.track if channel else current_origin.track,
-        risk=channel.risk if channel else current_origin.risk,
+        track=chan.track if chan else current_origin.track,
+        risk=chan.risk if chan else current_origin.risk,
         revision=revision if revision is not None else current_origin.revision,
         base=current_origin.base,
         architecture=current_origin.get('architecture', DEFAULT_ARCHITECTURE),
