@@ -34,6 +34,7 @@ setup(
         'kubernetes>=12.0.1,<31.0.0',
         'hvac',
         'packaging',
+        'typing-extensions>=4.5.0',
     ],
     include_package_data=True,
     maintainer='Juju Ecosystem Engineering',
