@@ -121,3 +121,29 @@ jobs:
       - name: Run integration
         # Force one single concurrent test
         run: tox -e integration
+
+  integration-quarantine:
+    name: Quarantined Integration Tests
+    needs: [lint, unit-tests]
+    timeout-minutes: 150
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python:
+          - "3.10"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Setup operator environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          provider: lxd
+          juju-channel: 3.4/stable
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: pip install tox
+      - name: Run integration
+        run: tox -e integration-quarantine
