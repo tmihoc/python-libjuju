@@ -47,7 +47,7 @@ jobs:
           echo "next-test=$next_test" >> $GITHUB_ENV
           echo "$next_test" > ~/juju-last-candidate-version
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: ${{ env.next-test != 'NA' }}
       - name: Setup operator environment
         if: ${{ env.next-test != 'NA' }}
@@ -57,7 +57,7 @@ jobs:
           juju-channel: 3.4/candidate
       - name: Setup Python
         if: ${{ env.next-test != 'NA' }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
@@ -69,7 +69,7 @@ jobs:
         run: tox -e integration -- -n 1
       - name: Upload artifact
         if: ${{ env.next-test != 'NA' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: juju-last-candidate-version
           path: ~/juju-last-candidate-version

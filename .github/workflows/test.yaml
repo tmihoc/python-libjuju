@@ -13,9 +13,9 @@ jobs:
           - "3.10"
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
@@ -34,9 +34,9 @@ jobs:
           - "3.10"
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Run build test target
@@ -54,9 +54,9 @@ jobs:
           - "3.10"
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
@@ -78,7 +78,7 @@ jobs:
           - "3.10"
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup operator environment
         uses: charmed-kubernetes/actions-operator@main
         with:
@@ -113,7 +113,7 @@ jobs:
       #     juju model-defaults apt-http-proxy=$PROXY apt-https-proxy=$PROXY  juju-http-proxy=$PROXY juju-https-proxy=$PROXY  snap-http-proxy=$PROXY snap-https-proxy=$PROXY
       #     juju model-defaults
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
