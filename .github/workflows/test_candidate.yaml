@@ -49,20 +49,17 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         if: ${{ env.next-test != 'NA' }}
+      - name: Setup Python
+        if: ${{ env.next-test != 'NA' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Setup operator environment
         if: ${{ env.next-test != 'NA' }}
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: lxd
           juju-channel: 3.4/candidate
-      - name: Setup Python
-        if: ${{ env.next-test != 'NA' }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install dependencies
-        if: ${{ env.next-test != 'NA' }}
-        run: pip install tox
       - name: Run integration
         if: ${{ env.next-test != 'NA' }}
         # Force one single concurrent test
