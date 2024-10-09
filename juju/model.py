@@ -2013,8 +2013,8 @@ class Model:
         :param str application: the name of the application
         :param client.CharmURL entity_url: url for the charm that we add resources for
         :param [string]string metadata: metadata for the charm that we add resources for
-        :param [string] resources: the paths for the local files (or oci-images) to be added as
-        local resources
+        :param dict[str, str] resources: the paths for the local files (or oci-images) to
+        be added as local resources
 
         :returns [string]string resource_map that is a map of resources to their assigned
         pendingIDs.

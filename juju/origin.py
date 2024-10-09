@@ -69,7 +69,7 @@ class Channel:
         self.risk = risk
 
     @staticmethod
-    def parse(s):
+    def parse(s: str):
         """parse a channel from a given string.
         Parse does not take into account branches.
 
