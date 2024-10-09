@@ -4,8 +4,10 @@
 import hashlib
 import json
 import logging
-import typing
+from typing import Dict, List, Union
 from pathlib import Path
+
+from typing_extensions import deprecated
 
 from . import jasyncio, model, tag, utils
 from .annotationhelper import _get_annotations, _set_annotations
@@ -24,6 +26,52 @@ log = logging.getLogger(__name__)
 
 
 class Application(model.ModelEntity):
+    """Represents the current state of a deployed application.
+
+    In the current library version, as well entire 2.x and 3.x series,
+    the data is supplied by Juju AllWatcher notifications, also known as deltas
+    for the specific application. The fields are declared here:
+    https://github.com/juju/juju/blob/be8a779/core/multiwatcher/types.go#L191-L209
+
+    The fields marked deprecated below will be removed in version 4.0 because
+    a different API must be used against Juju 4.
+    """
+    @property
+    def name(self) -> str:
+        return self.entity_id
+
+    @property
+    def exposed(self) -> bool:
+        return self.safe_data["exposed"]
+
+    @property
+    @deprecated("Application.owner_tag is deprecated and will be removed in v4")
+    def owner_tag(self) -> str:
+        return self.safe_data["owner-tag"]
+
+    @property
+    def life(self) -> str:
+        return self.safe_data["life"]
+
+    @property
+    @deprecated("Application.min_units is deprecated and will be removed in v4")
+    def min_units(self) -> int:
+        return self.safe_data["min-units"]
+
+    @property
+    def constraints(self) -> Dict[str, Union[str, int, bool]]:
+        return self.safe_data["constraints"]
+
+    @property
+    @deprecated("Application.subordinate is deprecated and will be removed in v4")
+    def subordinate(self) -> bool:
+        return self.safe_data["subordinate"]
+
+    @property
+    @deprecated("Application.workload_version is deprecated and will be removed in v4, use Unit.workload_version instead.")
+    def workload_version(self) -> str:
+        return self.safe_data["workload-version"]
+
     @property
     def _unit_match_pattern(self):
         return r'^{}.*$'.format(self.entity_id)
@@ -63,7 +111,7 @@ class Application(model.ModelEntity):
         return [u for u in self.units if u.is_subordinate]
 
     @property
-    def relations(self) -> typing.List[Relation]:
+    def relations(self) -> List[Relation]:
         return [rel for rel in self.model.relations if rel.matches(self.name)]
 
     def related_applications(self, endpoint_name=None):

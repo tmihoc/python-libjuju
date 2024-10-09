@@ -21,7 +21,6 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
         mock_facade().Expose.return_value.set_result([])
 
         app = Application(entity_id="app-id", model=Model())
-        app.name = "panther"
         app._facade = mock_facade
         app._facade_version = mock_facade_version
 
@@ -37,7 +36,7 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
         })
 
         mock_facade().Expose.assert_called_once_with(
-            application="panther",
+            application="app-id",
             exposed_endpoints={
                 "": {
                     "expose-to-spaces": ["alpha"],
@@ -53,7 +52,6 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
         mock_facade().Expose.return_value.set_result([])
 
         app = Application(entity_id="app-id", model=Model())
-        app.name = "panther"
         app._facade = mock_facade
         app._facade_version = mock_facade_version
 
@@ -67,7 +65,7 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
         })
 
         mock_facade().Expose.assert_called_once_with(
-            application="panther",
+            application="app-id",
             exposed_endpoints={
                 "": {
                     "expose-to-spaces": ["alpha"],
@@ -89,7 +87,6 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
         mock_facade().Expose.return_value.set_result([])
 
         app = Application(entity_id="app-id", model=Model())
-        app.name = "panther"
         app._facade = mock_facade
         app._facade_version = mock_facade_version
 
@@ -125,7 +122,7 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
 
         # Check that we call the facade with the right arity.
         await app.expose()
-        mock_facade().Expose.assert_called_once_with(application="panther")
+        mock_facade().Expose.assert_called_once_with(application="app-id")
 
 
 class TestUnExposeApplication(unittest.IsolatedAsyncioTestCase):
@@ -137,7 +134,6 @@ class TestUnExposeApplication(unittest.IsolatedAsyncioTestCase):
         mock_facade().Unexpose.return_value.set_result([])
 
         app = Application(entity_id="app-id", model=Model())
-        app.name = "panther"
         app._facade = mock_facade
         app._facade_version = mock_facade_version
 
@@ -148,7 +144,7 @@ class TestUnExposeApplication(unittest.IsolatedAsyncioTestCase):
 
         # Check that we call the facade with the right arity.
         await app.unexpose()
-        mock_facade().Unexpose.assert_called_once_with(application="panther")
+        mock_facade().Unexpose.assert_called_once_with(application="app-id")
 
     @mock.patch("juju.model.Model.connection")
     async def test_unexpose_endpoints_on_29_controller(self, mock_conn):
@@ -158,14 +154,13 @@ class TestUnExposeApplication(unittest.IsolatedAsyncioTestCase):
         mock_facade().Unexpose.return_value.set_result([])
 
         app = Application(entity_id="app-id", model=Model())
-        app.name = "panther"
         app._facade = mock_facade
         app._facade_version = mock_facade_version
 
         await app.unexpose(exposed_endpoints=["alpha", "beta"])
 
         mock_facade().Unexpose.assert_called_once_with(
-            application="panther",
+            application="app-id",
             exposed_endpoints=["alpha", "beta"]
         )
 
