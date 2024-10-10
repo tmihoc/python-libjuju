@@ -93,7 +93,7 @@ class Controller:
         :param list macaroons: List of macaroons to load into the
             ``bakery_client``.
         :param int max_frame_size: The maximum websocket frame size to allow.
-        :param specified_facades: Overwrite the facades with a series of
+        :param specified_facades: (deprecated) overwrite the facades with a series of
             specified facades.
         """
         await self.disconnect()
