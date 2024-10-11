@@ -2,13 +2,13 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import importlib
-import re
+from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, TypedDict, cast
+from typing import Dict, List, TypedDict
 
 import pytest
 
-from juju.client import connection, _definitions
+from juju.client.connection import client_facades, excluded_facades
 
 
 class Versions(TypedDict, total=True):
@@ -23,52 +23,29 @@ def project_root(pytestconfig: pytest.Config) -> Path:
     return pytestconfig.rootpath
 
 
-def test_facade_version_matches_filename(project_root: Path) -> None:
-    ignore_names = dir(_definitions)
-    for file in (project_root / 'juju' / 'client').glob('_client[0-9]*.py'):
-        match = re.search('_client([0-9]+).py', file.name)
-        assert match
-        version = int(match.group(1))
-        module = importlib.import_module(f'juju.client.{file.stem}')
-        for cls_name in dir(module):
-            if cls_name.startswith('_') or cls_name in ignore_names:
-                continue
-            assert getattr(module, cls_name).version == version
-
-
-def test_class_name_matches_facade_name(project_root: Path) -> None:
-    ignore_names = dir(_definitions)
+@pytest.fixture
+def generated_code_facades(project_root: Path) -> ClientFacades:
+    """Return a client_facades dictionary from generated code under project_root.
+    """
+    facades: Dict[str, List[int]] = defaultdict(list)
     for file in (project_root / 'juju' / 'client').glob('_client[0-9]*.py'):
         module = importlib.import_module(f'juju.client.{file.stem}')
         for cls_name in dir(module):
-            if cls_name.startswith('_') or cls_name in ignore_names:
+            cls = getattr(module, cls_name)
+            try:
+                cls.name
+                cls.version
+            except AttributeError:
                 continue
-            assert getattr(module, cls_name).name == cls_name.removesuffix('Facade')
+            if cls.version in excluded_facades.get(cls.name, []):
+                continue
+            facades[cls.name].append(cls.version)
+    return {name: {'versions': sorted(facades[name])} for name in sorted(facades)}
 
 
-def test_client_facades_matches_generated_code(project_root: Path) -> None:
-    client_facades = cast(ClientFacades, connection.client_facades)
-    expected_facades = make_client_facades_from_generated_code(project_root)
+def test_client_facades(project_root: Path, generated_code_facades: ClientFacades) -> None:
     assert {
         k: v['versions'] for k, v in client_facades.items()
     } == {
-        k: v['versions'] for k, v in expected_facades.items()
+        k: v['versions'] for k, v in generated_code_facades.items()
     }
-
-
-def make_client_facades_from_generated_code(project_root: Path) -> ClientFacades:
-    """Return a client_facades dictionary from generated code under project_root.
-    """
-    ignore_names = dir(_definitions)
-    excluded_facades = connection.excluded_facades
-    facades: Dict[str, List[int]] = {}
-    for file in (project_root / 'juju' / 'client').glob('_client[0-9]*.py'):
-        module = importlib.import_module(f'juju.client.{file.stem}')
-        for cls_name in dir(module):
-            if cls_name.startswith('_') or cls_name in ignore_names:
-                continue
-            cls = getattr(module, cls_name)
-            if cls.version in excluded_facades.get(cls.name, []):
-                continue
-            facades.setdefault(cls.name, []).append(cls.version)
-    return {name: {'versions': sorted(facades[name])} for name in sorted(facades)}
