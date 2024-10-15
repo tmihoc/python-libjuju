@@ -350,6 +350,8 @@ def buildTypes(schema, capture):
     for kind in sorted((k for k in schema.types if not isinstance(k, str)),
                        key=lambda x: str(x)):
         name = schema.types[kind]
+        if not name:
+            continue
         if name in capture and name not in NAUGHTY_CLASSES:
             continue
         args = Args(schema, kind)
