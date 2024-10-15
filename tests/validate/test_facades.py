@@ -26,13 +26,18 @@ def project_root(pytestconfig: pytest.Config) -> Path:
 @pytest.fixture
 def generated_code_facades(project_root: Path) -> ClientFacades:
     """Return a client_facades dictionary from generated code under project_root.
+
+    Iterates through all the generated files matching juju/client/_client*.py,
+    extracting facade types (those that have .name and .version properties).
+    Excludes facades in juju.client.connection.excluded_facades, as these are
+    manually marked as incompatible with the current version of python-libjuju.
     """
     facades: Dict[str, List[int]] = defaultdict(list)
-    for file in (project_root / 'juju' / 'client').glob('_client[0-9]*.py'):
+    for file in project_root.glob('juju/client/_client*.py'):
         module = importlib.import_module(f'juju.client.{file.stem}')
         for cls_name in dir(module):
             cls = getattr(module, cls_name)
-            try:
+            try:  # duck typing check for facade types
                 cls.name
                 cls.version
             except AttributeError:
@@ -44,6 +49,10 @@ def generated_code_facades(project_root: Path) -> ClientFacades:
 
 
 def test_client_facades(project_root: Path, generated_code_facades: ClientFacades) -> None:
+    """Ensure that juju.client.connection.client_facades matches expected facades.
+
+    See generated_code_facades for how expected facades are computed.
+    """
     assert {
         k: v['versions'] for k, v in client_facades.items()
     } == {
