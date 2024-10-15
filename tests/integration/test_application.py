@@ -261,11 +261,21 @@ async def test_upgrade_charm_resource_same_rev_no_update():
 async def test_refresh_charmhub_to_local():
     charm_path = INTEGRATION_TEST_DIR / 'charm'
     async with base.CleanModel() as model:
-        app = await model.deploy('ubuntu', application_name='ubu-path')
+        app = await model.deploy(
+            'ubuntu',
+            application_name='ubu-path',
+            channel='stable',
+            revision=24,  # revision 25 requires v2 format for local charm
+        )
         await app.refresh(path=str(charm_path))
         assert app.data['charm-url'].startswith('local:')
 
-        app = await model.deploy('ubuntu', application_name='ubu-switch')
+        app = await model.deploy(
+            'ubuntu',
+            application_name='ubu-switch',
+            channel='stable',
+            revision=24,  # revision 25 requires v2 format for local charm
+        )
         await app.refresh(switch=str(charm_path))
         assert app.data['charm-url'].startswith('local:')
 
@@ -275,7 +285,11 @@ async def test_refresh_charmhub_to_local():
 async def test_local_refresh():
     charm_path = INTEGRATION_TEST_DIR / 'charm'
     async with base.CleanModel() as model:
-        app = await model.deploy('ubuntu')
+        app = await model.deploy(
+            'ubuntu',
+            channel='stable',
+            revision=24,  # revision 25 requires v2 format for local charm
+        )
         origin = client.CharmOrigin(source="charm-hub", track="20.04", risk="stable",
                                     branch="deadbeef", hash_="hash", id_="id", revision=12,
                                     base=client.Base("20.04", "ubuntu"))
