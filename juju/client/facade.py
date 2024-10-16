@@ -350,6 +350,12 @@ def buildTypes(schema, capture):
     for kind in sorted((k for k in schema.types if not isinstance(k, str)),
                        key=lambda x: str(x)):
         name = schema.types[kind]
+        if not name:
+            # when running on juju 3.1.0 client-only schemas, we get a seemingly empty entry with no name
+            # this breaks codegen when generating a class with no name so we explicitly skip it here
+            # note that this is not a problem with the original 3.1.0 full schema (client + others)
+            # nor is it a problem with client-only schemas for latter juju versions (e.g. 3.3.0)
+            continue
         if name in capture and name not in NAUGHTY_CLASSES:
             continue
         args = Args(schema, kind)
