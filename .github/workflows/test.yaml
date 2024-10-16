@@ -73,8 +73,12 @@ jobs:
     strategy:
       matrix:
         python:
+          - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -165,6 +169,11 @@ jobs:
       matrix:
         python:
           - "3.10"
+        juju:
+          - "3.1/stable"
+          - "3.3/stable"
+          - "3.4/stable"
+          - "3.5/stable"
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -176,6 +185,6 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: lxd
-          juju-channel: 3.4/stable
+          juju-channel: ${{ matrix.juju }}
       - name: Run integration
         run: tox -e integration-quarantine
