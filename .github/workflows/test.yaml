@@ -2,6 +2,10 @@ name: Testing
 
 on: [push, pull_request, workflow_dispatch]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Linter
@@ -98,6 +102,9 @@ jobs:
         juju:
           - "3.1/stable"
           - "3.3/stable"
+          - "3.4/stable"
+          - "3.5/stable"
+          - "3.6/beta"
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -109,7 +116,7 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: lxd
-          juju-channel: 3.4/stable
+          juju-channel: ${{ matrix.juju }}
       # 2023-01-11 Commented until we discover a
       # clear approach for this.
       # - name: Set proxy in controller
