@@ -110,6 +110,7 @@ jobs:
           # * test_ssh
           # * ...
           # - "3.6/beta"
+    continue-on-error: false  # don't ignore if tests against some juju version fail
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -153,6 +154,7 @@ jobs:
       - name: Run integration
         # Force one single concurrent test
         run: tox -e integration
+        continue-on-error: true  # so that other juju versions are tested
 
   integration-quarantine:
     name: Quarantined Integration Tests
