@@ -2,6 +2,10 @@ name: Testing
 
 on: [push, pull_request, workflow_dispatch]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Linter
@@ -69,8 +73,12 @@ jobs:
     strategy:
       matrix:
         python:
+          - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -95,6 +103,18 @@ jobs:
           # save some resources for now.
           # - "3.9"
           - "3.10"
+        juju:
+          - "3.1/stable"
+          - "3.3/stable"
+          - "3.4/stable"
+          - "3.5/stable"
+          # A bunch of tests fail with juju.errors.JujuError: base: ubuntu@15.04/stable
+          # * test_subordinate_units
+          # * test_destroy_unit
+          # * test_ssh
+          # * ...
+          # - "3.6/beta"
+    continue-on-error: false  # ultimately fail a run if one of the matrix combinations fails
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -106,7 +126,7 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: lxd
-          juju-channel: 3.4/stable
+          juju-channel: ${{ matrix.juju }}
       # 2023-01-11 Commented until we discover a
       # clear approach for this.
       # - name: Set proxy in controller
@@ -138,6 +158,7 @@ jobs:
       - name: Run integration
         # Force one single concurrent test
         run: tox -e integration
+        continue-on-error: true  # don't fail early, let other matrix combinations get tested
 
   integration-quarantine:
     name: Quarantined Integration Tests
@@ -148,6 +169,12 @@ jobs:
       matrix:
         python:
           - "3.10"
+        juju:
+          - "3.1/stable"
+          - "3.3/stable"
+          - "3.4/stable"
+          - "3.5/stable"
+    continue-on-error: false  # ultimately fail the run if one of the matrix combinations fails
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -159,6 +186,7 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: lxd
-          juju-channel: 3.4/stable
+          juju-channel: ${{ matrix.juju }}
       - name: Run integration
         run: tox -e integration-quarantine
+        continue-on-error: true  # don't fail early, let other matrix combinations get tested
