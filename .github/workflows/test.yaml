@@ -188,3 +188,4 @@ jobs:
           juju-channel: ${{ matrix.juju }}
       - name: Run integration
         run: tox -e integration-quarantine
+        continue-on-error: true  # so that other juju versions are tested
