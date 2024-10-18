@@ -12,6 +12,7 @@ Please see docs/CONTRIBUTING.md for the process for updating this file.
 3.1.7 (identical to 3.1.6)
 3.1.8 (identical to 3.1.6)
 3.1.9 (identical to 3.1.6)
+3.1.10 (identical to 3.1.6)
 
 # 3.3
 3.3.0
