@@ -972,7 +972,7 @@ def load_schemas(options):
 
 def setup():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--schema", default="juju/client/schemas*")
+    parser.add_argument("-s", "--schema", default="juju/client/schemas-juju-*.json")
     parser.add_argument("-o", "--output_dir", default="juju/client")
     options = parser.parse_args()
     return options
