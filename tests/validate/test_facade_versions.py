@@ -4,18 +4,11 @@
 import importlib
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, TypedDict
+from typing import Dict, List, Sequence
 
 import pytest
 
-from juju.client.connection import client_facades, excluded_facades
-
-
-class Versions(TypedDict, total=True):
-    versions: List[int]
-
-
-ClientFacades = Dict[str, Versions]
+from juju.client.facade_versions import client_facade_versions, excluded_facade_versions, known_unsupported_facades
 
 
 @pytest.fixture
@@ -24,8 +17,8 @@ def project_root(pytestconfig: pytest.Config) -> Path:
 
 
 @pytest.fixture
-def generated_code_facades(project_root: Path) -> ClientFacades:
-    """Return a client_facades dictionary from generated code under project_root.
+def generated_code_facades(project_root: Path) -> Dict[str, Sequence[int]]:
+    """Return a {facade_name: (versions,)} dictionary from the generated code.
 
     Iterates through all the generated files matching juju/client/_client*.py,
     extracting facade types (those that have .name and .version properties).
@@ -42,19 +35,20 @@ def generated_code_facades(project_root: Path) -> ClientFacades:
                 cls.version
             except AttributeError:
                 continue
-            if cls.version in excluded_facades.get(cls.name, []):
+            if cls.version in excluded_facade_versions.get(cls.name, []):
                 continue
             facades[cls.name].append(cls.version)
-    return {name: {'versions': sorted(facades[name])} for name in sorted(facades)}
+    return {name: tuple(sorted(facades[name])) for name in sorted(facades)}
 
 
-def test_client_facades(project_root: Path, generated_code_facades: ClientFacades) -> None:
-    """Ensure that juju.client.connection.client_facades matches expected facades.
+def test_client_facades(generated_code_facades: Dict[str, Sequence[int]]) -> None:
+    """Ensure that juju.client.facade_versions.client_facade_versions matches expected facades.
 
     See generated_code_facades for how expected facades are computed.
     """
-    assert {
-        k: v['versions'] for k, v in client_facades.items()
-    } == {
-        k: v['versions'] for k, v in generated_code_facades.items()
-    }
+    assert client_facade_versions == generated_code_facades
+
+
+def test_unsupported_facades(generated_code_facades: Dict[str, Sequence[int]]) -> None:
+    """Ensure that we don't accidentally ignore our own generated code."""
+    assert not set(generated_code_facades) & set(known_unsupported_facades)

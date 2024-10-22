@@ -6,10 +6,11 @@ import json
 import logging
 import ssl
 import urllib.request
+import warnings
 import weakref
 from http.client import HTTPSConnection
 from dateutil.parser import parse
-from typing import Dict, List
+from typing import Dict, Literal, Optional, Sequence
 
 import macaroonbakery.bakery as bakery
 import macaroonbakery.httpbakery as httpbakery
@@ -18,52 +19,9 @@ from juju import errors, tag, utils, jasyncio
 from juju.client import client
 from juju.utils import IdQueue
 from juju.version import CLIENT_VERSION
+from .facade_versions import client_facade_versions, known_unsupported_facades
 
 log = logging.getLogger('juju.client.connection')
-
-# Manual list of facades present in schemas + codegen which python-libjuju does not yet support
-excluded_facades: Dict[str, List[int]] = {
-    'Charms': [7],
-}
-# Please keep in alphabetical order
-# in future this will likely be generated automatically (perhaps at runtime)
-client_facades = {
-    'Action': {'versions': [7]},
-    'Admin': {'versions': [3]},
-    'AllModelWatcher': {'versions': [4]},
-    'AllWatcher': {'versions': [3]},
-    'Annotations': {'versions': [2]},
-    'Application': {'versions': [17, 19]},
-    'ApplicationOffers': {'versions': [4]},
-    'Backups': {'versions': [3]},
-    'Block': {'versions': [2]},
-    'Bundle': {'versions': [6]},
-    'Charms': {'versions': [6]},
-    'Client': {'versions': [6, 7]},
-    'Cloud': {'versions': [7]},
-    'Controller': {'versions': [11]},
-    'CredentialManager': {'versions': [1]},
-    'FirewallRules': {'versions': [1]},
-    'HighAvailability': {'versions': [2]},
-    'ImageMetadataManager': {'versions': [1]},
-    'KeyManager': {'versions': [1]},
-    'MachineManager': {'versions': [10]},
-    'MetricsDebug': {'versions': [2]},
-    'ModelConfig': {'versions': [3]},
-    'ModelGeneration': {'versions': [4]},
-    'ModelManager': {'versions': [9]},
-    'ModelUpgrader': {'versions': [1]},
-    'Payloads': {'versions': [1]},
-    'Pinger': {'versions': [1]},
-    'Resources': {'versions': [3]},
-    'SSHClient': {'versions': [4]},
-    'SecretBackends': {'versions': [1]},
-    'Secrets': {'versions': [1, 2]},
-    'Spaces': {'versions': [6]},
-    'Storage': {'versions': [6]},
-    'Subnets': {'versions': [5]},
-    'UserManager': {'versions': [3]},
-}
 
 
 def facade_versions(name, versions):
@@ -156,6 +114,8 @@ class Connection:
 
     MAX_FRAME_SIZE = 2**22
     "Maximum size for a single frame.  Defaults to 4MB."
+    facades: Dict[str, int]
+    _specified_facades: Dict[str, Sequence[int]]
 
     @classmethod
     async def connect(
@@ -169,7 +129,7 @@ class Connection:
             max_frame_size=None,
             retries=3,
             retry_backoff=10,
-            specified_facades=None,
+            specified_facades: Optional[Dict[str, Dict[Literal["versions"], Sequence[int]]]] = None,
             proxy=None,
             debug_log_conn=None,
             debug_log_params={}
@@ -197,7 +157,7 @@ class Connection:
         :param int retry_backoff: Number of seconds to increase the wait
             between connection retry attempts (a backoff of 10 with 3 retries
             would wait 10s, 20s, and 30s).
-        :param specified_facades: Define a series of facade versions you wish to override
+        :param specified_facades: (deprecated) define a series of facade versions you wish to override
             to prevent using the conservative client pinning with in the client.
         :param TextIOWrapper debug_log_conn: target if this is a debug log connection
         :param dict debug_log_params: filtering parameters for the debug-log output
@@ -247,7 +207,18 @@ class Connection:
         self._retry_backoff = retry_backoff
 
         self.facades = {}
-        self.specified_facades = specified_facades or {}
+
+        if specified_facades:
+            warnings.warn(
+                "The `specified_facades` argument is deprecated and will be removed soon",
+                DeprecationWarning,
+                stacklevel=3,
+            )
+            self._specified_facades = {
+                name: d["versions"] for name, d in specified_facades.items()
+            }
+        else:
+            self._specified_facades = {}
 
         self.messages = IdQueue()
         self.monitor = Monitor(connection=self)
@@ -826,48 +797,31 @@ class Connection:
             self._pinger_task = jasyncio.create_task(self._pinger(), name="Task_Pinger")
 
     # _build_facades takes the facade list that comes from the connection with the controller,
-    # validates that the client knows about them (client_facades) and builds the facade list
-    # (into the self.specified facades) with the max versions that both the client and the controller
+    # validates that the client knows about them (client_facade_versions) and builds the facade list
+    # (into the self._specified facades) with the max versions that both the client and the controller
     # can negotiate on
     def _build_facades(self, facades_from_connection):
         self.facades.clear()
         for facade in facades_from_connection:
             name = facade['name']
-            # the following attempts to get the best facade version for the
-            # client. The client knows about the best facade versions it speaks,
-            # so in order to be compatible forwards and backwards we speak a
-            # common facade versions.
-            if (name not in client_facades) and (name not in self.specified_facades):
-                # if a facade is required but the client doesn't know about
-                # it, then log a warning.
+            if name in self._specified_facades:
+                client_versions = self._specified_facades[name]
+            elif name in client_facade_versions:
+                client_versions = client_facade_versions[name]
+            elif name in known_unsupported_facades:
+                continue
+            else:
                 log.warning(f'unexpected facade {name} received from the controller')
                 continue
 
-            try:
-                # allow the ability to specify a set of facade versions, so the
-                # client can define the non-conservative facade client pinning.
-                if name in self.specified_facades:
-                    client_versions = self.specified_facades[name]['versions']
-                elif name in client_facades:
-                    client_versions = client_facades[name]['versions']
-
-                controller_versions = facade['versions']
-                # select the max version that both the client and the controller know
-                version = max(set(client_versions).intersection(set(controller_versions)))
-            except ValueError:
-                # this can occur if client_verisons is [1, 2] and controller_versions is [3, 4]
-                # there is just no way to know how to communicate with the facades we're trying to call.
+            controller_versions = facade['versions']
+            candidates = set(client_versions) & set(controller_versions)
+            if not candidates:
                 log.warning(f'unknown common facade version for {name},\n'
                             f'versions known to client : {client_versions}\n'
                             f'versions known to controller : {controller_versions}')
-            except errors.JujuConnectionError:
-                # If the facade isn't with in the local facades then it's not
-                # possible to reason about what version should be used. In this
-                # case we should log the facade was found, but we couldn't
-                # handle it.
-                log.warning(f'unexpected facade {name} found, unable to determine which version to use')
-            else:
-                self.facades[name] = version
+                continue
+            self.facades[name] = max(candidates)
 
     async def login(self):
         params = {}
