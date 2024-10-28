@@ -13,8 +13,9 @@ import typing
 from collections import defaultdict
 from glob import glob
 from pathlib import Path
-from typing import Any, Mapping, Sequence, TypeVar
+from typing import Any, Dict, List, Mapping, Sequence
 
+import packaging.version
 import typing_inspect
 
 from . import codegen
@@ -150,7 +151,7 @@ class TypeRegistry(dict):
         # Two way mapping
         refname = self.schema.referenceName(name)
         if refname not in self:
-            result = TypeVar(refname)
+            result = typing.TypeVar(refname)
             self[refname] = result
             self[result] = refname
 
@@ -926,11 +927,11 @@ def generate_definitions(schemas):
     return definitions
 
 
-def generate_facades(schemas):
+def generate_facades(schemas: Dict[str, List[Schema]]) -> Dict[str, Dict[int, codegen.Capture]]:
     captures = defaultdict(codegen.Capture)
 
     # Build the Facade classes
-    for juju_version in sorted(schemas.keys()):
+    for juju_version in sorted(schemas.keys(), key=packaging.version.parse):
         for schema in schemas[juju_version]:
             cls, source = buildFacade(schema)
             cls_name = "{}Facade".format(schema.name)
@@ -953,18 +954,13 @@ def generate_facades(schemas):
 
 def load_schemas(options):
     schemas = {}
-
     for p in sorted(glob(options.schema)):
-        if 'latest' in p:
-            juju_version = 'latest'
-        else:
-            try:
-                juju_version = re.search(JUJU_VERSION, p).group()
-            except AttributeError:
-                print("Cannot extract a juju version from {}".format(p))
-                print("Schemas must include a juju version in the filename")
-                raise SystemExit(1)
-
+        try:
+            juju_version = re.search(JUJU_VERSION, p).group()
+        except AttributeError:
+            print("Cannot extract a juju version from {}".format(p))
+            print("Schemas must include a juju version in the filename")
+            raise SystemExit(1)
         new_schemas = json.loads(Path(p).read_text("utf-8"))
         schemas[juju_version] = [Schema(s) for s in new_schemas]
     return schemas
