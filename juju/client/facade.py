@@ -954,18 +954,13 @@ def generate_facades(schemas: Dict[str, List[Schema]]) -> Dict[str, Dict[int, co
 
 def load_schemas(options):
     schemas = {}
-
     for p in sorted(glob(options.schema)):
-        if 'latest' in p:
-            juju_version = 'latest'
-        else:
-            try:
-                juju_version = re.search(JUJU_VERSION, p).group()
-            except AttributeError:
-                print("Cannot extract a juju version from {}".format(p))
-                print("Schemas must include a juju version in the filename")
-                raise SystemExit(1)
-
+        try:
+            juju_version = re.search(JUJU_VERSION, p).group()
+        except AttributeError:
+            print("Cannot extract a juju version from {}".format(p))
+            print("Schemas must include a juju version in the filename")
+            raise SystemExit(1)
         new_schemas = json.loads(Path(p).read_text("utf-8"))
         schemas[juju_version] = [Schema(s) for s in new_schemas]
     return schemas
