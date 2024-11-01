@@ -4,7 +4,7 @@
 from juju.client._definitions import *
 
 
-from juju.client import _client7, _client3, _client4, _client2, _client17, _client6, _client11, _client1, _client10, _client9, _client5, _client19
+from juju.client import _client7, _client3, _client4, _client2, _client17, _client6, _client11, _client1, _client10, _client9, _client5, _client19, _client20, _client8, _client12
 
 
 CLIENTS = {
@@ -19,7 +19,10 @@ CLIENTS = {
     "10": _client10,
     "9": _client9,
     "5": _client5,
-    "19": _client19
+    "19": _client19,
+    "20": _client20,
+    "8": _client8,
+    "12": _client12
 }
 
 

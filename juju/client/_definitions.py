@@ -4,6 +4,36 @@
 from juju.client.facade import Type, ReturnMapping
 
 
+class AccessInfo(Type):
+    _toSchema = {'role': 'role', 'scope_tag': 'scope-tag', 'target_tag': 'target-tag'}
+    _toPy = {'role': 'role', 'scope-tag': 'scope_tag', 'target-tag': 'target_tag'}
+    def __init__(self, role=None, scope_tag=None, target_tag=None, **unknown_fields):
+        '''
+        role : str
+        scope_tag : str
+        target_tag : str
+        '''
+        role_ = role
+        scope_tag_ = scope_tag
+        target_tag_ = target_tag
+
+        # Validate arguments against known Juju API types.
+        if role_ is not None and not isinstance(role_, (bytes, str)):
+            raise Exception("Expected role_ to be a str, received: {}".format(type(role_)))
+
+        if scope_tag_ is not None and not isinstance(scope_tag_, (bytes, str)):
+            raise Exception("Expected scope_tag_ to be a str, received: {}".format(type(scope_tag_)))
+
+        if target_tag_ is not None and not isinstance(target_tag_, (bytes, str)):
+            raise Exception("Expected target_tag_ to be a str, received: {}".format(type(target_tag_)))
+
+        self.role = role_
+        self.scope_tag = scope_tag_
+        self.target_tag = target_tag_
+        self.unknown_fields = unknown_fields
+
+
+
 class Action(Type):
     _toSchema = {'execution_group': 'execution-group', 'name': 'name', 'parallel': 'parallel', 'parameters': 'parameters', 'receiver': 'receiver', 'tag': 'tag'}
     _toPy = {'execution-group': 'execution_group', 'name': 'name', 'parallel': 'parallel', 'parameters': 'parameters', 'receiver': 'receiver', 'tag': 'tag'}
@@ -1672,6 +1702,84 @@ class ApplicationOfferAdminDetails(Type):
 
 
 
+class ApplicationOfferAdminDetailsV5(Type):
+    _toSchema = {'application_description': 'application-description', 'application_name': 'application-name', 'applicationofferdetailsv5': 'ApplicationOfferDetailsV5', 'charm_url': 'charm-url', 'connections': 'connections', 'endpoints': 'endpoints', 'offer_name': 'offer-name', 'offer_url': 'offer-url', 'offer_uuid': 'offer-uuid', 'source_model_tag': 'source-model-tag', 'users': 'users'}
+    _toPy = {'ApplicationOfferDetailsV5': 'applicationofferdetailsv5', 'application-description': 'application_description', 'application-name': 'application_name', 'charm-url': 'charm_url', 'connections': 'connections', 'endpoints': 'endpoints', 'offer-name': 'offer_name', 'offer-url': 'offer_url', 'offer-uuid': 'offer_uuid', 'source-model-tag': 'source_model_tag', 'users': 'users'}
+    def __init__(self, applicationofferdetailsv5=None, application_description=None, application_name=None, charm_url=None, connections=None, endpoints=None, offer_name=None, offer_url=None, offer_uuid=None, source_model_tag=None, users=None, **unknown_fields):
+        '''
+        applicationofferdetailsv5 : ApplicationOfferDetailsV5
+        application_description : str
+        application_name : str
+        charm_url : str
+        connections : typing.Sequence[~OfferConnection]
+        endpoints : typing.Sequence[~RemoteEndpoint]
+        offer_name : str
+        offer_url : str
+        offer_uuid : str
+        source_model_tag : str
+        users : typing.Sequence[~OfferUserDetails]
+        '''
+        applicationofferdetailsv5_ = ApplicationOfferDetailsV5.from_json(applicationofferdetailsv5) if applicationofferdetailsv5 else None
+        application_description_ = application_description
+        application_name_ = application_name
+        charm_url_ = charm_url
+        connections_ = [OfferConnection.from_json(o) for o in connections or []]
+        endpoints_ = [RemoteEndpoint.from_json(o) for o in endpoints or []]
+        offer_name_ = offer_name
+        offer_url_ = offer_url
+        offer_uuid_ = offer_uuid
+        source_model_tag_ = source_model_tag
+        users_ = [OfferUserDetails.from_json(o) for o in users or []]
+
+        # Validate arguments against known Juju API types.
+        if applicationofferdetailsv5_ is not None and not isinstance(applicationofferdetailsv5_, (dict, ApplicationOfferDetailsV5)):
+            raise Exception("Expected applicationofferdetailsv5_ to be a ApplicationOfferDetailsV5, received: {}".format(type(applicationofferdetailsv5_)))
+
+        if application_description_ is not None and not isinstance(application_description_, (bytes, str)):
+            raise Exception("Expected application_description_ to be a str, received: {}".format(type(application_description_)))
+
+        if application_name_ is not None and not isinstance(application_name_, (bytes, str)):
+            raise Exception("Expected application_name_ to be a str, received: {}".format(type(application_name_)))
+
+        if charm_url_ is not None and not isinstance(charm_url_, (bytes, str)):
+            raise Exception("Expected charm_url_ to be a str, received: {}".format(type(charm_url_)))
+
+        if connections_ is not None and not isinstance(connections_, (bytes, str, list)):
+            raise Exception("Expected connections_ to be a Sequence, received: {}".format(type(connections_)))
+
+        if endpoints_ is not None and not isinstance(endpoints_, (bytes, str, list)):
+            raise Exception("Expected endpoints_ to be a Sequence, received: {}".format(type(endpoints_)))
+
+        if offer_name_ is not None and not isinstance(offer_name_, (bytes, str)):
+            raise Exception("Expected offer_name_ to be a str, received: {}".format(type(offer_name_)))
+
+        if offer_url_ is not None and not isinstance(offer_url_, (bytes, str)):
+            raise Exception("Expected offer_url_ to be a str, received: {}".format(type(offer_url_)))
+
+        if offer_uuid_ is not None and not isinstance(offer_uuid_, (bytes, str)):
+            raise Exception("Expected offer_uuid_ to be a str, received: {}".format(type(offer_uuid_)))
+
+        if source_model_tag_ is not None and not isinstance(source_model_tag_, (bytes, str)):
+            raise Exception("Expected source_model_tag_ to be a str, received: {}".format(type(source_model_tag_)))
+
+        if users_ is not None and not isinstance(users_, (bytes, str, list)):
+            raise Exception("Expected users_ to be a Sequence, received: {}".format(type(users_)))
+
+        self.applicationofferdetailsv5 = applicationofferdetailsv5_
+        self.application_description = application_description_
+        self.application_name = application_name_
+        self.charm_url = charm_url_
+        self.connections = connections_
+        self.endpoints = endpoints_
+        self.offer_name = offer_name_
+        self.offer_url = offer_url_
+        self.offer_uuid = offer_uuid_
+        self.source_model_tag = source_model_tag_
+        self.users = users_
+        self.unknown_fields = unknown_fields
+
+
+
 class ApplicationOfferDetails(Type):
     _toSchema = {'application_description': 'application-description', 'bindings': 'bindings', 'endpoints': 'endpoints', 'offer_name': 'offer-name', 'offer_url': 'offer-url', 'offer_uuid': 'offer-uuid', 'source_model_tag': 'source-model-tag', 'spaces': 'spaces', 'users': 'users'}
     _toPy = {'application-description': 'application_description', 'bindings': 'bindings', 'endpoints': 'endpoints', 'offer-name': 'offer_name', 'offer-url': 'offer_url', 'offer-uuid': 'offer_uuid', 'source-model-tag': 'source_model_tag', 'spaces': 'spaces', 'users': 'users'}
@@ -1738,23 +1846,77 @@ class ApplicationOfferDetails(Type):
 
 
 
+class ApplicationOfferDetailsV5(Type):
+    _toSchema = {'application_description': 'application-description', 'endpoints': 'endpoints', 'offer_name': 'offer-name', 'offer_url': 'offer-url', 'offer_uuid': 'offer-uuid', 'source_model_tag': 'source-model-tag', 'users': 'users'}
+    _toPy = {'application-description': 'application_description', 'endpoints': 'endpoints', 'offer-name': 'offer_name', 'offer-url': 'offer_url', 'offer-uuid': 'offer_uuid', 'source-model-tag': 'source_model_tag', 'users': 'users'}
+    def __init__(self, application_description=None, endpoints=None, offer_name=None, offer_url=None, offer_uuid=None, source_model_tag=None, users=None, **unknown_fields):
+        '''
+        application_description : str
+        endpoints : typing.Sequence[~RemoteEndpoint]
+        offer_name : str
+        offer_url : str
+        offer_uuid : str
+        source_model_tag : str
+        users : typing.Sequence[~OfferUserDetails]
+        '''
+        application_description_ = application_description
+        endpoints_ = [RemoteEndpoint.from_json(o) for o in endpoints or []]
+        offer_name_ = offer_name
+        offer_url_ = offer_url
+        offer_uuid_ = offer_uuid
+        source_model_tag_ = source_model_tag
+        users_ = [OfferUserDetails.from_json(o) for o in users or []]
+
+        # Validate arguments against known Juju API types.
+        if application_description_ is not None and not isinstance(application_description_, (bytes, str)):
+            raise Exception("Expected application_description_ to be a str, received: {}".format(type(application_description_)))
+
+        if endpoints_ is not None and not isinstance(endpoints_, (bytes, str, list)):
+            raise Exception("Expected endpoints_ to be a Sequence, received: {}".format(type(endpoints_)))
+
+        if offer_name_ is not None and not isinstance(offer_name_, (bytes, str)):
+            raise Exception("Expected offer_name_ to be a str, received: {}".format(type(offer_name_)))
+
+        if offer_url_ is not None and not isinstance(offer_url_, (bytes, str)):
+            raise Exception("Expected offer_url_ to be a str, received: {}".format(type(offer_url_)))
+
+        if offer_uuid_ is not None and not isinstance(offer_uuid_, (bytes, str)):
+            raise Exception("Expected offer_uuid_ to be a str, received: {}".format(type(offer_uuid_)))
+
+        if source_model_tag_ is not None and not isinstance(source_model_tag_, (bytes, str)):
+            raise Exception("Expected source_model_tag_ to be a str, received: {}".format(type(source_model_tag_)))
+
+        if users_ is not None and not isinstance(users_, (bytes, str, list)):
+            raise Exception("Expected users_ to be a Sequence, received: {}".format(type(users_)))
+
+        self.application_description = application_description_
+        self.endpoints = endpoints_
+        self.offer_name = offer_name_
+        self.offer_url = offer_url_
+        self.offer_uuid = offer_uuid_
+        self.source_model_tag = source_model_tag_
+        self.users = users_
+        self.unknown_fields = unknown_fields
+
+
+
 class ApplicationOfferResult(Type):
     _toSchema = {'error': 'error', 'result': 'result'}
     _toPy = {'error': 'error', 'result': 'result'}
     def __init__(self, error=None, result=None, **unknown_fields):
         '''
         error : Error
-        result : ApplicationOfferAdminDetails
+        result : ApplicationOfferAdminDetailsV5
         '''
         error_ = Error.from_json(error) if error else None
-        result_ = ApplicationOfferAdminDetails.from_json(result) if result else None
+        result_ = ApplicationOfferAdminDetailsV5.from_json(result) if result else None
 
         # Validate arguments against known Juju API types.
         if error_ is not None and not isinstance(error_, (dict, Error)):
             raise Exception("Expected error_ to be a Error, received: {}".format(type(error_)))
 
-        if result_ is not None and not isinstance(result_, (dict, ApplicationOfferAdminDetails)):
-            raise Exception("Expected result_ to be a ApplicationOfferAdminDetails, received: {}".format(type(result_)))
+        if result_ is not None and not isinstance(result_, (dict, ApplicationOfferAdminDetailsV5)):
+            raise Exception("Expected result_ to be a ApplicationOfferAdminDetailsV5, received: {}".format(type(result_)))
 
         self.error = error_
         self.result = result_
@@ -3113,25 +3275,37 @@ class CharmBase(Type):
 
 
 class CharmContainer(Type):
-    _toSchema = {'mounts': 'mounts', 'resource': 'resource'}
-    _toPy = {'mounts': 'mounts', 'resource': 'resource'}
-    def __init__(self, mounts=None, resource=None, **unknown_fields):
+    _toSchema = {'gid': 'gid', 'mounts': 'mounts', 'resource': 'resource', 'uid': 'uid'}
+    _toPy = {'gid': 'gid', 'mounts': 'mounts', 'resource': 'resource', 'uid': 'uid'}
+    def __init__(self, gid=None, mounts=None, resource=None, uid=None, **unknown_fields):
         '''
+        gid : int
         mounts : typing.Sequence[~CharmMount]
         resource : str
+        uid : int
         '''
+        gid_ = gid
         mounts_ = [CharmMount.from_json(o) for o in mounts or []]
         resource_ = resource
+        uid_ = uid
 
         # Validate arguments against known Juju API types.
+        if gid_ is not None and not isinstance(gid_, int):
+            raise Exception("Expected gid_ to be a int, received: {}".format(type(gid_)))
+
         if mounts_ is not None and not isinstance(mounts_, (bytes, str, list)):
             raise Exception("Expected mounts_ to be a Sequence, received: {}".format(type(mounts_)))
 
         if resource_ is not None and not isinstance(resource_, (bytes, str)):
             raise Exception("Expected resource_ to be a str, received: {}".format(type(resource_)))
 
+        if uid_ is not None and not isinstance(uid_, int):
+            raise Exception("Expected uid_ to be a int, received: {}".format(type(uid_)))
+
+        self.gid = gid_
         self.mounts = mounts_
         self.resource = resource_
+        self.uid = uid_
         self.unknown_fields = unknown_fields
 
 
@@ -3263,12 +3437,13 @@ class CharmManifest(Type):
 
 
 class CharmMeta(Type):
-    _toSchema = {'assumes_expr': 'assumes-expr', 'categories': 'categories', 'containers': 'containers', 'deployment': 'deployment', 'description': 'description', 'devices': 'devices', 'extra_bindings': 'extra-bindings', 'min_juju_version': 'min-juju-version', 'name': 'name', 'payload_classes': 'payload-classes', 'peers': 'peers', 'provides': 'provides', 'requires': 'requires', 'resources': 'resources', 'series': 'series', 'storage': 'storage', 'subordinate': 'subordinate', 'summary': 'summary', 'tags': 'tags', 'terms': 'terms'}
-    _toPy = {'assumes-expr': 'assumes_expr', 'categories': 'categories', 'containers': 'containers', 'deployment': 'deployment', 'description': 'description', 'devices': 'devices', 'extra-bindings': 'extra_bindings', 'min-juju-version': 'min_juju_version', 'name': 'name', 'payload-classes': 'payload_classes', 'peers': 'peers', 'provides': 'provides', 'requires': 'requires', 'resources': 'resources', 'series': 'series', 'storage': 'storage', 'subordinate': 'subordinate', 'summary': 'summary', 'tags': 'tags', 'terms': 'terms'}
-    def __init__(self, assumes_expr=None, categories=None, containers=None, deployment=None, description=None, devices=None, extra_bindings=None, min_juju_version=None, name=None, payload_classes=None, peers=None, provides=None, requires=None, resources=None, series=None, storage=None, subordinate=None, summary=None, tags=None, terms=None, **unknown_fields):
+    _toSchema = {'assumes_expr': 'assumes-expr', 'categories': 'categories', 'charm_user': 'charm-user', 'containers': 'containers', 'deployment': 'deployment', 'description': 'description', 'devices': 'devices', 'extra_bindings': 'extra-bindings', 'min_juju_version': 'min-juju-version', 'name': 'name', 'payload_classes': 'payload-classes', 'peers': 'peers', 'provides': 'provides', 'requires': 'requires', 'resources': 'resources', 'series': 'series', 'storage': 'storage', 'subordinate': 'subordinate', 'summary': 'summary', 'tags': 'tags', 'terms': 'terms'}
+    _toPy = {'assumes-expr': 'assumes_expr', 'categories': 'categories', 'charm-user': 'charm_user', 'containers': 'containers', 'deployment': 'deployment', 'description': 'description', 'devices': 'devices', 'extra-bindings': 'extra_bindings', 'min-juju-version': 'min_juju_version', 'name': 'name', 'payload-classes': 'payload_classes', 'peers': 'peers', 'provides': 'provides', 'requires': 'requires', 'resources': 'resources', 'series': 'series', 'storage': 'storage', 'subordinate': 'subordinate', 'summary': 'summary', 'tags': 'tags', 'terms': 'terms'}
+    def __init__(self, assumes_expr=None, categories=None, charm_user=None, containers=None, deployment=None, description=None, devices=None, extra_bindings=None, min_juju_version=None, name=None, payload_classes=None, peers=None, provides=None, requires=None, resources=None, series=None, storage=None, subordinate=None, summary=None, tags=None, terms=None, **unknown_fields):
         '''
         assumes_expr : ExpressionTree
         categories : typing.Sequence[str]
+        charm_user : str
         containers : typing.Mapping[str, ~CharmContainer]
         deployment : CharmDeployment
         description : str
@@ -3290,6 +3465,7 @@ class CharmMeta(Type):
         '''
         assumes_expr_ = ExpressionTree.from_json(assumes_expr) if assumes_expr else None
         categories_ = categories
+        charm_user_ = charm_user
         containers_ = {k: CharmContainer.from_json(v) for k, v in (containers or dict()).items()}
         deployment_ = CharmDeployment.from_json(deployment) if deployment else None
         description_ = description
@@ -3315,6 +3491,9 @@ class CharmMeta(Type):
 
         if categories_ is not None and not isinstance(categories_, (bytes, str, list)):
             raise Exception("Expected categories_ to be a Sequence, received: {}".format(type(categories_)))
+
+        if charm_user_ is not None and not isinstance(charm_user_, (bytes, str)):
+            raise Exception("Expected charm_user_ to be a str, received: {}".format(type(charm_user_)))
 
         if containers_ is not None and not isinstance(containers_, dict):
             raise Exception("Expected containers_ to be a Mapping, received: {}".format(type(containers_)))
@@ -3372,6 +3551,7 @@ class CharmMeta(Type):
 
         self.assumes_expr = assumes_expr_
         self.categories = categories_
+        self.charm_user = charm_user_
         self.containers = containers_
         self.deployment = deployment_
         self.description = description_
@@ -4996,6 +5176,84 @@ class ConsumeApplicationArg(Type):
 
 
 
+class ConsumeApplicationArgV5(Type):
+    _toSchema = {'application_alias': 'application-alias', 'application_description': 'application-description', 'applicationofferdetailsv5': 'ApplicationOfferDetailsV5', 'endpoints': 'endpoints', 'external_controller': 'external-controller', 'macaroon': 'macaroon', 'offer_name': 'offer-name', 'offer_url': 'offer-url', 'offer_uuid': 'offer-uuid', 'source_model_tag': 'source-model-tag', 'users': 'users'}
+    _toPy = {'ApplicationOfferDetailsV5': 'applicationofferdetailsv5', 'application-alias': 'application_alias', 'application-description': 'application_description', 'endpoints': 'endpoints', 'external-controller': 'external_controller', 'macaroon': 'macaroon', 'offer-name': 'offer_name', 'offer-url': 'offer_url', 'offer-uuid': 'offer_uuid', 'source-model-tag': 'source_model_tag', 'users': 'users'}
+    def __init__(self, applicationofferdetailsv5=None, application_alias=None, application_description=None, endpoints=None, external_controller=None, macaroon=None, offer_name=None, offer_url=None, offer_uuid=None, source_model_tag=None, users=None, **unknown_fields):
+        '''
+        applicationofferdetailsv5 : ApplicationOfferDetailsV5
+        application_alias : str
+        application_description : str
+        endpoints : typing.Sequence[~RemoteEndpoint]
+        external_controller : ExternalControllerInfo
+        macaroon : Macaroon
+        offer_name : str
+        offer_url : str
+        offer_uuid : str
+        source_model_tag : str
+        users : typing.Sequence[~OfferUserDetails]
+        '''
+        applicationofferdetailsv5_ = ApplicationOfferDetailsV5.from_json(applicationofferdetailsv5) if applicationofferdetailsv5 else None
+        application_alias_ = application_alias
+        application_description_ = application_description
+        endpoints_ = [RemoteEndpoint.from_json(o) for o in endpoints or []]
+        external_controller_ = ExternalControllerInfo.from_json(external_controller) if external_controller else None
+        macaroon_ = Macaroon.from_json(macaroon) if macaroon else None
+        offer_name_ = offer_name
+        offer_url_ = offer_url
+        offer_uuid_ = offer_uuid
+        source_model_tag_ = source_model_tag
+        users_ = [OfferUserDetails.from_json(o) for o in users or []]
+
+        # Validate arguments against known Juju API types.
+        if applicationofferdetailsv5_ is not None and not isinstance(applicationofferdetailsv5_, (dict, ApplicationOfferDetailsV5)):
+            raise Exception("Expected applicationofferdetailsv5_ to be a ApplicationOfferDetailsV5, received: {}".format(type(applicationofferdetailsv5_)))
+
+        if application_alias_ is not None and not isinstance(application_alias_, (bytes, str)):
+            raise Exception("Expected application_alias_ to be a str, received: {}".format(type(application_alias_)))
+
+        if application_description_ is not None and not isinstance(application_description_, (bytes, str)):
+            raise Exception("Expected application_description_ to be a str, received: {}".format(type(application_description_)))
+
+        if endpoints_ is not None and not isinstance(endpoints_, (bytes, str, list)):
+            raise Exception("Expected endpoints_ to be a Sequence, received: {}".format(type(endpoints_)))
+
+        if external_controller_ is not None and not isinstance(external_controller_, (dict, ExternalControllerInfo)):
+            raise Exception("Expected external_controller_ to be a ExternalControllerInfo, received: {}".format(type(external_controller_)))
+
+        if macaroon_ is not None and not isinstance(macaroon_, (dict, Macaroon)):
+            raise Exception("Expected macaroon_ to be a Macaroon, received: {}".format(type(macaroon_)))
+
+        if offer_name_ is not None and not isinstance(offer_name_, (bytes, str)):
+            raise Exception("Expected offer_name_ to be a str, received: {}".format(type(offer_name_)))
+
+        if offer_url_ is not None and not isinstance(offer_url_, (bytes, str)):
+            raise Exception("Expected offer_url_ to be a str, received: {}".format(type(offer_url_)))
+
+        if offer_uuid_ is not None and not isinstance(offer_uuid_, (bytes, str)):
+            raise Exception("Expected offer_uuid_ to be a str, received: {}".format(type(offer_uuid_)))
+
+        if source_model_tag_ is not None and not isinstance(source_model_tag_, (bytes, str)):
+            raise Exception("Expected source_model_tag_ to be a str, received: {}".format(type(source_model_tag_)))
+
+        if users_ is not None and not isinstance(users_, (bytes, str, list)):
+            raise Exception("Expected users_ to be a Sequence, received: {}".format(type(users_)))
+
+        self.applicationofferdetailsv5 = applicationofferdetailsv5_
+        self.application_alias = application_alias_
+        self.application_description = application_description_
+        self.endpoints = endpoints_
+        self.external_controller = external_controller_
+        self.macaroon = macaroon_
+        self.offer_name = offer_name_
+        self.offer_url = offer_url_
+        self.offer_uuid = offer_uuid_
+        self.source_model_tag = source_model_tag_
+        self.users = users_
+        self.unknown_fields = unknown_fields
+
+
+
 class ConsumeApplicationArgs(Type):
     _toSchema = {'args': 'args'}
     _toPy = {'args': 'args'}
@@ -5014,6 +5272,24 @@ class ConsumeApplicationArgs(Type):
 
 
 
+class ConsumeApplicationArgsV5(Type):
+    _toSchema = {'args': 'args'}
+    _toPy = {'args': 'args'}
+    def __init__(self, args=None, **unknown_fields):
+        '''
+        args : typing.Sequence[~ConsumeApplicationArgV5]
+        '''
+        args_ = [ConsumeApplicationArgV5.from_json(o) for o in args or []]
+
+        # Validate arguments against known Juju API types.
+        if args_ is not None and not isinstance(args_, (bytes, str, list)):
+            raise Exception("Expected args_ to be a Sequence, received: {}".format(type(args_)))
+
+        self.args = args_
+        self.unknown_fields = unknown_fields
+
+
+
 class ConsumeOfferDetails(Type):
     _toSchema = {'external_controller': 'external-controller', 'macaroon': 'macaroon', 'offer': 'offer'}
     _toPy = {'external-controller': 'external_controller', 'macaroon': 'macaroon', 'offer': 'offer'}
@@ -5021,11 +5297,11 @@ class ConsumeOfferDetails(Type):
         '''
         external_controller : ExternalControllerInfo
         macaroon : Macaroon
-        offer : ApplicationOfferDetails
+        offer : ApplicationOfferDetailsV5
         '''
         external_controller_ = ExternalControllerInfo.from_json(external_controller) if external_controller else None
         macaroon_ = Macaroon.from_json(macaroon) if macaroon else None
-        offer_ = ApplicationOfferDetails.from_json(offer) if offer else None
+        offer_ = ApplicationOfferDetailsV5.from_json(offer) if offer else None
 
         # Validate arguments against known Juju API types.
         if external_controller_ is not None and not isinstance(external_controller_, (dict, ExternalControllerInfo)):
@@ -5034,8 +5310,8 @@ class ConsumeOfferDetails(Type):
         if macaroon_ is not None and not isinstance(macaroon_, (dict, Macaroon)):
             raise Exception("Expected macaroon_ to be a Macaroon, received: {}".format(type(macaroon_)))
 
-        if offer_ is not None and not isinstance(offer_, (dict, ApplicationOfferDetails)):
-            raise Exception("Expected offer_ to be a ApplicationOfferDetails, received: {}".format(type(offer_)))
+        if offer_ is not None and not isinstance(offer_, (dict, ApplicationOfferDetailsV5)):
+            raise Exception("Expected offer_ to be a ApplicationOfferDetailsV5, received: {}".format(type(offer_)))
 
         self.external_controller = external_controller_
         self.macaroon = macaroon_
@@ -5077,13 +5353,13 @@ class ConsumeOfferDetailsResult(Type):
         error : Error
         external_controller : ExternalControllerInfo
         macaroon : Macaroon
-        offer : ApplicationOfferDetails
+        offer : ApplicationOfferDetailsV5
         '''
         consumeofferdetails_ = ConsumeOfferDetails.from_json(consumeofferdetails) if consumeofferdetails else None
         error_ = Error.from_json(error) if error else None
         external_controller_ = ExternalControllerInfo.from_json(external_controller) if external_controller else None
         macaroon_ = Macaroon.from_json(macaroon) if macaroon else None
-        offer_ = ApplicationOfferDetails.from_json(offer) if offer else None
+        offer_ = ApplicationOfferDetailsV5.from_json(offer) if offer else None
 
         # Validate arguments against known Juju API types.
         if consumeofferdetails_ is not None and not isinstance(consumeofferdetails_, (dict, ConsumeOfferDetails)):
@@ -5098,8 +5374,8 @@ class ConsumeOfferDetailsResult(Type):
         if macaroon_ is not None and not isinstance(macaroon_, (dict, Macaroon)):
             raise Exception("Expected macaroon_ to be a Macaroon, received: {}".format(type(macaroon_)))
 
-        if offer_ is not None and not isinstance(offer_, (dict, ApplicationOfferDetails)):
-            raise Exception("Expected offer_ to be a ApplicationOfferDetails, received: {}".format(type(offer_)))
+        if offer_ is not None and not isinstance(offer_, (dict, ApplicationOfferDetailsV5)):
+            raise Exception("Expected offer_ to be a ApplicationOfferDetailsV5, received: {}".format(type(offer_)))
 
         self.consumeofferdetails = consumeofferdetails_
         self.error = error_
@@ -8603,15 +8879,17 @@ class ListSecretBackendsResults(Type):
 
 
 class ListSecretResult(Type):
-    _toSchema = {'create_time': 'create-time', 'description': 'description', 'label': 'label', 'latest_expire_time': 'latest-expire-time', 'latest_revision': 'latest-revision', 'next_rotate_time': 'next-rotate-time', 'owner_tag': 'owner-tag', 'revisions': 'revisions', 'rotate_policy': 'rotate-policy', 'update_time': 'update-time', 'uri': 'uri', 'value': 'value', 'version': 'version'}
-    _toPy = {'create-time': 'create_time', 'description': 'description', 'label': 'label', 'latest-expire-time': 'latest_expire_time', 'latest-revision': 'latest_revision', 'next-rotate-time': 'next_rotate_time', 'owner-tag': 'owner_tag', 'revisions': 'revisions', 'rotate-policy': 'rotate_policy', 'update-time': 'update_time', 'uri': 'uri', 'value': 'value', 'version': 'version'}
-    def __init__(self, create_time=None, description=None, label=None, latest_expire_time=None, latest_revision=None, next_rotate_time=None, owner_tag=None, revisions=None, rotate_policy=None, update_time=None, uri=None, value=None, version=None, **unknown_fields):
+    _toSchema = {'access': 'access', 'create_time': 'create-time', 'description': 'description', 'label': 'label', 'latest_expire_time': 'latest-expire-time', 'latest_revision': 'latest-revision', 'latest_revision_checksum': 'latest-revision-checksum', 'next_rotate_time': 'next-rotate-time', 'owner_tag': 'owner-tag', 'revisions': 'revisions', 'rotate_policy': 'rotate-policy', 'update_time': 'update-time', 'uri': 'uri', 'value': 'value', 'version': 'version'}
+    _toPy = {'access': 'access', 'create-time': 'create_time', 'description': 'description', 'label': 'label', 'latest-expire-time': 'latest_expire_time', 'latest-revision': 'latest_revision', 'latest-revision-checksum': 'latest_revision_checksum', 'next-rotate-time': 'next_rotate_time', 'owner-tag': 'owner_tag', 'revisions': 'revisions', 'rotate-policy': 'rotate_policy', 'update-time': 'update_time', 'uri': 'uri', 'value': 'value', 'version': 'version'}
+    def __init__(self, access=None, create_time=None, description=None, label=None, latest_expire_time=None, latest_revision=None, latest_revision_checksum=None, next_rotate_time=None, owner_tag=None, revisions=None, rotate_policy=None, update_time=None, uri=None, value=None, version=None, **unknown_fields):
         '''
+        access : typing.Sequence[~AccessInfo]
         create_time : str
         description : str
         label : str
         latest_expire_time : str
         latest_revision : int
+        latest_revision_checksum : str
         next_rotate_time : str
         owner_tag : str
         revisions : typing.Sequence[~SecretRevision]
@@ -8621,11 +8899,13 @@ class ListSecretResult(Type):
         value : SecretValueResult
         version : int
         '''
+        access_ = [AccessInfo.from_json(o) for o in access or []]
         create_time_ = create_time
         description_ = description
         label_ = label
         latest_expire_time_ = latest_expire_time
         latest_revision_ = latest_revision
+        latest_revision_checksum_ = latest_revision_checksum
         next_rotate_time_ = next_rotate_time
         owner_tag_ = owner_tag
         revisions_ = [SecretRevision.from_json(o) for o in revisions or []]
@@ -8636,6 +8916,9 @@ class ListSecretResult(Type):
         version_ = version
 
         # Validate arguments against known Juju API types.
+        if access_ is not None and not isinstance(access_, (bytes, str, list)):
+            raise Exception("Expected access_ to be a Sequence, received: {}".format(type(access_)))
+
         if create_time_ is not None and not isinstance(create_time_, (bytes, str)):
             raise Exception("Expected create_time_ to be a str, received: {}".format(type(create_time_)))
 
@@ -8650,6 +8933,9 @@ class ListSecretResult(Type):
 
         if latest_revision_ is not None and not isinstance(latest_revision_, int):
             raise Exception("Expected latest_revision_ to be a int, received: {}".format(type(latest_revision_)))
+
+        if latest_revision_checksum_ is not None and not isinstance(latest_revision_checksum_, (bytes, str)):
+            raise Exception("Expected latest_revision_checksum_ to be a str, received: {}".format(type(latest_revision_checksum_)))
 
         if next_rotate_time_ is not None and not isinstance(next_rotate_time_, (bytes, str)):
             raise Exception("Expected next_rotate_time_ to be a str, received: {}".format(type(next_rotate_time_)))
@@ -8675,11 +8961,13 @@ class ListSecretResult(Type):
         if version_ is not None and not isinstance(version_, int):
             raise Exception("Expected version_ to be a int, received: {}".format(type(version_)))
 
+        self.access = access_
         self.create_time = create_time_
         self.description = description_
         self.label = label_
         self.latest_expire_time = latest_expire_time_
         self.latest_revision = latest_revision_
+        self.latest_revision_checksum = latest_revision_checksum_
         self.next_rotate_time = next_rotate_time_
         self.owner_tag = owner_tag_
         self.revisions = revisions_
@@ -11792,6 +12080,24 @@ class QueryApplicationOffersResults(Type):
 
 
 
+class QueryApplicationOffersResultsV5(Type):
+    _toSchema = {'results': 'results'}
+    _toPy = {'results': 'results'}
+    def __init__(self, results=None, **unknown_fields):
+        '''
+        results : typing.Sequence[~ApplicationOfferAdminDetailsV5]
+        '''
+        results_ = [ApplicationOfferAdminDetailsV5.from_json(o) for o in results or []]
+
+        # Validate arguments against known Juju API types.
+        if results_ is not None and not isinstance(results_, (bytes, str, list)):
+            raise Exception("Expected results_ to be a Sequence, received: {}".format(type(results_)))
+
+        self.results = results_
+        self.unknown_fields = unknown_fields
+
+
+
 class RedirectInfoResult(Type):
     _toSchema = {'ca_cert': 'ca-cert', 'servers': 'servers'}
     _toPy = {'ca-cert': 'ca_cert', 'servers': 'servers'}
@@ -13182,23 +13488,29 @@ class SecretBackendResult(Type):
 
 
 class SecretContentParams(Type):
-    _toSchema = {'data': 'data', 'value_ref': 'value-ref'}
-    _toPy = {'data': 'data', 'value-ref': 'value_ref'}
-    def __init__(self, data=None, value_ref=None, **unknown_fields):
+    _toSchema = {'checksum': 'checksum', 'data': 'data', 'value_ref': 'value-ref'}
+    _toPy = {'checksum': 'checksum', 'data': 'data', 'value-ref': 'value_ref'}
+    def __init__(self, checksum=None, data=None, value_ref=None, **unknown_fields):
         '''
+        checksum : str
         data : typing.Mapping[str, str]
         value_ref : SecretValueRef
         '''
+        checksum_ = checksum
         data_ = data
         value_ref_ = SecretValueRef.from_json(value_ref) if value_ref else None
 
         # Validate arguments against known Juju API types.
+        if checksum_ is not None and not isinstance(checksum_, (bytes, str)):
+            raise Exception("Expected checksum_ to be a str, received: {}".format(type(checksum_)))
+
         if data_ is not None and not isinstance(data_, dict):
             raise Exception("Expected data_ to be a Mapping, received: {}".format(type(data_)))
 
         if value_ref_ is not None and not isinstance(value_ref_, (dict, SecretValueRef)):
             raise Exception("Expected value_ref_ to be a SecretValueRef, received: {}".format(type(value_ref_)))
 
+        self.checksum = checksum_
         self.data = data_
         self.value_ref = value_ref_
         self.unknown_fields = unknown_fields
