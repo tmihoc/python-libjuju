@@ -22,3 +22,4 @@ Please see docs/CONTRIBUTING.md for the process for updating this file.
 3.3.4 (identical to 3.3.1)
 3.3.5 (identical to 3.3.1)
 3.3.6 (identical to 3.3.1)
+3.3.7 (identical to 3.3.1)
