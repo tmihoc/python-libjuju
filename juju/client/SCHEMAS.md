@@ -29,3 +29,4 @@ Please see docs/CONTRIBUTING.md for the process for updating this file.
 3.4.1 (identical to 3.4.0)
 3.4.2 (identical to 3.4.0)
 3.4.3 (identical to 3.4.0)
+3.4.4 (identical to 3.4.0)
