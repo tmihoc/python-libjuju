@@ -138,6 +138,8 @@ That is, an `X.Y.0` release, for example `3.6.0`?
 3.6.0
 ```
 
+Note: you should also remove any pre-release schemas, which have the naming format `schemas-juju.X.Y-rcN.json`, where `N` is the release candidate version.
+
 
 ### Subsequent releases
 
