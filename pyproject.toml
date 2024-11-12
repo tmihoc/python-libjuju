@@ -1,0 +1,153 @@
+[project]
+name = "juju"
+description = "Python library for Juju"
+readme = "docs/readme.rst"
+license = "Apache-2.0"
+maintainers = [{name = "Juju Ecosystem Engineering", email = "juju@lists.ubuntu.com"}]
+requires-python = ">=3.8"
+homepage = "https://github.com/juju/python-libjuju"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+]
+
+[project.dependencies]
+macaroonbakery = ">=1.1,<2.0"
+pyRFC3339 = ">=1.0,<2.0"
+pyyaml = ">=5.1.2"
+websockets = ">=8.1,<14.0"
+paramiko = ">=2.4.0"
+pyasn1 = ">=0.4.4"
+toposort = ">=1.5,<2"
+typing_inspect = ">=0.6.0"
+kubernetes = ">=12.0.1,<31.0.0"
+hvac = "*"
+packaging = "*"
+typing-extensions = ">=4.5.0"
+
+[project.urls]
+"Homepage" = "https://juju.is/docs/sdk"
+"Repository" = "https://github.com/juju/python-libjuju"
+"Issues" = "https://github.com/juju/python-libjuju/issues"
+"Documentation" = "https://pythonlibjuju.readthedocs.io/en/latest/"
+"Changelog" = "https://pythonlibjuju.readthedocs.io/en/latest/changelog.html#changelog"
+
+[tool.setuptools.dynamic]
+version = {attr = "juju.version.CLIENT_VERSION"}
+
+# Linting tools configuration
+[tool.ruff]
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    # isort
+    "I001",
+    # pep8-naming
+    "N",
+    # flake8-builtins
+    "A",
+    # flake8-copyright
+    "CPY",
+    # pyupgrade
+    "UP",
+    # flake8-2020
+    "YTT",
+    # flake8-bandit
+    "S",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # Ruff specific
+    "RUF",
+    # Perflint
+    "PERF",
+    # pyflakes-docstrings
+    "D",
+]
+ignore = [
+    # FIXME: change the codegen to remove the schema from auto-generate classes
+    "RUF012",
+    # FIXME: change the codegen to insert a period at the end of the docstring
+    "D415",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    # assert False to fail
+    "B011",
+    # raise from
+    "B904",
+    # Don't require docstrings
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D107",
+    # Copyright
+    "CPY001",
+    # Docstring format
+    "D205",
+    "D400",
+    # FIXME do something about long lines in assert v == "aaa..."
+    "E501",
+    # Performance overhead
+    "PERF203",
+    # async function without await
+    "RUF029",
+    # index[0]
+    "RUF015",
+    # Allow asserts
+    "S101",
+    # Hardcoded passwords and secret keys
+    "S105",
+    "S106",
+    # FIXME Hardcoded /tmp path, prevents parallel tests
+    "S108",
+    # Weird URL scheme
+    "S310",
+    # Weak random source
+    "S311",
+    # subprocess
+    "S404",
+    "S603",
+    "S607",
+    # FIXME YAML loader
+    "S506",
+    # FIXME refactor nested if statements
+    "SIM102",
+    # FIXME refactor nested with statements
+    "SIM117",
+    # FIXME refactor to use list comprehensions
+    "PERF401",
+    # FIXME new-style super()
+    "UP008",
+    # %-format
+    "UP031",
+]
+
+[tool.pyright]
+# These are tentative
+# include = ["**/*.py"]
+pythonVersion = "3.8" # check no python > 3.8 features are used
+pythonPlatform = "All"
+typeCheckingMode = "strict"
