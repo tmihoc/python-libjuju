@@ -35,8 +35,8 @@ def generated_code_facades(project_root: Path) -> Dict[str, Sequence[int]]:
         for cls_name in dir(module):
             cls = getattr(module, cls_name)
             try:  # duck typing check for facade types
-                cls.name
-                cls.version
+                assert cls.name
+                assert cls.version
             except AttributeError:
                 continue
             if cls.version in excluded_facade_versions.get(cls.name, []):

@@ -9,7 +9,7 @@ import pytest
 # test cases ported from:
 # https://github.com/juju/version/blob/master/version_test.go
 @pytest.mark.parametrize(
-    "input,expected",
+    "value,expected",
     (
         (None, Number(major=0, minor=0, patch=0, tag="", build=0)),
         (Number(major=1, minor=0, patch=0), Number(major=1, minor=0, patch=0)),
@@ -37,21 +37,21 @@ import pytest
         ("1.21-alpha123dev3", TypeError),
     ),
 )
-def test_number(input, expected):
+def test_number(value, expected):
     if expected is TypeError:
         with pytest.raises(expected):
-            Number.from_json(input)
+            Number.from_json(value)
     else:
-        result = Number.from_json(input)
+        result = Number.from_json(value)
         assert result == expected
-        if isinstance(input, str):
-            assert result.to_json() == input
+        if isinstance(value, str):
+            assert result.to_json() == value
 
 
 # test cases ported from:
 # https://github.com/juju/version/blob/master/version_test.go
 @pytest.mark.parametrize(
-    "input,expected",
+    "value,expected",
     (
         (None, Binary(Number(), None, None)),
         (Binary(Number(1), "trusty", "amd64"), Binary(Number(1), "trusty", "amd64")),
@@ -75,12 +75,12 @@ def test_number(input, expected):
         ("1.2.3-trusty-", TypeError),
     ),
 )
-def test_binary(input, expected):
+def test_binary(value, expected):
     if expected is TypeError:
         with pytest.raises(expected):
-            Binary.from_json(input)
+            Binary.from_json(value)
     else:
-        result = Binary.from_json(input)
+        result = Binary.from_json(value)
         assert result == expected
-        if isinstance(input, str):
-            assert result.to_json() == input
+        if isinstance(value, str):
+            assert result.to_json() == value

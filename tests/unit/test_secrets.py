@@ -29,10 +29,8 @@ class TestCreateSecretData(unittest.TestCase):
             create_secret_data(["foo=" + ("a" * 8 * 1024)])
 
     def test_total_content_too_large(self):
-        args = []
         content = "a" * 4 * 1024
-        for i in range(20):
-            args.append(f"key{i}={content}")
+        args = [f"key{i}={content}" for i in range(20)]
         with pytest.raises(ValueError):
             create_secret_data(args)
 
@@ -87,7 +85,7 @@ class TestReadSecretData(unittest.TestCase):
                 {
                     "hello": "d29ybGQ=",
                     "goodbye": "world",
-                    "another-key": "YiJHSUY4OWFceDBjXHgwMFx4MGNceDAwXHg4NFx4MDBceDAwXHhmZlx4ZmZceGY3XHhmNVx4ZjVceGVlXHhlOVx4ZTlceGU1ZmZmXHgwMFx4MDBceDAwXHhlN1x4ZTdceGU3Xl5eXHhmM1x4ZjNceGVkXHg4ZVx4OGVceDhlXHhlMFx4ZTBceGUwXHg5Zlx4OWZceDlmXHg5M1x4OTNceDkzXHhhN1x4YTdceGE3XHg5ZVx4OWVceDllaWlpY2NjXHhhM1x4YTNceGEzXHg4NFx4ODRceDg0XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5IVx4ZmVceDBlTWFkZSB3aXRoIEdJTVBceDAwLFx4MDBceDAwXHgwMFx4MDBceDBjXHgwMFx4MGNceDAwXHgwMFx4MDUsICBceDhlXHg4MTBceDllXHhlM0BceDE0XHhlOGlceDEwXHhjNFx4ZDFceDhhXHgwOFx4MWNceGNmXHg4ME0kelx4ZWZceGZmMFx4ODVwXHhiOFx4YjAxZlxyXHgxYlx4Y2VceDAxXHhjM1x4MDFceDFlXHgxMCcgXHg4MlxuXHgwMVx4MDA7Ig==",
+                    "another-key": "YiJHSUY4OWFceDBjXHgwMFx4MGNceDAwXHg4NFx4MDBceDAwXHhmZlx4ZmZceGY3XHhmNVx4ZjVceGVlXHhlOVx4ZTlceGU1ZmZmXHgwMFx4MDBceDAwXHhlN1x4ZTdceGU3Xl5eXHhmM1x4ZjNceGVkXHg4ZVx4OGVceDhlXHhlMFx4ZTBceGUwXHg5Zlx4OWZceDlmXHg5M1x4OTNceDkzXHhhN1x4YTdceGE3XHg5ZVx4OWVceDllaWlpY2NjXHhhM1x4YTNceGEzXHg4NFx4ODRceDg0XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5XHhmZlx4ZmVceGY5IVx4ZmVceDBlTWFkZSB3aXRoIEdJTVBceDAwLFx4MDBceDAwXHgwMFx4MDBceDBjXHgwMFx4MGNceDAwXHgwMFx4MDUsICBceDhlXHg4MTBceDllXHhlM0BceDE0XHhlOGlceDEwXHhjNFx4ZDFceDhhXHgwOFx4MWNceGNmXHg4ME0kelx4ZWZceGZmMFx4ODVwXHhiOFx4YjAxZlxyXHgxYlx4Y2VceDAxXHhjM1x4MDFceDFlXHgxMCcgXHg4MlxuXHgwMVx4MDA7Ig==",  # noqa: E501
                 },
             )
 
