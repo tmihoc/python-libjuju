@@ -107,12 +107,12 @@ class TestContextManager(unittest.IsolatedAsyncioTestCase):
     @mock.patch("juju.model.Model.disconnect")
     @mock.patch("juju.model.Model.connect")
     async def test_exception(self, mock_connect, mock_disconnect):
-        class SomeException(Exception):
+        class SomeError(Exception):
             pass
 
-        with self.assertRaises(SomeException):
+        with self.assertRaises(SomeError):
             async with Model():
-                raise SomeException()
+                raise SomeError()
 
         self.assertTrue(mock_connect.called)
         self.assertTrue(mock_disconnect.called)

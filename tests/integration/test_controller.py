@@ -245,10 +245,10 @@ async def test_secrets_backend_lifecycle():
         assert response["results"][0]["error"] is None
 
         # List the secrets backend
-        list = await controller.list_secret_backends()
-        assert len(list["results"]) == 2
+        alist = await controller.list_secret_backends()
+        assert len(alist["results"]) == 2
         # consider the internal secrets backend
-        for entry in list["results"]:
+        for entry in alist["results"]:
             assert (
                 entry["result"].name == "internal" or entry["result"].name == "myvault"
             )
@@ -261,10 +261,10 @@ async def test_secrets_backend_lifecycle():
         assert resp["results"][0]["error"] is None
 
         # List the secrets backend
-        list = await controller.list_secret_backends()
-        assert len(list["results"]) == 2
+        alist = await controller.list_secret_backends()
+        assert len(alist["results"]) == 2
         # consider the internal secrets backend
-        for entry in list["results"]:
+        for entry in alist["results"]:
             assert (
                 entry["result"].name == "internal"
                 or entry["result"].name == "changed_name"
@@ -318,7 +318,7 @@ async def test_connection_lazy_jujudata():
             password=conn.password,
         )
         assert new_controller._controller_name is None
-        new_controller.controller_name
+        assert new_controller.controller_name
         assert new_controller._controller_name is not None
         await new_controller.disconnect()
 

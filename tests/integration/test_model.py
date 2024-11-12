@@ -53,7 +53,7 @@ async def test_deploy_local_bundle_dir():
         app2 = model.applications.get("nrpe")
         with open("/tmp/output", "w") as writer:
             writer.write(str(bundle_path) + "\n")
-            for k, v in model.applications.items():
+            for k in model.applications:
                 writer.write(k)
         assert app1 and app2
         # import pdb;pdb.set_trace()
@@ -726,14 +726,14 @@ async def test_relate():
         real_app_facade = client.ApplicationFacade.from_connection(model.connection())
         mock_app_facade = mock.MagicMock()
 
-        async def mock_AddRelation(*args, **kwargs):
+        async def mock_add_relation(*args, **kwargs):
             # force response delay from AddRelation to test race condition
             # (see https://github.com/juju/python-libjuju/issues/191)
             result = await real_app_facade.AddRelation(*args, **kwargs)
             await relation_added.wait()
             return result
 
-        mock_app_facade.AddRelation = mock_AddRelation
+        mock_app_facade.AddRelation = mock_add_relation
 
         with mock.patch.object(
             client.ApplicationFacade, "from_connection", return_value=mock_app_facade

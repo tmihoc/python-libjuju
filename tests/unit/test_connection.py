@@ -65,7 +65,7 @@ async def test_out_of_order():
         ):
             con = await Connection.connect("0.1.2.3:999")
         actual_responses = []
-        for i in range(3):
+        for _ in range(3):
             actual_responses.append(await con.rpc({"version": 1}))
         assert actual_responses == expected_responses
     finally:
@@ -123,7 +123,7 @@ async def test_follow_redirect():
 -----BEGIN CERTIFICATE-----
 SOMECERT
 -----END CERTIFICATE-----"""
-    wsForCont1 = WebsocketMock([
+    cont1 = WebsocketMock([
         {
             "request-id": 1,
             "error": "redirection to alternative server required",
@@ -154,7 +154,7 @@ SOMECERT
         },
     ])
     minimal_facades = [{"name": "Pinger", "versions": [1]}]
-    wsForCont2 = WebsocketMock([
+    cont2 = WebsocketMock([
         {"request-id": 1},
         {"request-id": 2},
         {
@@ -169,7 +169,7 @@ SOMECERT
     con = None
     try:
         with mock.patch(
-            "websockets.connect", mock.AsyncMock(side_effect=[wsForCont1, wsForCont2])
+            "websockets.connect", mock.AsyncMock(side_effect=[cont1, cont2])
         ), mock.patch("juju.client.connection.Connection._get_ssl"), mock.patch(
             "juju.client.connection.Connection._pinger", mock.AsyncMock()
         ):
