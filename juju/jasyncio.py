@@ -17,11 +17,30 @@ import logging
 
 ROOT_LOGGER = logging.getLogger()
 
-from asyncio import Event, TimeoutError, Queue, ensure_future, \
-    gather, sleep, wait_for, create_subprocess_exec, subprocess, \
-    wait, FIRST_COMPLETED, Lock, as_completed, new_event_loop, \
-    get_event_loop_policy, CancelledError, get_running_loop, \
-    create_task, ALL_COMPLETED, all_tasks, current_task, shield     # noqa
+from asyncio import (
+    Event,
+    TimeoutError,
+    Queue,
+    ensure_future,
+    gather,
+    sleep,
+    wait_for,
+    create_subprocess_exec,
+    subprocess,
+    wait,
+    FIRST_COMPLETED,
+    Lock,
+    as_completed,
+    new_event_loop,
+    get_event_loop_policy,
+    CancelledError,
+    get_running_loop,
+    create_task,
+    ALL_COMPLETED,
+    all_tasks,
+    current_task,
+    shield,
+)  # noqa
 
 
 def create_task_with_handler(coro, task_name, logger=ROOT_LOGGER):
@@ -36,6 +55,7 @@ def create_task_with_handler(coro, task_name, logger=ROOT_LOGGER):
     This makes sure the exceptions are retrieved and properly
     handled/logged whenever the Task is destroyed.
     """
+
     def _task_result_exp_handler(task, task_name=task_name, logger=logger):
         try:
             task.result()
@@ -53,7 +73,9 @@ def create_task_with_handler(coro, task_name, logger=ROOT_LOGGER):
             logger.exception("Task %s raised an exception: %s" % (task_name, e))
 
     task = create_task(coro)
-    task.add_done_callback(functools.partial(_task_result_exp_handler, task_name=task_name, logger=logger))
+    task.add_done_callback(
+        functools.partial(_task_result_exp_handler, task_name=task_name, logger=logger)
+    )
     return task
 
 
@@ -65,7 +87,7 @@ class SingletonEventLoop(object):
     loop = None
 
     def __new__(cls):
-        if not hasattr(cls, 'instance'):
+        if not hasattr(cls, "instance"):
             cls.instance = super(SingletonEventLoop, cls).__new__(cls)
             cls.instance.loop = asyncio.new_event_loop()
 
@@ -98,7 +120,7 @@ def run(*steps):
         added = True
     except (ValueError, OSError, RuntimeError) as e:
         # add_signal_handler doesn't work in a thread
-        if 'main thread' not in str(e):
+        if "main thread" not in str(e):
             raise
     try:
         for step in steps:

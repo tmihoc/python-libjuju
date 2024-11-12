@@ -28,21 +28,18 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
         # expose change, it gets correctly converted to ExposedEndpoint values,
         # validated and converted to a dictionary with the right format before
         # it gets passed to the facade.
-        await app.expose(exposed_endpoints={
-            "": {
-                "expose-to-spaces": ["alpha"],
-                "expose-to-cidrs": ["0.0.0.0/0"]
+        await app.expose(
+            exposed_endpoints={
+                "": {"expose-to-spaces": ["alpha"], "expose-to-cidrs": ["0.0.0.0/0"]}
             }
-        })
+        )
 
         mock_facade().Expose.assert_called_once_with(
             application="app-id",
             exposed_endpoints={
-                "": {
-                    "expose-to-spaces": ["alpha"],
-                    "expose-to-cidrs": ["0.0.0.0/0"]
-                }
-            })
+                "": {"expose-to-spaces": ["alpha"], "expose-to-cidrs": ["0.0.0.0/0"]}
+            },
+        )
 
     @mock.patch("juju.model.Model.connection")
     async def test_expose_with_exposed_endpoints(self, mock_conn):
@@ -58,26 +55,26 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
         # Check that if we pass a dict with ExposedEndpoint values, they get
         # validated and converted to a dictionary with the right format before
         # it gets passed to the facade.
-        await app.expose(exposed_endpoints={
-            "": ExposedEndpoint(to_spaces=["alpha"], to_cidrs=["0.0.0.0/0"]),
-            "x": ExposedEndpoint(to_spaces=["beta"]),
-            "y": ExposedEndpoint(to_cidrs=["10.0.0.0/24"])
-        })
+        await app.expose(
+            exposed_endpoints={
+                "": ExposedEndpoint(to_spaces=["alpha"], to_cidrs=["0.0.0.0/0"]),
+                "x": ExposedEndpoint(to_spaces=["beta"]),
+                "y": ExposedEndpoint(to_cidrs=["10.0.0.0/24"]),
+            }
+        )
 
         mock_facade().Expose.assert_called_once_with(
             application="app-id",
             exposed_endpoints={
-                "": {
-                    "expose-to-spaces": ["alpha"],
-                    "expose-to-cidrs": ["0.0.0.0/0"]
-                },
+                "": {"expose-to-spaces": ["alpha"], "expose-to-cidrs": ["0.0.0.0/0"]},
                 "x": {
                     "expose-to-spaces": ["beta"],
                 },
                 "y": {
                     "expose-to-cidrs": ["10.0.0.0/24"],
                 },
-            })
+            },
+        )
 
     @mock.patch("juju.model.Model.connection")
     async def test_expose_endpoints_on_older_controller(self, mock_conn):
@@ -95,30 +92,38 @@ class TestExposeApplication(unittest.IsolatedAsyncioTestCase):
 
         # Case 1: exposed_endpoints includes an entry with a space list.
         with self.assertRaises(JujuError):
-            await app.expose(exposed_endpoints={
-                "": ExposedEndpoint(to_spaces=["alpha"]),
-            })
+            await app.expose(
+                exposed_endpoints={
+                    "": ExposedEndpoint(to_spaces=["alpha"]),
+                }
+            )
 
         # Case 2: exposed_endpoints only includes the wildcard endpoints key
         # with a non-wildcard CIDR.
         with self.assertRaises(JujuError):
-            await app.expose(exposed_endpoints={
-                "": ExposedEndpoint(to_cidrs=["0.0.0.0/0", "10.0.0.0/24"]),
-            })
+            await app.expose(
+                exposed_endpoints={
+                    "": ExposedEndpoint(to_cidrs=["0.0.0.0/0", "10.0.0.0/24"]),
+                }
+            )
 
         # Case 3: exposed_endpoints has a single entry for the
         # non-wildcard endpoint.
         with self.assertRaises(JujuError):
-            await app.expose(exposed_endpoints={
-                "": ExposedEndpoint(to_cidrs=["0.0.0.0/0", "10.0.0.0/24"]),
-            })
+            await app.expose(
+                exposed_endpoints={
+                    "": ExposedEndpoint(to_cidrs=["0.0.0.0/0", "10.0.0.0/24"]),
+                }
+            )
 
         # Case 4: exposed_endpoints has multiple keys.
         with self.assertRaises(JujuError):
-            await app.expose(exposed_endpoints={
-                "foo": ExposedEndpoint(to_cidrs=["0.0.0.0/0"]),
-                "bar": ExposedEndpoint(to_spaces=["alpha"]),
-            })
+            await app.expose(
+                exposed_endpoints={
+                    "foo": ExposedEndpoint(to_cidrs=["0.0.0.0/0"]),
+                    "bar": ExposedEndpoint(to_spaces=["alpha"]),
+                }
+            )
 
         # Check that we call the facade with the right arity.
         await app.expose()
@@ -160,8 +165,7 @@ class TestUnExposeApplication(unittest.IsolatedAsyncioTestCase):
         await app.unexpose(exposed_endpoints=["alpha", "beta"])
 
         mock_facade().Unexpose.assert_called_once_with(
-            application="app-id",
-            exposed_endpoints=["alpha", "beta"]
+            application="app-id", exposed_endpoints=["alpha", "beta"]
         )
 
 

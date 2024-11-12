@@ -9,6 +9,7 @@ This example:
 3. Runs forever (kill with Ctrl-C)
 
 """
+
 from juju.model import Model
 from juju import jasyncio
 
@@ -28,7 +29,7 @@ async def watch_model():
     model.add_observer(on_model_change)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Run loop until the process is manually stopped (watch_model will loop
     # forever).
     jasyncio.run(watch_model())

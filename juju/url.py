@@ -19,7 +19,15 @@ class Schema(Enum):
 
 
 class URL:
-    def __init__(self, schema, user=None, name=None, revision=None, series=None, architecture=None):
+    def __init__(
+        self,
+        schema,
+        user=None,
+        name=None,
+        revision=None,
+        series=None,
+        architecture=None,
+    ):
         self.schema = schema
         self.user = user
         self.name = name
@@ -34,17 +42,18 @@ class URL:
     @staticmethod
     def parse(s, default_store=Schema.CHARM_HUB):
         """parse parses the provided charm URL string into its respective
-            structure.
+        structure.
 
-            A missing schema is assumed to be 'ch'.
+        A missing schema is assumed to be 'ch'.
 
         """
         u = urlparse(s)
         if u.query != "" or u.fragment != "" or u.username or u.password:
             raise JujuError("charm or bundle URL {} has unrecognized parts".format(u))
 
-        if Schema.CHARM_STORE.matches(u.scheme) or \
-                (u.scheme == "" and Schema.CHARM_STORE.matches(default_store)):
+        if Schema.CHARM_STORE.matches(u.scheme) or (
+            u.scheme == "" and Schema.CHARM_STORE.matches(default_store)
+        ):
             c = parse_v1_url(Schema.CHARM_STORE, u, s)
         else:
             c = parse_v2_url(u, s, default_store)
@@ -54,10 +63,14 @@ class URL:
         return c
 
     def with_revision(self, rev):
-        return URL(self.schema, self.user, self.name, rev, self.series, self.architecture)
+        return URL(
+            self.schema, self.user, self.name, rev, self.series, self.architecture
+        )
 
     def with_series(self, series):
-        return URL(self.schema, self.user, self.name, self.revision, series, self.architecture)
+        return URL(
+            self.schema, self.user, self.name, self.revision, series, self.architecture
+        )
 
     def path(self):
         parts = []
@@ -75,12 +88,14 @@ class URL:
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.schema == other.schema and \
-                self.user == other.user and \
-                self.name == other.name and \
-                self.revision == other.revision and \
-                self.series == other.series and \
-                self.architecture == other.architecture
+            return (
+                self.schema == other.schema
+                and self.user == other.user
+                and self.name == other.name
+                and self.revision == other.revision
+                and self.series == other.series
+                and self.architecture == other.architecture
+            )
         return False
 
     def __str__(self):
@@ -155,7 +170,7 @@ def extract_revision(name):
         if c.isnumeric():
             continue
         if c == "-" and i != (len(name) - 1):
-            revision = int(name[(i + 1):])
+            revision = int(name[(i + 1) :])
             name = name[:i]
         break
     return (name, revision)

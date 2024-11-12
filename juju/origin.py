@@ -12,6 +12,7 @@ class Source(Enum):
     what the charm identity is from the URL and origin source.
 
     """
+
     LOCAL = "local"
     CHARM_HUB = "charm-hub"
 
@@ -26,7 +27,9 @@ class Origin:
         self.platform = platform
 
     def __str__(self):
-        return "origin using source {} for channel {} and platform {}".format(str(self.source), self.channel, self.platform)
+        return "origin using source {} for channel {} and platform {}".format(
+            str(self.source), self.channel, self.platform
+        )
 
 
 class Risk(Enum):
@@ -49,18 +52,19 @@ class Risk(Enum):
 class Channel:
     """Channel identifies and describes completely a store channel.
 
-     A channel consists of, and is subdivided by, tracks, risk-levels and
-      - Tracks enable snap developers to publish multiple supported releases of
-        their application under the same snap name.
-      - Risk-levels represent a progressive potential trade-off between stability
-        and new features.
+    A channel consists of, and is subdivided by, tracks, risk-levels and
+     - Tracks enable snap developers to publish multiple supported releases of
+       their application under the same snap name.
+     - Risk-levels represent a progressive potential trade-off between stability
+       and new features.
 
-     The complete channel name can be structured as three distinct parts separated
-     by slashes:
+    The complete channel name can be structured as three distinct parts separated
+    by slashes:
 
-        <track>/<risk>
+       <track>/<risk>
 
     """
+
     def __init__(self, track=None, risk=None):
         if not Risk.valid(risk):
             raise JujuError("unexpected risk {}".format(risk))
@@ -91,7 +95,9 @@ class Channel:
             track = p[0]
             risk = p[1]
         else:
-            raise JujuError("channel is malformed and has too many components {}".format(s))
+            raise JujuError(
+                "channel is malformed and has too many components {}".format(s)
+            )
 
         if risk is not None and not Risk.valid(risk):
             raise JujuError("risk in channel {} is not valid".format(s))
@@ -147,6 +153,7 @@ class Platform:
      4. `<arch>/unknown/<series>`
 
     """
+
     def __init__(self, arch, series=None, os=None):
         self.arch = arch
         self.series = series
@@ -172,7 +179,9 @@ class Platform:
             os = p[1]
             series = p[2]
         else:
-            raise JujuError("platform is malformed and has too many components {}".format(s))
+            raise JujuError(
+                "platform is malformed and has too many components {}".format(s)
+            )
 
         if not arch:
             raise JujuError("architecture in platform {} is not valid".format(s))
@@ -194,7 +203,11 @@ class Platform:
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.arch == other.arch and self.os == other.os and self.series == other.series
+            return (
+                self.arch == other.arch
+                and self.os == other.os
+                and self.series == other.series
+            )
         return False
 
     def __str__(self):

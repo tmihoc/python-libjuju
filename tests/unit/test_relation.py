@@ -23,9 +23,13 @@ class TestRelation(unittest.TestCase):
         model = Model()
         model._connector = mock.MagicMock()
 
-        delta = _make_delta('application', 'add', dict(name='foo'))
+        delta = _make_delta("application", "add", dict(name="foo"))
         model.state.apply_delta(delta)
-        delta = _make_delta('relation', 'bar', dict(id="uuid-1234", name='foo', endpoints=[{"application-name": "foo"}]))
+        delta = _make_delta(
+            "relation",
+            "bar",
+            dict(id="uuid-1234", name="foo", endpoints=[{"application-name": "foo"}]),
+        )
         model.state.apply_delta(delta)
 
         rel = Relation("uuid-1234", model)
@@ -35,9 +39,13 @@ class TestRelation(unittest.TestCase):
         model = Model()
         model._connector = mock.MagicMock()
 
-        delta = _make_delta('application', 'add', dict(name='foo'))
+        delta = _make_delta("application", "add", dict(name="foo"))
         model.state.apply_delta(delta)
-        delta = _make_delta('relation', 'bar', dict(id="uuid-1234", name='foo', endpoints=[{"application-name": "foo"}]))
+        delta = _make_delta(
+            "relation",
+            "bar",
+            dict(id="uuid-1234", name="foo", endpoints=[{"application-name": "foo"}]),
+        )
         model.state.apply_delta(delta)
 
         rel = Relation("uuid-1234", model)
@@ -47,9 +55,13 @@ class TestRelation(unittest.TestCase):
         model = Model()
         model._connector = mock.MagicMock()
 
-        delta = _make_delta('remoteApplication', 'add', dict(name='foo'))
+        delta = _make_delta("remoteApplication", "add", dict(name="foo"))
         model.state.apply_delta(delta)
-        delta = _make_delta('relation', 'bar', dict(id="uuid-1234", name='foo', endpoints=[{"application-name": "foo"}]))
+        delta = _make_delta(
+            "relation",
+            "bar",
+            dict(id="uuid-1234", name="foo", endpoints=[{"application-name": "foo"}]),
+        )
         model.state.apply_delta(delta)
 
         rel = Relation("uuid-1234", model)
@@ -59,7 +71,11 @@ class TestRelation(unittest.TestCase):
         model = Model()
         model._connector = mock.MagicMock()
 
-        delta = _make_delta('relation', 'bar', dict(id="uuid-1234", name='foo', endpoints=[{"application-name": "foo"}]))
+        delta = _make_delta(
+            "relation",
+            "bar",
+            dict(id="uuid-1234", name="foo", endpoints=[{"application-name": "foo"}]),
+        )
         model.state.apply_delta(delta)
 
         rel = Relation("uuid-1234", model)

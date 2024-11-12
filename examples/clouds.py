@@ -9,6 +9,7 @@ This example:
 3. Disconnects from the controller
 
 """
+
 import logging
 
 from juju import jasyncio
@@ -24,8 +25,8 @@ async def main():
     await controller.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    ws_logger = logging.getLogger('websockets.protocol')
+    ws_logger = logging.getLogger("websockets.protocol")
     ws_logger.setLevel(logging.INFO)
     jasyncio.run(main())

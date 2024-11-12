@@ -14,22 +14,20 @@ from juju.controller import Controller
 
 def is_bootstrapped():
     try:
-        result = subprocess.run(['juju', 'switch'], stdout=subprocess.PIPE)
-        return (
-            result.returncode == 0 and
-            len(result.stdout.decode().strip()) > 0)
+        result = subprocess.run(["juju", "switch"], stdout=subprocess.PIPE)
+        return result.returncode == 0 and len(result.stdout.decode().strip()) > 0
     except FileNotFoundError:
         return False
 
 
 bootstrapped = pytest.mark.skipif(
-    not is_bootstrapped(),
-    reason='bootstrapped Juju environment required')
+    not is_bootstrapped(), reason="bootstrapped Juju environment required"
+)
 
 test_run_nonce = uuid.uuid4().hex[-4:]
 
 
-class CleanController():
+class CleanController:
     """
     Context manager that automatically connects and disconnects from
     the currently active controller.
@@ -37,6 +35,7 @@ class CleanController():
     Note: Unlike CleanModel, this will not create a new controller for you,
     and an active controller must already be available.
     """
+
     def __init__(self):
         self._controller = None
 
@@ -49,7 +48,7 @@ class CleanController():
         await self._controller.disconnect()
 
 
-class CleanModel():
+class CleanModel:
     """
     Context manager that automatically connects to the currently active
     controller, adds a fresh model, returns the connection to that model,
@@ -58,6 +57,7 @@ class CleanModel():
     The new model is also set as the current default for the controller
     connection.
     """
+
     def __init__(self, bakery_client=None):
         self._controller = None
         self._model = None
@@ -67,17 +67,17 @@ class CleanModel():
     async def __aenter__(self):
         model_nonce = uuid.uuid4().hex[-4:]
         frame = inspect.stack()[1]
-        test_name = frame.function.replace('_', '-')
+        test_name = frame.function.replace("_", "-")
         jujudata = TestJujuData()
         self._controller = Controller(
             jujudata=jujudata,
             bakery_client=self._bakery_client,
         )
         controller_name = jujudata.current_controller()
-        user_name = jujudata.accounts()[controller_name]['user']
+        user_name = jujudata.accounts()[controller_name]["user"]
         await self._controller.connect(controller_name)
 
-        model_name = 'test-{}-{}-{}'.format(
+        model_name = "test-{}-{}-{}".format(
             test_run_nonce,
             test_name,
             model_nonce,
@@ -125,9 +125,9 @@ class TestJujuData(FileJujuData):
         if self.__model_name is None:
             return all_models
         all_models.setdefault(self.__controller_name, {})
-        all_models[self.__controller_name].setdefault('models', {})
-        cmodels = all_models[self.__controller_name]['models']
-        cmodels[self.__model_name] = {'uuid': self.__model_uuid}
+        all_models[self.__controller_name].setdefault("models", {})
+        cmodels = all_models[self.__controller_name]["models"]
+        cmodels[self.__model_name] = {"uuid": self.__model_uuid}
         return all_models
 
 

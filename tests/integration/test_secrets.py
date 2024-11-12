@@ -14,12 +14,14 @@ async def test_add_secret():
         if str(model._info.agent_version) < "3.3.0":
             pytest.skip("Juju too old, need Secrets API v2")
 
-        secret = await model.add_secret(name='my-apitoken', data_args=['token=34ae35facd4'])
-        assert secret.startswith('secret:')
+        secret = await model.add_secret(
+            name="my-apitoken", data_args=["token=34ae35facd4"]
+        )
+        assert secret.startswith("secret:")
 
         secrets = await model.list_secrets()
         assert len(secrets) == 1
-        assert secrets[0].label == 'my-apitoken'
+        assert secrets[0].label == "my-apitoken"
 
 
 # This test can only work if we can fully upgrade the whole charm
@@ -29,7 +31,7 @@ async def test_list_secrets():
     """Use the charm-secret charm definition and see if the
     arguments defined in the secret are correct or not."""
 
-    charm_path = TESTS_DIR / 'charm-secret/charm-secret_ubuntu-22.04-amd64.charm'
+    charm_path = TESTS_DIR / "charm-secret/charm-secret_ubuntu-22.04-amd64.charm"
 
     async with base.CleanModel() as model:
         assert model._info
@@ -37,9 +39,9 @@ async def test_list_secrets():
             pytest.skip("Juju too old, need Secrets API v2")
 
         await model.deploy(str(charm_path))
-        assert 'charm-secret' in model.applications
+        assert "charm-secret" in model.applications
         await model.wait_for_idle(status="active")
-        assert model.units['charm-secret/0'].workload_status == 'active'
+        assert model.units["charm-secret/0"].workload_status == "active"
 
         secrets = await model.list_secrets(show_secrets=True)
         assert secrets is not None
@@ -54,14 +56,16 @@ async def test_update_secret():
         if str(model._info.agent_version) < "3.3.0":
             pytest.skip("Juju too old, need Secrets API v2")
 
-        secret = await model.add_secret(name='my-apitoken', data_args=['token=34ae35facd4'])
-        assert secret.startswith('secret:')
+        secret = await model.add_secret(
+            name="my-apitoken", data_args=["token=34ae35facd4"]
+        )
+        assert secret.startswith("secret:")
 
-        await model.update_secret(name='my-apitoken', new_name='new-token')
+        await model.update_secret(name="my-apitoken", new_name="new-token")
 
         secrets = await model.list_secrets()
         assert len(secrets) == 1
-        assert secrets[0].label == 'new-token'
+        assert secrets[0].label == "new-token"
 
 
 @base.bootstrapped
@@ -72,10 +76,12 @@ async def test_remove_secret():
         if str(model._info.agent_version) < "3.3.0":
             pytest.skip("Juju too old, need Secrets API v2")
 
-        secret = await model.add_secret(name='my-apitoken', data_args=['token=34ae35facd4'])
-        assert secret.startswith('secret:')
+        secret = await model.add_secret(
+            name="my-apitoken", data_args=["token=34ae35facd4"]
+        )
+        assert secret.startswith("secret:")
 
-        await model.remove_secret('my-apitoken')
+        await model.remove_secret("my-apitoken")
 
         secrets = await model.list_secrets()
         assert len(secrets) == 0
@@ -89,12 +95,14 @@ async def test_grant_secret():
         if str(model._info.agent_version) < "3.3.0":
             pytest.skip("Juju too old, need Secrets API v2")
 
-        secret = await model.add_secret(name='my-apitoken', data_args=['token=34ae35facd4'])
-        assert secret.startswith('secret:')
+        secret = await model.add_secret(
+            name="my-apitoken", data_args=["token=34ae35facd4"]
+        )
+        assert secret.startswith("secret:")
 
-        await model.deploy('ubuntu')
+        await model.deploy("ubuntu")
 
-        await model.grant_secret('my-apitoken', 'ubuntu')
+        await model.grant_secret("my-apitoken", "ubuntu")
 
 
 @base.bootstrapped
@@ -105,6 +113,8 @@ async def test_revoke_secret():
         if str(model._info.agent_version) < "3.3.0":
             pytest.skip("Juju too old, need Secrets API v2")
 
-        secret = await model.add_secret(name='my-apitoken', data_args=['token=34ae35facd4'])
-        assert secret.startswith('secret:')
-        await model.revoke_secret('my-apitoken', 'ubuntu')
+        secret = await model.add_secret(
+            name="my-apitoken", data_args=["token=34ae35facd4"]
+        )
+        assert secret.startswith("secret:")
+        await model.revoke_secret("my-apitoken", "ubuntu")

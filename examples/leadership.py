@@ -9,6 +9,7 @@ This example:
 3. Cleanly disconnects.
 
 """
+
 from juju import jasyncio
 from juju.model import Model
 
@@ -20,11 +21,10 @@ async def report_leadership():
     print("Leadership: ")
     for app in model.applications.values():
         for unit in app.units:
-            print("{}: {}".format(
-                unit.name, await unit.is_leader_from_status()))
+            print("{}: {}".format(unit.name, await unit.is_leader_from_status()))
 
     await model.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     jasyncio.run(report_leadership())

@@ -16,7 +16,7 @@ async def main():
     await m.connect()
 
     # # deploy postgresql
-    await m.deploy('postgresql', series="focal")
+    await m.deploy("postgresql", series="focal")
     # # deploy vault
     await m.deploy("vault", series="focal")
     # # relate/integrate
@@ -31,7 +31,7 @@ async def main():
     # Deploy this entire thing
     status = await m.get_status()
     target = ""
-    for unit in status.applications['vault'].units.values():
+    for unit in status.applications["vault"].units.values():
         target = unit.public_address
 
     vault_url = "http://%s:8200" % target
@@ -44,13 +44,18 @@ async def main():
     # Unseal vault
     vault_client.sys.submit_unseal_keys(keys["keys"])
 
-    target_unit = m.applications['vault'].units[0]
+    target_unit = m.applications["vault"].units[0]
     action = await target_unit.run_action("authorize-charm", token=keys["root_token"])
     await action.wait()
 
     # Add the secret backend
     c = await m.get_controller()
-    response = await c.add_secret_backends("1111", "examplevault", "vault", {"endpoint": vault_url, "token": keys["root_token"]})
+    response = await c.add_secret_backends(
+        "1111",
+        "examplevault",
+        "vault",
+        {"endpoint": vault_url, "token": keys["root_token"]},
+    )
     print("Output from add secret backends")
     print(response["results"])
 
@@ -70,5 +75,5 @@ async def main():
     await m.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     jasyncio.run(main())

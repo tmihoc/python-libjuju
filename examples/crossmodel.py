@@ -11,6 +11,7 @@ This example:
 3. Destroys the unit and application
 
 """
+
 import tempfile
 from logging import getLogger
 
@@ -26,43 +27,50 @@ async def main():
     await controller.connect()
 
     try:
-        print('Creating models')
-        offering_model = await controller.add_model('test-cmr-1')
-        consuming_model = await controller.add_model('test-cmr-2')
+        print("Creating models")
+        offering_model = await controller.add_model("test-cmr-1")
+        consuming_model = await controller.add_model("test-cmr-2")
 
-        print('Deploying mysql')
+        print("Deploying mysql")
         application = await offering_model.deploy(
-            'ch:mysql',
-            application_name='mysql',
-            series='jammy',
-            channel='edge',
+            "ch:mysql",
+            application_name="mysql",
+            series="jammy",
+            channel="edge",
         )
 
-        print('Waiting for active')
+        print("Waiting for active")
         await offering_model.block_until(
-            lambda: all(unit.workload_status == 'active'
-                        for unit in application.units))
+            lambda: all(unit.workload_status == "active" for unit in application.units)
+        )
 
-        print('Adding offer')
+        print("Adding offer")
         await offering_model.create_offer("mysql:db")
 
         offers = await offering_model.list_offers()
-        print('Show offers', ', '.join("%s: %s" % item for offer in offers.results for item in vars(offer).items()))
+        print(
+            "Show offers",
+            ", ".join(
+                "%s: %s" % item
+                for offer in offers.results
+                for item in vars(offer).items()
+            ),
+        )
 
-        print('Consuming offer')
+        print("Consuming offer")
         await consuming_model.consume("admin/test-cmr-1.mysql")
 
-        print('Exporting bundle')
+        print("Exporting bundle")
         with tempfile.TemporaryDirectory() as dirpath:
             await offering_model.export_bundle("{}/bundle.yaml".format(dirpath))
 
         print("Remove SAAS")
         await consuming_model.remove_saas("mysql")
 
-        print('Removing offer')
+        print("Removing offer")
         await offering_model.remove_offer("admin/test-cmr-1.mysql", force=True)
 
-        print('Destroying models')
+        print("Destroying models")
         await controller.destroy_model(offering_model.info.uuid)
         await controller.destroy_model(consuming_model.info.uuid)
 
@@ -71,9 +79,9 @@ async def main():
         raise
 
     finally:
-        print('Disconnecting from controller')
+        print("Disconnecting from controller")
         await controller.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     jasyncio.run(main())

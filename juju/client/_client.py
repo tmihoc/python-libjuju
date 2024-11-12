@@ -4,7 +4,23 @@
 from juju.client._definitions import *
 
 
-from juju.client import _client7, _client3, _client4, _client2, _client17, _client6, _client11, _client1, _client10, _client9, _client5, _client19, _client20, _client8, _client12
+from juju.client import (
+    _client7,
+    _client3,
+    _client4,
+    _client2,
+    _client17,
+    _client6,
+    _client11,
+    _client1,
+    _client10,
+    _client9,
+    _client5,
+    _client19,
+    _client20,
+    _client8,
+    _client12,
+)
 
 
 CLIENTS = {
@@ -22,7 +38,7 @@ CLIENTS = {
     "19": _client19,
     "20": _client20,
     "8": _client8,
-    "12": _client12
+    "12": _client12,
 }
 
 
@@ -39,8 +55,7 @@ def lookup_facade(name, version):
         except (KeyError, AttributeError):
             continue
     else:
-        raise ImportError("No supported version for facade: "
-                          "{}".format(name))
+        raise ImportError("No supported version for facade: {}".format(name))
 
 
 class TypeFactory:
@@ -55,13 +70,14 @@ class TypeFactory:
 
         """
         facade_name = cls.__name__
-        if not facade_name.endswith('Facade'):
-           raise TypeError('Unexpected class name: {}'.format(facade_name))
-        facade_name = facade_name[:-len('Facade')]
+        if not facade_name.endswith("Facade"):
+            raise TypeError("Unexpected class name: {}".format(facade_name))
+        facade_name = facade_name[: -len("Facade")]
         version = connection.facades.get(facade_name)
         if version is None:
-            raise Exception('No facade {} in facades {}'.format(facade_name,
-                                                                connection.facades))
+            raise Exception(
+                "No facade {} in facades {}".format(facade_name, connection.facades)
+            )
 
         c = lookup_facade(cls.__name__, version)
         c = c()
@@ -78,9 +94,9 @@ class TypeFactory:
         @param connection: initialized Connection object.
         """
         facade_name = cls.__name__
-        if not facade_name.endswith('Facade'):
-           raise TypeError('Unexpected class name: {}'.format(facade_name))
-        facade_name = facade_name[:-len('Facade')]
+        if not facade_name.endswith("Facade"):
+            raise TypeError("Unexpected class name: {}".format(facade_name))
+        facade_name = facade_name[: -len("Facade")]
         return connection.facades.get(facade_name)
 
 
@@ -226,5 +242,3 @@ class SubnetsFacade(TypeFactory):
 
 class UserManagerFacade(TypeFactory):
     pass
-
-

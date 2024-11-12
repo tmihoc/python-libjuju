@@ -6,881 +6,1211 @@ from juju.client._definitions import *
 
 
 class AllModelWatcherFacade(Type):
-    name = 'AllModelWatcher'
+    name = "AllModelWatcher"
     version = 4
-    schema =     {'definitions': {'AllWatcherNextResults': {'additionalProperties': False,
-                                               'properties': {'deltas': {'items': {'$ref': '#/definitions/Delta'},
-                                                                         'type': 'array'}},
-                                               'required': ['deltas'],
-                                               'type': 'object'},
-                     'Delta': {'additionalProperties': False,
-                               'properties': {'entity': {'additionalProperties': True,
-                                                         'type': 'object'},
-                                              'removed': {'type': 'boolean'}},
-                               'required': ['removed', 'entity'],
-                               'type': 'object'}},
-     'properties': {'Next': {'description': 'Next will return the current state of '
-                                            'everything on the first call\n'
-                                            'and subsequent calls will',
-                             'properties': {'Result': {'$ref': '#/definitions/AllWatcherNextResults'}},
-                             'type': 'object'},
-                    'Stop': {'description': 'Stop stops the watcher.',
-                             'type': 'object'}},
-     'type': 'object'}
-    
+    schema = {
+        "definitions": {
+            "AllWatcherNextResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "deltas": {
+                        "items": {"$ref": "#/definitions/Delta"},
+                        "type": "array",
+                    }
+                },
+                "required": ["deltas"],
+                "type": "object",
+            },
+            "Delta": {
+                "additionalProperties": False,
+                "properties": {
+                    "entity": {"additionalProperties": True, "type": "object"},
+                    "removed": {"type": "boolean"},
+                },
+                "required": ["removed", "entity"],
+                "type": "object",
+            },
+        },
+        "properties": {
+            "Next": {
+                "description": "Next will return the current state of "
+                "everything on the first call\n"
+                "and subsequent calls will",
+                "properties": {
+                    "Result": {"$ref": "#/definitions/AllWatcherNextResults"}
+                },
+                "type": "object",
+            },
+            "Stop": {"description": "Stop stops the watcher.", "type": "object"},
+        },
+        "type": "object",
+    }
 
     @ReturnMapping(AllWatcherNextResults)
     async def Next(self):
-        '''
+        """
         Next will return the current state of everything on the first call
         and subsequent calls will
 
 
         Returns -> AllWatcherNextResults
-        '''
+        """
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='AllModelWatcher',
-                   request='Next',
-                   version=4,
-                   params=_params)
+        msg = dict(type="AllModelWatcher", request="Next", version=4, params=_params)
 
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(None)
     async def Stop(self):
-        '''
+        """
         Stop stops the watcher.
 
 
         Returns -> None
-        '''
+        """
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='AllModelWatcher',
-                   request='Stop',
-                   version=4,
-                   params=_params)
+        msg = dict(type="AllModelWatcher", request="Stop", version=4, params=_params)
 
         reply = await self.rpc(msg)
         return reply
 
-
-
     async def rpc(self, msg):
-        '''
+        """
         Patch rpc method to add Id.
-        '''
-        if not hasattr(self, 'Id'):
+        """
+        if not hasattr(self, "Id"):
             raise RuntimeError('Missing "Id" field')
-        msg['Id'] = id
+        msg["Id"] = id
 
         from .facade import TypeEncoder
+
         reply = await self.connection.rpc(msg, encoder=TypeEncoder)
         return reply
 
 
-
 class ApplicationOffersFacade(Type):
-    name = 'ApplicationOffers'
+    name = "ApplicationOffers"
     version = 4
-    schema =     {'definitions': {'AddApplicationOffer': {'additionalProperties': False,
-                                             'properties': {'application-description': {'type': 'string'},
-                                                            'application-name': {'type': 'string'},
-                                                            'endpoints': {'patternProperties': {'.*': {'type': 'string'}},
-                                                                          'type': 'object'},
-                                                            'model-tag': {'type': 'string'},
-                                                            'offer-name': {'type': 'string'},
-                                                            'owner-tag': {'type': 'string'}},
-                                             'required': ['model-tag',
-                                                          'offer-name',
-                                                          'application-name',
-                                                          'application-description',
-                                                          'endpoints'],
-                                             'type': 'object'},
-                     'AddApplicationOffers': {'additionalProperties': False,
-                                              'properties': {'Offers': {'items': {'$ref': '#/definitions/AddApplicationOffer'},
-                                                                        'type': 'array'}},
-                                              'required': ['Offers'],
-                                              'type': 'object'},
-                     'ApplicationOfferAdminDetails': {'additionalProperties': False,
-                                                      'properties': {'ApplicationOfferDetails': {'$ref': '#/definitions/ApplicationOfferDetails'},
-                                                                     'application-description': {'type': 'string'},
-                                                                     'application-name': {'type': 'string'},
-                                                                     'bindings': {'patternProperties': {'.*': {'type': 'string'}},
-                                                                                  'type': 'object'},
-                                                                     'charm-url': {'type': 'string'},
-                                                                     'connections': {'items': {'$ref': '#/definitions/OfferConnection'},
-                                                                                     'type': 'array'},
-                                                                     'endpoints': {'items': {'$ref': '#/definitions/RemoteEndpoint'},
-                                                                                   'type': 'array'},
-                                                                     'offer-name': {'type': 'string'},
-                                                                     'offer-url': {'type': 'string'},
-                                                                     'offer-uuid': {'type': 'string'},
-                                                                     'source-model-tag': {'type': 'string'},
-                                                                     'spaces': {'items': {'$ref': '#/definitions/RemoteSpace'},
-                                                                                'type': 'array'},
-                                                                     'users': {'items': {'$ref': '#/definitions/OfferUserDetails'},
-                                                                               'type': 'array'}},
-                                                      'required': ['source-model-tag',
-                                                                   'offer-uuid',
-                                                                   'offer-url',
-                                                                   'offer-name',
-                                                                   'application-description',
-                                                                   'ApplicationOfferDetails',
-                                                                   'application-name',
-                                                                   'charm-url'],
-                                                      'type': 'object'},
-                     'ApplicationOfferDetails': {'additionalProperties': False,
-                                                 'properties': {'application-description': {'type': 'string'},
-                                                                'bindings': {'patternProperties': {'.*': {'type': 'string'}},
-                                                                             'type': 'object'},
-                                                                'endpoints': {'items': {'$ref': '#/definitions/RemoteEndpoint'},
-                                                                              'type': 'array'},
-                                                                'offer-name': {'type': 'string'},
-                                                                'offer-url': {'type': 'string'},
-                                                                'offer-uuid': {'type': 'string'},
-                                                                'source-model-tag': {'type': 'string'},
-                                                                'spaces': {'items': {'$ref': '#/definitions/RemoteSpace'},
-                                                                           'type': 'array'},
-                                                                'users': {'items': {'$ref': '#/definitions/OfferUserDetails'},
-                                                                          'type': 'array'}},
-                                                 'required': ['source-model-tag',
-                                                              'offer-uuid',
-                                                              'offer-url',
-                                                              'offer-name',
-                                                              'application-description'],
-                                                 'type': 'object'},
-                     'ApplicationOfferResult': {'additionalProperties': False,
-                                                'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                               'result': {'$ref': '#/definitions/ApplicationOfferAdminDetails'}},
-                                                'type': 'object'},
-                     'ApplicationOffersResults': {'additionalProperties': False,
-                                                  'properties': {'results': {'items': {'$ref': '#/definitions/ApplicationOfferResult'},
-                                                                             'type': 'array'}},
-                                                  'type': 'object'},
-                     'ConsumeOfferDetails': {'additionalProperties': False,
-                                             'properties': {'external-controller': {'$ref': '#/definitions/ExternalControllerInfo'},
-                                                            'macaroon': {'$ref': '#/definitions/Macaroon'},
-                                                            'offer': {'$ref': '#/definitions/ApplicationOfferDetails'}},
-                                             'type': 'object'},
-                     'ConsumeOfferDetailsArg': {'additionalProperties': False,
-                                                'properties': {'offer-urls': {'$ref': '#/definitions/OfferURLs'},
-                                                               'user-tag': {'type': 'string'}},
-                                                'required': ['offer-urls'],
-                                                'type': 'object'},
-                     'ConsumeOfferDetailsResult': {'additionalProperties': False,
-                                                   'properties': {'ConsumeOfferDetails': {'$ref': '#/definitions/ConsumeOfferDetails'},
-                                                                  'error': {'$ref': '#/definitions/Error'},
-                                                                  'external-controller': {'$ref': '#/definitions/ExternalControllerInfo'},
-                                                                  'macaroon': {'$ref': '#/definitions/Macaroon'},
-                                                                  'offer': {'$ref': '#/definitions/ApplicationOfferDetails'}},
-                                                   'required': ['ConsumeOfferDetails'],
-                                                   'type': 'object'},
-                     'ConsumeOfferDetailsResults': {'additionalProperties': False,
-                                                    'properties': {'results': {'items': {'$ref': '#/definitions/ConsumeOfferDetailsResult'},
-                                                                               'type': 'array'}},
-                                                    'type': 'object'},
-                     'DestroyApplicationOffers': {'additionalProperties': False,
-                                                  'properties': {'force': {'type': 'boolean'},
-                                                                 'offer-urls': {'items': {'type': 'string'},
-                                                                                'type': 'array'}},
-                                                  'required': ['offer-urls'],
-                                                  'type': 'object'},
-                     'EndpointFilterAttributes': {'additionalProperties': False,
-                                                  'properties': {'interface': {'type': 'string'},
-                                                                 'name': {'type': 'string'},
-                                                                 'role': {'type': 'string'}},
-                                                  'required': ['role',
-                                                               'interface',
-                                                               'name'],
-                                                  'type': 'object'},
-                     'EntityStatus': {'additionalProperties': False,
-                                      'properties': {'data': {'patternProperties': {'.*': {'additionalProperties': True,
-                                                                                           'type': 'object'}},
-                                                              'type': 'object'},
-                                                     'info': {'type': 'string'},
-                                                     'since': {'format': 'date-time',
-                                                               'type': 'string'},
-                                                     'status': {'type': 'string'}},
-                                      'required': ['status', 'info', 'since'],
-                                      'type': 'object'},
-                     'Error': {'additionalProperties': False,
-                               'properties': {'code': {'type': 'string'},
-                                              'info': {'patternProperties': {'.*': {'additionalProperties': True,
-                                                                                    'type': 'object'}},
-                                                       'type': 'object'},
-                                              'message': {'type': 'string'}},
-                               'required': ['message', 'code'],
-                               'type': 'object'},
-                     'ErrorResult': {'additionalProperties': False,
-                                     'properties': {'error': {'$ref': '#/definitions/Error'}},
-                                     'type': 'object'},
-                     'ErrorResults': {'additionalProperties': False,
-                                      'properties': {'results': {'items': {'$ref': '#/definitions/ErrorResult'},
-                                                                 'type': 'array'}},
-                                      'required': ['results'],
-                                      'type': 'object'},
-                     'ExternalControllerInfo': {'additionalProperties': False,
-                                                'properties': {'addrs': {'items': {'type': 'string'},
-                                                                         'type': 'array'},
-                                                               'ca-cert': {'type': 'string'},
-                                                               'controller-alias': {'type': 'string'},
-                                                               'controller-tag': {'type': 'string'}},
-                                                'required': ['controller-tag',
-                                                             'controller-alias',
-                                                             'addrs',
-                                                             'ca-cert'],
-                                                'type': 'object'},
-                     'Macaroon': {'additionalProperties': False, 'type': 'object'},
-                     'ModifyOfferAccess': {'additionalProperties': False,
-                                           'properties': {'access': {'type': 'string'},
-                                                          'action': {'type': 'string'},
-                                                          'offer-url': {'type': 'string'},
-                                                          'user-tag': {'type': 'string'}},
-                                           'required': ['user-tag',
-                                                        'action',
-                                                        'access',
-                                                        'offer-url'],
-                                           'type': 'object'},
-                     'ModifyOfferAccessRequest': {'additionalProperties': False,
-                                                  'properties': {'changes': {'items': {'$ref': '#/definitions/ModifyOfferAccess'},
-                                                                             'type': 'array'}},
-                                                  'required': ['changes'],
-                                                  'type': 'object'},
-                     'OfferConnection': {'additionalProperties': False,
-                                         'properties': {'endpoint': {'type': 'string'},
-                                                        'ingress-subnets': {'items': {'type': 'string'},
-                                                                            'type': 'array'},
-                                                        'relation-id': {'type': 'integer'},
-                                                        'source-model-tag': {'type': 'string'},
-                                                        'status': {'$ref': '#/definitions/EntityStatus'},
-                                                        'username': {'type': 'string'}},
-                                         'required': ['source-model-tag',
-                                                      'relation-id',
-                                                      'username',
-                                                      'endpoint',
-                                                      'status',
-                                                      'ingress-subnets'],
-                                         'type': 'object'},
-                     'OfferFilter': {'additionalProperties': False,
-                                     'properties': {'allowed-users': {'items': {'type': 'string'},
-                                                                      'type': 'array'},
-                                                    'application-description': {'type': 'string'},
-                                                    'application-name': {'type': 'string'},
-                                                    'application-user': {'type': 'string'},
-                                                    'connected-users': {'items': {'type': 'string'},
-                                                                        'type': 'array'},
-                                                    'endpoints': {'items': {'$ref': '#/definitions/EndpointFilterAttributes'},
-                                                                  'type': 'array'},
-                                                    'model-name': {'type': 'string'},
-                                                    'offer-name': {'type': 'string'},
-                                                    'owner-name': {'type': 'string'}},
-                                     'required': ['owner-name',
-                                                  'model-name',
-                                                  'offer-name',
-                                                  'application-name',
-                                                  'application-description',
-                                                  'application-user',
-                                                  'endpoints',
-                                                  'connected-users',
-                                                  'allowed-users'],
-                                     'type': 'object'},
-                     'OfferFilters': {'additionalProperties': False,
-                                      'properties': {'Filters': {'items': {'$ref': '#/definitions/OfferFilter'},
-                                                                 'type': 'array'}},
-                                      'required': ['Filters'],
-                                      'type': 'object'},
-                     'OfferURLs': {'additionalProperties': False,
-                                   'properties': {'bakery-version': {'type': 'integer'},
-                                                  'offer-urls': {'items': {'type': 'string'},
-                                                                 'type': 'array'}},
-                                   'type': 'object'},
-                     'OfferUserDetails': {'additionalProperties': False,
-                                          'properties': {'access': {'type': 'string'},
-                                                         'display-name': {'type': 'string'},
-                                                         'user': {'type': 'string'}},
-                                          'required': ['user',
-                                                       'display-name',
-                                                       'access'],
-                                          'type': 'object'},
-                     'QueryApplicationOffersResults': {'additionalProperties': False,
-                                                       'properties': {'results': {'items': {'$ref': '#/definitions/ApplicationOfferAdminDetails'},
-                                                                                  'type': 'array'}},
-                                                       'required': ['results'],
-                                                       'type': 'object'},
-                     'RemoteApplicationInfo': {'additionalProperties': False,
-                                               'properties': {'description': {'type': 'string'},
-                                                              'endpoints': {'items': {'$ref': '#/definitions/RemoteEndpoint'},
-                                                                            'type': 'array'},
-                                                              'icon-url-path': {'type': 'string'},
-                                                              'model-tag': {'type': 'string'},
-                                                              'name': {'type': 'string'},
-                                                              'offer-url': {'type': 'string'},
-                                                              'source-model-label': {'type': 'string'}},
-                                               'required': ['model-tag',
-                                                            'name',
-                                                            'description',
-                                                            'offer-url',
-                                                            'endpoints',
-                                                            'icon-url-path'],
-                                               'type': 'object'},
-                     'RemoteApplicationInfoResult': {'additionalProperties': False,
-                                                     'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                                    'result': {'$ref': '#/definitions/RemoteApplicationInfo'}},
-                                                     'type': 'object'},
-                     'RemoteApplicationInfoResults': {'additionalProperties': False,
-                                                      'properties': {'results': {'items': {'$ref': '#/definitions/RemoteApplicationInfoResult'},
-                                                                                 'type': 'array'}},
-                                                      'required': ['results'],
-                                                      'type': 'object'},
-                     'RemoteEndpoint': {'additionalProperties': False,
-                                        'properties': {'interface': {'type': 'string'},
-                                                       'limit': {'type': 'integer'},
-                                                       'name': {'type': 'string'},
-                                                       'role': {'type': 'string'}},
-                                        'required': ['name',
-                                                     'role',
-                                                     'interface',
-                                                     'limit'],
-                                        'type': 'object'},
-                     'RemoteSpace': {'additionalProperties': False,
-                                     'properties': {'cloud-type': {'type': 'string'},
-                                                    'name': {'type': 'string'},
-                                                    'provider-attributes': {'patternProperties': {'.*': {'additionalProperties': True,
-                                                                                                         'type': 'object'}},
-                                                                            'type': 'object'},
-                                                    'provider-id': {'type': 'string'},
-                                                    'subnets': {'items': {'$ref': '#/definitions/Subnet'},
-                                                                'type': 'array'}},
-                                     'required': ['cloud-type',
-                                                  'name',
-                                                  'provider-id',
-                                                  'provider-attributes',
-                                                  'subnets'],
-                                     'type': 'object'},
-                     'Subnet': {'additionalProperties': False,
-                                'properties': {'cidr': {'type': 'string'},
-                                               'life': {'type': 'string'},
-                                               'provider-id': {'type': 'string'},
-                                               'provider-network-id': {'type': 'string'},
-                                               'provider-space-id': {'type': 'string'},
-                                               'space-tag': {'type': 'string'},
-                                               'status': {'type': 'string'},
-                                               'vlan-tag': {'type': 'integer'},
-                                               'zones': {'items': {'type': 'string'},
-                                                         'type': 'array'}},
-                                'required': ['cidr',
-                                             'vlan-tag',
-                                             'life',
-                                             'space-tag',
-                                             'zones'],
-                                'type': 'object'}},
-     'properties': {'ApplicationOffers': {'description': 'ApplicationOffers gets '
-                                                         'details about remote '
-                                                         'applications that match '
-                                                         'given URLs.',
-                                          'properties': {'Params': {'$ref': '#/definitions/OfferURLs'},
-                                                         'Result': {'$ref': '#/definitions/ApplicationOffersResults'}},
-                                          'type': 'object'},
-                    'DestroyOffers': {'description': 'DestroyOffers removes the '
-                                                     'offers specified by the '
-                                                     'given URLs, forcing if '
-                                                     'necessary.',
-                                      'properties': {'Params': {'$ref': '#/definitions/DestroyApplicationOffers'},
-                                                     'Result': {'$ref': '#/definitions/ErrorResults'}},
-                                      'type': 'object'},
-                    'FindApplicationOffers': {'description': 'FindApplicationOffers '
-                                                             'gets details about '
-                                                             'remote applications '
-                                                             'that match given '
-                                                             'filter.',
-                                              'properties': {'Params': {'$ref': '#/definitions/OfferFilters'},
-                                                             'Result': {'$ref': '#/definitions/QueryApplicationOffersResults'}},
-                                              'type': 'object'},
-                    'GetConsumeDetails': {'description': 'GetConsumeDetails '
-                                                         'returns the details '
-                                                         'necessary to pass to '
-                                                         'another model\n'
-                                                         'to allow the specified '
-                                                         'args user to consume the '
-                                                         'offers represented by '
-                                                         'the args URLs.',
-                                          'properties': {'Params': {'$ref': '#/definitions/ConsumeOfferDetailsArg'},
-                                                         'Result': {'$ref': '#/definitions/ConsumeOfferDetailsResults'}},
-                                          'type': 'object'},
-                    'ListApplicationOffers': {'description': 'ListApplicationOffers '
-                                                             'gets deployed '
-                                                             'details about '
-                                                             'application offers '
-                                                             'that match given '
-                                                             'filter.\n'
-                                                             'The results contain '
-                                                             'details about the '
-                                                             'deployed '
-                                                             'applications such as '
-                                                             'connection count.',
-                                              'properties': {'Params': {'$ref': '#/definitions/OfferFilters'},
-                                                             'Result': {'$ref': '#/definitions/QueryApplicationOffersResults'}},
-                                              'type': 'object'},
-                    'ModifyOfferAccess': {'description': 'ModifyOfferAccess '
-                                                         'changes the application '
-                                                         'offer access granted to '
-                                                         'users.',
-                                          'properties': {'Params': {'$ref': '#/definitions/ModifyOfferAccessRequest'},
-                                                         'Result': {'$ref': '#/definitions/ErrorResults'}},
-                                          'type': 'object'},
-                    'Offer': {'description': 'Offer makes application endpoints '
-                                             'available for consumption at a '
-                                             'specified URL.',
-                              'properties': {'Params': {'$ref': '#/definitions/AddApplicationOffers'},
-                                             'Result': {'$ref': '#/definitions/ErrorResults'}},
-                              'type': 'object'},
-                    'RemoteApplicationInfo': {'description': 'RemoteApplicationInfo '
-                                                             'returns information '
-                                                             'about the requested '
-                                                             'remote application.\n'
-                                                             'This call currently '
-                                                             'has no client side '
-                                                             'API, only there for '
-                                                             'the Dashboard at '
-                                                             'this stage.',
-                                              'properties': {'Params': {'$ref': '#/definitions/OfferURLs'},
-                                                             'Result': {'$ref': '#/definitions/RemoteApplicationInfoResults'}},
-                                              'type': 'object'}},
-     'type': 'object'}
-    
+    schema = {
+        "definitions": {
+            "AddApplicationOffer": {
+                "additionalProperties": False,
+                "properties": {
+                    "application-description": {"type": "string"},
+                    "application-name": {"type": "string"},
+                    "endpoints": {
+                        "patternProperties": {".*": {"type": "string"}},
+                        "type": "object",
+                    },
+                    "model-tag": {"type": "string"},
+                    "offer-name": {"type": "string"},
+                    "owner-tag": {"type": "string"},
+                },
+                "required": [
+                    "model-tag",
+                    "offer-name",
+                    "application-name",
+                    "application-description",
+                    "endpoints",
+                ],
+                "type": "object",
+            },
+            "AddApplicationOffers": {
+                "additionalProperties": False,
+                "properties": {
+                    "Offers": {
+                        "items": {"$ref": "#/definitions/AddApplicationOffer"},
+                        "type": "array",
+                    }
+                },
+                "required": ["Offers"],
+                "type": "object",
+            },
+            "ApplicationOfferAdminDetails": {
+                "additionalProperties": False,
+                "properties": {
+                    "ApplicationOfferDetails": {
+                        "$ref": "#/definitions/ApplicationOfferDetails"
+                    },
+                    "application-description": {"type": "string"},
+                    "application-name": {"type": "string"},
+                    "bindings": {
+                        "patternProperties": {".*": {"type": "string"}},
+                        "type": "object",
+                    },
+                    "charm-url": {"type": "string"},
+                    "connections": {
+                        "items": {"$ref": "#/definitions/OfferConnection"},
+                        "type": "array",
+                    },
+                    "endpoints": {
+                        "items": {"$ref": "#/definitions/RemoteEndpoint"},
+                        "type": "array",
+                    },
+                    "offer-name": {"type": "string"},
+                    "offer-url": {"type": "string"},
+                    "offer-uuid": {"type": "string"},
+                    "source-model-tag": {"type": "string"},
+                    "spaces": {
+                        "items": {"$ref": "#/definitions/RemoteSpace"},
+                        "type": "array",
+                    },
+                    "users": {
+                        "items": {"$ref": "#/definitions/OfferUserDetails"},
+                        "type": "array",
+                    },
+                },
+                "required": [
+                    "source-model-tag",
+                    "offer-uuid",
+                    "offer-url",
+                    "offer-name",
+                    "application-description",
+                    "ApplicationOfferDetails",
+                    "application-name",
+                    "charm-url",
+                ],
+                "type": "object",
+            },
+            "ApplicationOfferDetails": {
+                "additionalProperties": False,
+                "properties": {
+                    "application-description": {"type": "string"},
+                    "bindings": {
+                        "patternProperties": {".*": {"type": "string"}},
+                        "type": "object",
+                    },
+                    "endpoints": {
+                        "items": {"$ref": "#/definitions/RemoteEndpoint"},
+                        "type": "array",
+                    },
+                    "offer-name": {"type": "string"},
+                    "offer-url": {"type": "string"},
+                    "offer-uuid": {"type": "string"},
+                    "source-model-tag": {"type": "string"},
+                    "spaces": {
+                        "items": {"$ref": "#/definitions/RemoteSpace"},
+                        "type": "array",
+                    },
+                    "users": {
+                        "items": {"$ref": "#/definitions/OfferUserDetails"},
+                        "type": "array",
+                    },
+                },
+                "required": [
+                    "source-model-tag",
+                    "offer-uuid",
+                    "offer-url",
+                    "offer-name",
+                    "application-description",
+                ],
+                "type": "object",
+            },
+            "ApplicationOfferResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "result": {"$ref": "#/definitions/ApplicationOfferAdminDetails"},
+                },
+                "type": "object",
+            },
+            "ApplicationOffersResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/ApplicationOfferResult"},
+                        "type": "array",
+                    }
+                },
+                "type": "object",
+            },
+            "ConsumeOfferDetails": {
+                "additionalProperties": False,
+                "properties": {
+                    "external-controller": {
+                        "$ref": "#/definitions/ExternalControllerInfo"
+                    },
+                    "macaroon": {"$ref": "#/definitions/Macaroon"},
+                    "offer": {"$ref": "#/definitions/ApplicationOfferDetails"},
+                },
+                "type": "object",
+            },
+            "ConsumeOfferDetailsArg": {
+                "additionalProperties": False,
+                "properties": {
+                    "offer-urls": {"$ref": "#/definitions/OfferURLs"},
+                    "user-tag": {"type": "string"},
+                },
+                "required": ["offer-urls"],
+                "type": "object",
+            },
+            "ConsumeOfferDetailsResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "ConsumeOfferDetails": {
+                        "$ref": "#/definitions/ConsumeOfferDetails"
+                    },
+                    "error": {"$ref": "#/definitions/Error"},
+                    "external-controller": {
+                        "$ref": "#/definitions/ExternalControllerInfo"
+                    },
+                    "macaroon": {"$ref": "#/definitions/Macaroon"},
+                    "offer": {"$ref": "#/definitions/ApplicationOfferDetails"},
+                },
+                "required": ["ConsumeOfferDetails"],
+                "type": "object",
+            },
+            "ConsumeOfferDetailsResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/ConsumeOfferDetailsResult"},
+                        "type": "array",
+                    }
+                },
+                "type": "object",
+            },
+            "DestroyApplicationOffers": {
+                "additionalProperties": False,
+                "properties": {
+                    "force": {"type": "boolean"},
+                    "offer-urls": {"items": {"type": "string"}, "type": "array"},
+                },
+                "required": ["offer-urls"],
+                "type": "object",
+            },
+            "EndpointFilterAttributes": {
+                "additionalProperties": False,
+                "properties": {
+                    "interface": {"type": "string"},
+                    "name": {"type": "string"},
+                    "role": {"type": "string"},
+                },
+                "required": ["role", "interface", "name"],
+                "type": "object",
+            },
+            "EntityStatus": {
+                "additionalProperties": False,
+                "properties": {
+                    "data": {
+                        "patternProperties": {
+                            ".*": {"additionalProperties": True, "type": "object"}
+                        },
+                        "type": "object",
+                    },
+                    "info": {"type": "string"},
+                    "since": {"format": "date-time", "type": "string"},
+                    "status": {"type": "string"},
+                },
+                "required": ["status", "info", "since"],
+                "type": "object",
+            },
+            "Error": {
+                "additionalProperties": False,
+                "properties": {
+                    "code": {"type": "string"},
+                    "info": {
+                        "patternProperties": {
+                            ".*": {"additionalProperties": True, "type": "object"}
+                        },
+                        "type": "object",
+                    },
+                    "message": {"type": "string"},
+                },
+                "required": ["message", "code"],
+                "type": "object",
+            },
+            "ErrorResult": {
+                "additionalProperties": False,
+                "properties": {"error": {"$ref": "#/definitions/Error"}},
+                "type": "object",
+            },
+            "ErrorResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/ErrorResult"},
+                        "type": "array",
+                    }
+                },
+                "required": ["results"],
+                "type": "object",
+            },
+            "ExternalControllerInfo": {
+                "additionalProperties": False,
+                "properties": {
+                    "addrs": {"items": {"type": "string"}, "type": "array"},
+                    "ca-cert": {"type": "string"},
+                    "controller-alias": {"type": "string"},
+                    "controller-tag": {"type": "string"},
+                },
+                "required": ["controller-tag", "controller-alias", "addrs", "ca-cert"],
+                "type": "object",
+            },
+            "Macaroon": {"additionalProperties": False, "type": "object"},
+            "ModifyOfferAccess": {
+                "additionalProperties": False,
+                "properties": {
+                    "access": {"type": "string"},
+                    "action": {"type": "string"},
+                    "offer-url": {"type": "string"},
+                    "user-tag": {"type": "string"},
+                },
+                "required": ["user-tag", "action", "access", "offer-url"],
+                "type": "object",
+            },
+            "ModifyOfferAccessRequest": {
+                "additionalProperties": False,
+                "properties": {
+                    "changes": {
+                        "items": {"$ref": "#/definitions/ModifyOfferAccess"},
+                        "type": "array",
+                    }
+                },
+                "required": ["changes"],
+                "type": "object",
+            },
+            "OfferConnection": {
+                "additionalProperties": False,
+                "properties": {
+                    "endpoint": {"type": "string"},
+                    "ingress-subnets": {"items": {"type": "string"}, "type": "array"},
+                    "relation-id": {"type": "integer"},
+                    "source-model-tag": {"type": "string"},
+                    "status": {"$ref": "#/definitions/EntityStatus"},
+                    "username": {"type": "string"},
+                },
+                "required": [
+                    "source-model-tag",
+                    "relation-id",
+                    "username",
+                    "endpoint",
+                    "status",
+                    "ingress-subnets",
+                ],
+                "type": "object",
+            },
+            "OfferFilter": {
+                "additionalProperties": False,
+                "properties": {
+                    "allowed-users": {"items": {"type": "string"}, "type": "array"},
+                    "application-description": {"type": "string"},
+                    "application-name": {"type": "string"},
+                    "application-user": {"type": "string"},
+                    "connected-users": {"items": {"type": "string"}, "type": "array"},
+                    "endpoints": {
+                        "items": {"$ref": "#/definitions/EndpointFilterAttributes"},
+                        "type": "array",
+                    },
+                    "model-name": {"type": "string"},
+                    "offer-name": {"type": "string"},
+                    "owner-name": {"type": "string"},
+                },
+                "required": [
+                    "owner-name",
+                    "model-name",
+                    "offer-name",
+                    "application-name",
+                    "application-description",
+                    "application-user",
+                    "endpoints",
+                    "connected-users",
+                    "allowed-users",
+                ],
+                "type": "object",
+            },
+            "OfferFilters": {
+                "additionalProperties": False,
+                "properties": {
+                    "Filters": {
+                        "items": {"$ref": "#/definitions/OfferFilter"},
+                        "type": "array",
+                    }
+                },
+                "required": ["Filters"],
+                "type": "object",
+            },
+            "OfferURLs": {
+                "additionalProperties": False,
+                "properties": {
+                    "bakery-version": {"type": "integer"},
+                    "offer-urls": {"items": {"type": "string"}, "type": "array"},
+                },
+                "type": "object",
+            },
+            "OfferUserDetails": {
+                "additionalProperties": False,
+                "properties": {
+                    "access": {"type": "string"},
+                    "display-name": {"type": "string"},
+                    "user": {"type": "string"},
+                },
+                "required": ["user", "display-name", "access"],
+                "type": "object",
+            },
+            "QueryApplicationOffersResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/ApplicationOfferAdminDetails"},
+                        "type": "array",
+                    }
+                },
+                "required": ["results"],
+                "type": "object",
+            },
+            "RemoteApplicationInfo": {
+                "additionalProperties": False,
+                "properties": {
+                    "description": {"type": "string"},
+                    "endpoints": {
+                        "items": {"$ref": "#/definitions/RemoteEndpoint"},
+                        "type": "array",
+                    },
+                    "icon-url-path": {"type": "string"},
+                    "model-tag": {"type": "string"},
+                    "name": {"type": "string"},
+                    "offer-url": {"type": "string"},
+                    "source-model-label": {"type": "string"},
+                },
+                "required": [
+                    "model-tag",
+                    "name",
+                    "description",
+                    "offer-url",
+                    "endpoints",
+                    "icon-url-path",
+                ],
+                "type": "object",
+            },
+            "RemoteApplicationInfoResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "result": {"$ref": "#/definitions/RemoteApplicationInfo"},
+                },
+                "type": "object",
+            },
+            "RemoteApplicationInfoResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/RemoteApplicationInfoResult"},
+                        "type": "array",
+                    }
+                },
+                "required": ["results"],
+                "type": "object",
+            },
+            "RemoteEndpoint": {
+                "additionalProperties": False,
+                "properties": {
+                    "interface": {"type": "string"},
+                    "limit": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "role": {"type": "string"},
+                },
+                "required": ["name", "role", "interface", "limit"],
+                "type": "object",
+            },
+            "RemoteSpace": {
+                "additionalProperties": False,
+                "properties": {
+                    "cloud-type": {"type": "string"},
+                    "name": {"type": "string"},
+                    "provider-attributes": {
+                        "patternProperties": {
+                            ".*": {"additionalProperties": True, "type": "object"}
+                        },
+                        "type": "object",
+                    },
+                    "provider-id": {"type": "string"},
+                    "subnets": {
+                        "items": {"$ref": "#/definitions/Subnet"},
+                        "type": "array",
+                    },
+                },
+                "required": [
+                    "cloud-type",
+                    "name",
+                    "provider-id",
+                    "provider-attributes",
+                    "subnets",
+                ],
+                "type": "object",
+            },
+            "Subnet": {
+                "additionalProperties": False,
+                "properties": {
+                    "cidr": {"type": "string"},
+                    "life": {"type": "string"},
+                    "provider-id": {"type": "string"},
+                    "provider-network-id": {"type": "string"},
+                    "provider-space-id": {"type": "string"},
+                    "space-tag": {"type": "string"},
+                    "status": {"type": "string"},
+                    "vlan-tag": {"type": "integer"},
+                    "zones": {"items": {"type": "string"}, "type": "array"},
+                },
+                "required": ["cidr", "vlan-tag", "life", "space-tag", "zones"],
+                "type": "object",
+            },
+        },
+        "properties": {
+            "ApplicationOffers": {
+                "description": "ApplicationOffers gets "
+                "details about remote "
+                "applications that match "
+                "given URLs.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/OfferURLs"},
+                    "Result": {"$ref": "#/definitions/ApplicationOffersResults"},
+                },
+                "type": "object",
+            },
+            "DestroyOffers": {
+                "description": "DestroyOffers removes the "
+                "offers specified by the "
+                "given URLs, forcing if "
+                "necessary.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/DestroyApplicationOffers"},
+                    "Result": {"$ref": "#/definitions/ErrorResults"},
+                },
+                "type": "object",
+            },
+            "FindApplicationOffers": {
+                "description": "FindApplicationOffers "
+                "gets details about "
+                "remote applications "
+                "that match given "
+                "filter.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/OfferFilters"},
+                    "Result": {"$ref": "#/definitions/QueryApplicationOffersResults"},
+                },
+                "type": "object",
+            },
+            "GetConsumeDetails": {
+                "description": "GetConsumeDetails "
+                "returns the details "
+                "necessary to pass to "
+                "another model\n"
+                "to allow the specified "
+                "args user to consume the "
+                "offers represented by "
+                "the args URLs.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/ConsumeOfferDetailsArg"},
+                    "Result": {"$ref": "#/definitions/ConsumeOfferDetailsResults"},
+                },
+                "type": "object",
+            },
+            "ListApplicationOffers": {
+                "description": "ListApplicationOffers "
+                "gets deployed "
+                "details about "
+                "application offers "
+                "that match given "
+                "filter.\n"
+                "The results contain "
+                "details about the "
+                "deployed "
+                "applications such as "
+                "connection count.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/OfferFilters"},
+                    "Result": {"$ref": "#/definitions/QueryApplicationOffersResults"},
+                },
+                "type": "object",
+            },
+            "ModifyOfferAccess": {
+                "description": "ModifyOfferAccess "
+                "changes the application "
+                "offer access granted to "
+                "users.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/ModifyOfferAccessRequest"},
+                    "Result": {"$ref": "#/definitions/ErrorResults"},
+                },
+                "type": "object",
+            },
+            "Offer": {
+                "description": "Offer makes application endpoints "
+                "available for consumption at a "
+                "specified URL.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/AddApplicationOffers"},
+                    "Result": {"$ref": "#/definitions/ErrorResults"},
+                },
+                "type": "object",
+            },
+            "RemoteApplicationInfo": {
+                "description": "RemoteApplicationInfo "
+                "returns information "
+                "about the requested "
+                "remote application.\n"
+                "This call currently "
+                "has no client side "
+                "API, only there for "
+                "the Dashboard at "
+                "this stage.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/OfferURLs"},
+                    "Result": {"$ref": "#/definitions/RemoteApplicationInfoResults"},
+                },
+                "type": "object",
+            },
+        },
+        "type": "object",
+    }
 
     @ReturnMapping(ApplicationOffersResults)
     async def ApplicationOffers(self, bakery_version=None, offer_urls=None):
-        '''
+        """
         ApplicationOffers gets details about remote applications that match given URLs.
 
         bakery_version : int
         offer_urls : typing.Sequence[str]
         Returns -> ApplicationOffersResults
-        '''
+        """
         if bakery_version is not None and not isinstance(bakery_version, int):
-            raise Exception("Expected bakery_version to be a int, received: {}".format(type(bakery_version)))
+            raise Exception(
+                "Expected bakery_version to be a int, received: {}".format(
+                    type(bakery_version)
+                )
+            )
 
         if offer_urls is not None and not isinstance(offer_urls, (bytes, str, list)):
-            raise Exception("Expected offer_urls to be a Sequence, received: {}".format(type(offer_urls)))
+            raise Exception(
+                "Expected offer_urls to be a Sequence, received: {}".format(
+                    type(offer_urls)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='ApplicationOffers',
-                   version=4,
-                   params=_params)
-        _params['bakery-version'] = bakery_version
-        _params['offer-urls'] = offer_urls
+        msg = dict(
+            type="ApplicationOffers",
+            request="ApplicationOffers",
+            version=4,
+            params=_params,
+        )
+        _params["bakery-version"] = bakery_version
+        _params["offer-urls"] = offer_urls
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(ErrorResults)
     async def DestroyOffers(self, force=None, offer_urls=None):
-        '''
+        """
         DestroyOffers removes the offers specified by the given URLs, forcing if necessary.
 
         force : bool
         offer_urls : typing.Sequence[str]
         Returns -> ErrorResults
-        '''
+        """
         if force is not None and not isinstance(force, bool):
-            raise Exception("Expected force to be a bool, received: {}".format(type(force)))
+            raise Exception(
+                "Expected force to be a bool, received: {}".format(type(force))
+            )
 
         if offer_urls is not None and not isinstance(offer_urls, (bytes, str, list)):
-            raise Exception("Expected offer_urls to be a Sequence, received: {}".format(type(offer_urls)))
+            raise Exception(
+                "Expected offer_urls to be a Sequence, received: {}".format(
+                    type(offer_urls)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='DestroyOffers',
-                   version=4,
-                   params=_params)
-        _params['force'] = force
-        _params['offer-urls'] = offer_urls
+        msg = dict(
+            type="ApplicationOffers", request="DestroyOffers", version=4, params=_params
+        )
+        _params["force"] = force
+        _params["offer-urls"] = offer_urls
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(QueryApplicationOffersResults)
     async def FindApplicationOffers(self, filters=None):
-        '''
+        """
         FindApplicationOffers gets details about remote applications that match given filter.
 
         filters : typing.Sequence[~OfferFilter]
         Returns -> QueryApplicationOffersResults
-        '''
+        """
         if filters is not None and not isinstance(filters, (bytes, str, list)):
-            raise Exception("Expected filters to be a Sequence, received: {}".format(type(filters)))
+            raise Exception(
+                "Expected filters to be a Sequence, received: {}".format(type(filters))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='FindApplicationOffers',
-                   version=4,
-                   params=_params)
-        _params['Filters'] = filters
+        msg = dict(
+            type="ApplicationOffers",
+            request="FindApplicationOffers",
+            version=4,
+            params=_params,
+        )
+        _params["Filters"] = filters
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(ConsumeOfferDetailsResults)
     async def GetConsumeDetails(self, offer_urls=None, user_tag=None):
-        '''
+        """
         GetConsumeDetails returns the details necessary to pass to another model
         to allow the specified args user to consume the offers represented by the args URLs.
 
         offer_urls : OfferURLs
         user_tag : str
         Returns -> ConsumeOfferDetailsResults
-        '''
+        """
         if offer_urls is not None and not isinstance(offer_urls, (dict, OfferURLs)):
-            raise Exception("Expected offer_urls to be a OfferURLs, received: {}".format(type(offer_urls)))
+            raise Exception(
+                "Expected offer_urls to be a OfferURLs, received: {}".format(
+                    type(offer_urls)
+                )
+            )
 
         if user_tag is not None and not isinstance(user_tag, (bytes, str)):
-            raise Exception("Expected user_tag to be a str, received: {}".format(type(user_tag)))
+            raise Exception(
+                "Expected user_tag to be a str, received: {}".format(type(user_tag))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='GetConsumeDetails',
-                   version=4,
-                   params=_params)
-        _params['offer-urls'] = offer_urls
-        _params['user-tag'] = user_tag
+        msg = dict(
+            type="ApplicationOffers",
+            request="GetConsumeDetails",
+            version=4,
+            params=_params,
+        )
+        _params["offer-urls"] = offer_urls
+        _params["user-tag"] = user_tag
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(QueryApplicationOffersResults)
     async def ListApplicationOffers(self, filters=None):
-        '''
+        """
         ListApplicationOffers gets deployed details about application offers that match given filter.
         The results contain details about the deployed applications such as connection count.
 
         filters : typing.Sequence[~OfferFilter]
         Returns -> QueryApplicationOffersResults
-        '''
+        """
         if filters is not None and not isinstance(filters, (bytes, str, list)):
-            raise Exception("Expected filters to be a Sequence, received: {}".format(type(filters)))
+            raise Exception(
+                "Expected filters to be a Sequence, received: {}".format(type(filters))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='ListApplicationOffers',
-                   version=4,
-                   params=_params)
-        _params['Filters'] = filters
+        msg = dict(
+            type="ApplicationOffers",
+            request="ListApplicationOffers",
+            version=4,
+            params=_params,
+        )
+        _params["Filters"] = filters
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(ErrorResults)
     async def ModifyOfferAccess(self, changes=None):
-        '''
+        """
         ModifyOfferAccess changes the application offer access granted to users.
 
         changes : typing.Sequence[~ModifyOfferAccess]
         Returns -> ErrorResults
-        '''
+        """
         if changes is not None and not isinstance(changes, (bytes, str, list)):
-            raise Exception("Expected changes to be a Sequence, received: {}".format(type(changes)))
+            raise Exception(
+                "Expected changes to be a Sequence, received: {}".format(type(changes))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='ModifyOfferAccess',
-                   version=4,
-                   params=_params)
-        _params['changes'] = changes
+        msg = dict(
+            type="ApplicationOffers",
+            request="ModifyOfferAccess",
+            version=4,
+            params=_params,
+        )
+        _params["changes"] = changes
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(ErrorResults)
     async def Offer(self, offers=None):
-        '''
+        """
         Offer makes application endpoints available for consumption at a specified URL.
 
         offers : typing.Sequence[~AddApplicationOffer]
         Returns -> ErrorResults
-        '''
+        """
         if offers is not None and not isinstance(offers, (bytes, str, list)):
-            raise Exception("Expected offers to be a Sequence, received: {}".format(type(offers)))
+            raise Exception(
+                "Expected offers to be a Sequence, received: {}".format(type(offers))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='Offer',
-                   version=4,
-                   params=_params)
-        _params['Offers'] = offers
+        msg = dict(type="ApplicationOffers", request="Offer", version=4, params=_params)
+        _params["Offers"] = offers
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(RemoteApplicationInfoResults)
     async def RemoteApplicationInfo(self, bakery_version=None, offer_urls=None):
-        '''
+        """
         RemoteApplicationInfo returns information about the requested remote application.
         This call currently has no client side API, only there for the Dashboard at this stage.
 
         bakery_version : int
         offer_urls : typing.Sequence[str]
         Returns -> RemoteApplicationInfoResults
-        '''
+        """
         if bakery_version is not None and not isinstance(bakery_version, int):
-            raise Exception("Expected bakery_version to be a int, received: {}".format(type(bakery_version)))
+            raise Exception(
+                "Expected bakery_version to be a int, received: {}".format(
+                    type(bakery_version)
+                )
+            )
 
         if offer_urls is not None and not isinstance(offer_urls, (bytes, str, list)):
-            raise Exception("Expected offer_urls to be a Sequence, received: {}".format(type(offer_urls)))
+            raise Exception(
+                "Expected offer_urls to be a Sequence, received: {}".format(
+                    type(offer_urls)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ApplicationOffers',
-                   request='RemoteApplicationInfo',
-                   version=4,
-                   params=_params)
-        _params['bakery-version'] = bakery_version
-        _params['offer-urls'] = offer_urls
+        msg = dict(
+            type="ApplicationOffers",
+            request="RemoteApplicationInfo",
+            version=4,
+            params=_params,
+        )
+        _params["bakery-version"] = bakery_version
+        _params["offer-urls"] = offer_urls
         reply = await self.rpc(msg)
         return reply
 
 
-
 class ModelGenerationFacade(Type):
-    name = 'ModelGeneration'
+    name = "ModelGeneration"
     version = 4
-    schema =     {'definitions': {'BoolResult': {'additionalProperties': False,
-                                    'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                   'result': {'type': 'boolean'}},
-                                    'required': ['result'],
-                                    'type': 'object'},
-                     'BranchArg': {'additionalProperties': False,
-                                   'properties': {'branch': {'type': 'string'}},
-                                   'required': ['branch'],
-                                   'type': 'object'},
-                     'BranchInfoArgs': {'additionalProperties': False,
-                                        'properties': {'branches': {'items': {'type': 'string'},
-                                                                    'type': 'array'},
-                                                       'detailed': {'type': 'boolean'}},
-                                        'required': ['branches', 'detailed'],
-                                        'type': 'object'},
-                     'BranchResults': {'additionalProperties': False,
-                                       'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                      'generations': {'items': {'$ref': '#/definitions/Generation'},
-                                                                      'type': 'array'}},
-                                       'required': ['generations'],
-                                       'type': 'object'},
-                     'BranchTrackArg': {'additionalProperties': False,
-                                        'properties': {'branch': {'type': 'string'},
-                                                       'entities': {'items': {'$ref': '#/definitions/Entity'},
-                                                                    'type': 'array'},
-                                                       'num-units': {'type': 'integer'}},
-                                        'required': ['branch', 'entities'],
-                                        'type': 'object'},
-                     'Entity': {'additionalProperties': False,
-                                'properties': {'tag': {'type': 'string'}},
-                                'required': ['tag'],
-                                'type': 'object'},
-                     'Error': {'additionalProperties': False,
-                               'properties': {'code': {'type': 'string'},
-                                              'info': {'patternProperties': {'.*': {'additionalProperties': True,
-                                                                                    'type': 'object'}},
-                                                       'type': 'object'},
-                                              'message': {'type': 'string'}},
-                               'required': ['message', 'code'],
-                               'type': 'object'},
-                     'ErrorResult': {'additionalProperties': False,
-                                     'properties': {'error': {'$ref': '#/definitions/Error'}},
-                                     'type': 'object'},
-                     'ErrorResults': {'additionalProperties': False,
-                                      'properties': {'results': {'items': {'$ref': '#/definitions/ErrorResult'},
-                                                                 'type': 'array'}},
-                                      'required': ['results'],
-                                      'type': 'object'},
-                     'Generation': {'additionalProperties': False,
-                                    'properties': {'applications': {'items': {'$ref': '#/definitions/GenerationApplication'},
-                                                                    'type': 'array'},
-                                                   'branch': {'type': 'string'},
-                                                   'completed': {'type': 'integer'},
-                                                   'completed-by': {'type': 'string'},
-                                                   'created': {'type': 'integer'},
-                                                   'created-by': {'type': 'string'},
-                                                   'generation-id': {'type': 'integer'}},
-                                    'required': ['branch',
-                                                 'created',
-                                                 'created-by',
-                                                 'applications'],
-                                    'type': 'object'},
-                     'GenerationApplication': {'additionalProperties': False,
-                                               'properties': {'application': {'type': 'string'},
-                                                              'config': {'patternProperties': {'.*': {'additionalProperties': True,
-                                                                                                      'type': 'object'}},
-                                                                         'type': 'object'},
-                                                              'pending': {'items': {'type': 'string'},
-                                                                          'type': 'array'},
-                                                              'progress': {'type': 'string'},
-                                                              'tracking': {'items': {'type': 'string'},
-                                                                           'type': 'array'}},
-                                               'required': ['application',
-                                                            'progress',
-                                                            'config'],
-                                               'type': 'object'},
-                     'GenerationId': {'additionalProperties': False,
-                                      'properties': {'generation-id': {'type': 'integer'}},
-                                      'required': ['generation-id'],
-                                      'type': 'object'},
-                     'GenerationResult': {'additionalProperties': False,
-                                          'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                         'generation': {'$ref': '#/definitions/Generation'}},
-                                          'required': ['generation'],
-                                          'type': 'object'},
-                     'IntResult': {'additionalProperties': False,
-                                   'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                  'result': {'type': 'integer'}},
-                                   'required': ['result'],
-                                   'type': 'object'}},
-     'properties': {'AbortBranch': {'description': 'AbortBranch aborts the input '
-                                                   'branch, marking it complete.  '
-                                                   'However no\n'
-                                                   'changes are made applicable to '
-                                                   'the whole model.  No units may '
-                                                   'be assigned\n'
-                                                   'to the branch when aborting.',
-                                    'properties': {'Params': {'$ref': '#/definitions/BranchArg'},
-                                                   'Result': {'$ref': '#/definitions/ErrorResult'}},
-                                    'type': 'object'},
-                    'AddBranch': {'description': 'AddBranch adds a new branch with '
-                                                 'the input name to the model.',
-                                  'properties': {'Params': {'$ref': '#/definitions/BranchArg'},
-                                                 'Result': {'$ref': '#/definitions/ErrorResult'}},
-                                  'type': 'object'},
-                    'BranchInfo': {'description': 'BranchInfo will return details '
-                                                  'of branch identified by the '
-                                                  'input argument,\n'
-                                                  'including units on the branch '
-                                                  'and the configuration disjoint '
-                                                  'with the\n'
-                                                  'master generation.\n'
-                                                  'An error is returned if no '
-                                                  'in-flight branch matching in '
-                                                  'input is found.',
-                                   'properties': {'Params': {'$ref': '#/definitions/BranchInfoArgs'},
-                                                  'Result': {'$ref': '#/definitions/BranchResults'}},
-                                   'type': 'object'},
-                    'CommitBranch': {'description': 'CommitBranch commits the '
-                                                    'input branch, making its '
-                                                    'changes applicable to\n'
-                                                    'the whole model and marking '
-                                                    'it complete.',
-                                     'properties': {'Params': {'$ref': '#/definitions/BranchArg'},
-                                                    'Result': {'$ref': '#/definitions/IntResult'}},
-                                     'type': 'object'},
-                    'HasActiveBranch': {'description': 'HasActiveBranch returns a '
-                                                       'true result if the input '
-                                                       'model has an "in-flight"\n'
-                                                       'branch matching the input '
-                                                       'name.',
-                                        'properties': {'Params': {'$ref': '#/definitions/BranchArg'},
-                                                       'Result': {'$ref': '#/definitions/BoolResult'}},
-                                        'type': 'object'},
-                    'ListCommits': {'description': 'ListCommits will return the '
-                                                   'commits, hence only branches '
-                                                   'with generation_id higher than '
-                                                   '0',
-                                    'properties': {'Result': {'$ref': '#/definitions/BranchResults'}},
-                                    'type': 'object'},
-                    'ShowCommit': {'description': 'ShowCommit will return details '
-                                                  'a commit given by its '
-                                                  'generationId\n'
-                                                  'An error is returned if either '
-                                                  'no branch can be found '
-                                                  'corresponding to the generation '
-                                                  'id.\n'
-                                                  'Or the generation id given is '
-                                                  'below 1.',
-                                   'properties': {'Params': {'$ref': '#/definitions/GenerationId'},
-                                                  'Result': {'$ref': '#/definitions/GenerationResult'}},
-                                   'type': 'object'},
-                    'TrackBranch': {'description': 'TrackBranch marks the input '
-                                                   'units and/or applications as '
-                                                   'tracking the input\n'
-                                                   'branch, causing them to '
-                                                   'realise changes made under '
-                                                   'that branch.',
-                                    'properties': {'Params': {'$ref': '#/definitions/BranchTrackArg'},
-                                                   'Result': {'$ref': '#/definitions/ErrorResults'}},
-                                    'type': 'object'}},
-     'type': 'object'}
-    
+    schema = {
+        "definitions": {
+            "BoolResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "result": {"type": "boolean"},
+                },
+                "required": ["result"],
+                "type": "object",
+            },
+            "BranchArg": {
+                "additionalProperties": False,
+                "properties": {"branch": {"type": "string"}},
+                "required": ["branch"],
+                "type": "object",
+            },
+            "BranchInfoArgs": {
+                "additionalProperties": False,
+                "properties": {
+                    "branches": {"items": {"type": "string"}, "type": "array"},
+                    "detailed": {"type": "boolean"},
+                },
+                "required": ["branches", "detailed"],
+                "type": "object",
+            },
+            "BranchResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "generations": {
+                        "items": {"$ref": "#/definitions/Generation"},
+                        "type": "array",
+                    },
+                },
+                "required": ["generations"],
+                "type": "object",
+            },
+            "BranchTrackArg": {
+                "additionalProperties": False,
+                "properties": {
+                    "branch": {"type": "string"},
+                    "entities": {
+                        "items": {"$ref": "#/definitions/Entity"},
+                        "type": "array",
+                    },
+                    "num-units": {"type": "integer"},
+                },
+                "required": ["branch", "entities"],
+                "type": "object",
+            },
+            "Entity": {
+                "additionalProperties": False,
+                "properties": {"tag": {"type": "string"}},
+                "required": ["tag"],
+                "type": "object",
+            },
+            "Error": {
+                "additionalProperties": False,
+                "properties": {
+                    "code": {"type": "string"},
+                    "info": {
+                        "patternProperties": {
+                            ".*": {"additionalProperties": True, "type": "object"}
+                        },
+                        "type": "object",
+                    },
+                    "message": {"type": "string"},
+                },
+                "required": ["message", "code"],
+                "type": "object",
+            },
+            "ErrorResult": {
+                "additionalProperties": False,
+                "properties": {"error": {"$ref": "#/definitions/Error"}},
+                "type": "object",
+            },
+            "ErrorResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/ErrorResult"},
+                        "type": "array",
+                    }
+                },
+                "required": ["results"],
+                "type": "object",
+            },
+            "Generation": {
+                "additionalProperties": False,
+                "properties": {
+                    "applications": {
+                        "items": {"$ref": "#/definitions/GenerationApplication"},
+                        "type": "array",
+                    },
+                    "branch": {"type": "string"},
+                    "completed": {"type": "integer"},
+                    "completed-by": {"type": "string"},
+                    "created": {"type": "integer"},
+                    "created-by": {"type": "string"},
+                    "generation-id": {"type": "integer"},
+                },
+                "required": ["branch", "created", "created-by", "applications"],
+                "type": "object",
+            },
+            "GenerationApplication": {
+                "additionalProperties": False,
+                "properties": {
+                    "application": {"type": "string"},
+                    "config": {
+                        "patternProperties": {
+                            ".*": {"additionalProperties": True, "type": "object"}
+                        },
+                        "type": "object",
+                    },
+                    "pending": {"items": {"type": "string"}, "type": "array"},
+                    "progress": {"type": "string"},
+                    "tracking": {"items": {"type": "string"}, "type": "array"},
+                },
+                "required": ["application", "progress", "config"],
+                "type": "object",
+            },
+            "GenerationId": {
+                "additionalProperties": False,
+                "properties": {"generation-id": {"type": "integer"}},
+                "required": ["generation-id"],
+                "type": "object",
+            },
+            "GenerationResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "generation": {"$ref": "#/definitions/Generation"},
+                },
+                "required": ["generation"],
+                "type": "object",
+            },
+            "IntResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "result": {"type": "integer"},
+                },
+                "required": ["result"],
+                "type": "object",
+            },
+        },
+        "properties": {
+            "AbortBranch": {
+                "description": "AbortBranch aborts the input "
+                "branch, marking it complete.  "
+                "However no\n"
+                "changes are made applicable to "
+                "the whole model.  No units may "
+                "be assigned\n"
+                "to the branch when aborting.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/BranchArg"},
+                    "Result": {"$ref": "#/definitions/ErrorResult"},
+                },
+                "type": "object",
+            },
+            "AddBranch": {
+                "description": "AddBranch adds a new branch with "
+                "the input name to the model.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/BranchArg"},
+                    "Result": {"$ref": "#/definitions/ErrorResult"},
+                },
+                "type": "object",
+            },
+            "BranchInfo": {
+                "description": "BranchInfo will return details "
+                "of branch identified by the "
+                "input argument,\n"
+                "including units on the branch "
+                "and the configuration disjoint "
+                "with the\n"
+                "master generation.\n"
+                "An error is returned if no "
+                "in-flight branch matching in "
+                "input is found.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/BranchInfoArgs"},
+                    "Result": {"$ref": "#/definitions/BranchResults"},
+                },
+                "type": "object",
+            },
+            "CommitBranch": {
+                "description": "CommitBranch commits the "
+                "input branch, making its "
+                "changes applicable to\n"
+                "the whole model and marking "
+                "it complete.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/BranchArg"},
+                    "Result": {"$ref": "#/definitions/IntResult"},
+                },
+                "type": "object",
+            },
+            "HasActiveBranch": {
+                "description": "HasActiveBranch returns a "
+                "true result if the input "
+                'model has an "in-flight"\n'
+                "branch matching the input "
+                "name.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/BranchArg"},
+                    "Result": {"$ref": "#/definitions/BoolResult"},
+                },
+                "type": "object",
+            },
+            "ListCommits": {
+                "description": "ListCommits will return the "
+                "commits, hence only branches "
+                "with generation_id higher than "
+                "0",
+                "properties": {"Result": {"$ref": "#/definitions/BranchResults"}},
+                "type": "object",
+            },
+            "ShowCommit": {
+                "description": "ShowCommit will return details "
+                "a commit given by its "
+                "generationId\n"
+                "An error is returned if either "
+                "no branch can be found "
+                "corresponding to the generation "
+                "id.\n"
+                "Or the generation id given is "
+                "below 1.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/GenerationId"},
+                    "Result": {"$ref": "#/definitions/GenerationResult"},
+                },
+                "type": "object",
+            },
+            "TrackBranch": {
+                "description": "TrackBranch marks the input "
+                "units and/or applications as "
+                "tracking the input\n"
+                "branch, causing them to "
+                "realise changes made under "
+                "that branch.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/BranchTrackArg"},
+                    "Result": {"$ref": "#/definitions/ErrorResults"},
+                },
+                "type": "object",
+            },
+        },
+        "type": "object",
+    }
 
     @ReturnMapping(ErrorResult)
     async def AbortBranch(self, branch=None):
-        '''
+        """
         AbortBranch aborts the input branch, marking it complete.  However no
         changes are made applicable to the whole model.  No units may be assigned
         to the branch when aborting.
 
         branch : str
         Returns -> ErrorResult
-        '''
+        """
         if branch is not None and not isinstance(branch, (bytes, str)):
-            raise Exception("Expected branch to be a str, received: {}".format(type(branch)))
+            raise Exception(
+                "Expected branch to be a str, received: {}".format(type(branch))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='AbortBranch',
-                   version=4,
-                   params=_params)
-        _params['branch'] = branch
+        msg = dict(
+            type="ModelGeneration", request="AbortBranch", version=4, params=_params
+        )
+        _params["branch"] = branch
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(ErrorResult)
     async def AddBranch(self, branch=None):
-        '''
+        """
         AddBranch adds a new branch with the input name to the model.
 
         branch : str
         Returns -> ErrorResult
-        '''
+        """
         if branch is not None and not isinstance(branch, (bytes, str)):
-            raise Exception("Expected branch to be a str, received: {}".format(type(branch)))
+            raise Exception(
+                "Expected branch to be a str, received: {}".format(type(branch))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='AddBranch',
-                   version=4,
-                   params=_params)
-        _params['branch'] = branch
+        msg = dict(
+            type="ModelGeneration", request="AddBranch", version=4, params=_params
+        )
+        _params["branch"] = branch
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(BranchResults)
     async def BranchInfo(self, branches=None, detailed=None):
-        '''
+        """
         BranchInfo will return details of branch identified by the input argument,
         including units on the branch and the configuration disjoint with the
         master generation.
@@ -889,123 +1219,122 @@ class ModelGenerationFacade(Type):
         branches : typing.Sequence[str]
         detailed : bool
         Returns -> BranchResults
-        '''
+        """
         if branches is not None and not isinstance(branches, (bytes, str, list)):
-            raise Exception("Expected branches to be a Sequence, received: {}".format(type(branches)))
+            raise Exception(
+                "Expected branches to be a Sequence, received: {}".format(
+                    type(branches)
+                )
+            )
 
         if detailed is not None and not isinstance(detailed, bool):
-            raise Exception("Expected detailed to be a bool, received: {}".format(type(detailed)))
+            raise Exception(
+                "Expected detailed to be a bool, received: {}".format(type(detailed))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='BranchInfo',
-                   version=4,
-                   params=_params)
-        _params['branches'] = branches
-        _params['detailed'] = detailed
+        msg = dict(
+            type="ModelGeneration", request="BranchInfo", version=4, params=_params
+        )
+        _params["branches"] = branches
+        _params["detailed"] = detailed
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(IntResult)
     async def CommitBranch(self, branch=None):
-        '''
+        """
         CommitBranch commits the input branch, making its changes applicable to
         the whole model and marking it complete.
 
         branch : str
         Returns -> IntResult
-        '''
+        """
         if branch is not None and not isinstance(branch, (bytes, str)):
-            raise Exception("Expected branch to be a str, received: {}".format(type(branch)))
+            raise Exception(
+                "Expected branch to be a str, received: {}".format(type(branch))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='CommitBranch',
-                   version=4,
-                   params=_params)
-        _params['branch'] = branch
+        msg = dict(
+            type="ModelGeneration", request="CommitBranch", version=4, params=_params
+        )
+        _params["branch"] = branch
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(BoolResult)
     async def HasActiveBranch(self, branch=None):
-        '''
+        """
         HasActiveBranch returns a true result if the input model has an "in-flight"
         branch matching the input name.
 
         branch : str
         Returns -> BoolResult
-        '''
+        """
         if branch is not None and not isinstance(branch, (bytes, str)):
-            raise Exception("Expected branch to be a str, received: {}".format(type(branch)))
+            raise Exception(
+                "Expected branch to be a str, received: {}".format(type(branch))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='HasActiveBranch',
-                   version=4,
-                   params=_params)
-        _params['branch'] = branch
+        msg = dict(
+            type="ModelGeneration", request="HasActiveBranch", version=4, params=_params
+        )
+        _params["branch"] = branch
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(BranchResults)
     async def ListCommits(self):
-        '''
+        """
         ListCommits will return the commits, hence only branches with generation_id higher than 0
 
 
         Returns -> BranchResults
-        '''
+        """
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='ListCommits',
-                   version=4,
-                   params=_params)
+        msg = dict(
+            type="ModelGeneration", request="ListCommits", version=4, params=_params
+        )
 
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(GenerationResult)
     async def ShowCommit(self, generation_id=None):
-        '''
+        """
         ShowCommit will return details a commit given by its generationId
         An error is returned if either no branch can be found corresponding to the generation id.
         Or the generation id given is below 1.
 
         generation_id : int
         Returns -> GenerationResult
-        '''
+        """
         if generation_id is not None and not isinstance(generation_id, int):
-            raise Exception("Expected generation_id to be a int, received: {}".format(type(generation_id)))
+            raise Exception(
+                "Expected generation_id to be a int, received: {}".format(
+                    type(generation_id)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='ShowCommit',
-                   version=4,
-                   params=_params)
-        _params['generation-id'] = generation_id
+        msg = dict(
+            type="ModelGeneration", request="ShowCommit", version=4, params=_params
+        )
+        _params["generation-id"] = generation_id
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(ErrorResults)
     async def TrackBranch(self, branch=None, entities=None, num_units=None):
-        '''
+        """
         TrackBranch marks the input units and/or applications as tracking the input
         branch, causing them to realise changes made under that branch.
 
@@ -1013,299 +1342,377 @@ class ModelGenerationFacade(Type):
         entities : typing.Sequence[~Entity]
         num_units : int
         Returns -> ErrorResults
-        '''
+        """
         if branch is not None and not isinstance(branch, (bytes, str)):
-            raise Exception("Expected branch to be a str, received: {}".format(type(branch)))
+            raise Exception(
+                "Expected branch to be a str, received: {}".format(type(branch))
+            )
 
         if entities is not None and not isinstance(entities, (bytes, str, list)):
-            raise Exception("Expected entities to be a Sequence, received: {}".format(type(entities)))
+            raise Exception(
+                "Expected entities to be a Sequence, received: {}".format(
+                    type(entities)
+                )
+            )
 
         if num_units is not None and not isinstance(num_units, int):
-            raise Exception("Expected num_units to be a int, received: {}".format(type(num_units)))
+            raise Exception(
+                "Expected num_units to be a int, received: {}".format(type(num_units))
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='ModelGeneration',
-                   request='TrackBranch',
-                   version=4,
-                   params=_params)
-        _params['branch'] = branch
-        _params['entities'] = entities
-        _params['num-units'] = num_units
+        msg = dict(
+            type="ModelGeneration", request="TrackBranch", version=4, params=_params
+        )
+        _params["branch"] = branch
+        _params["entities"] = entities
+        _params["num-units"] = num_units
         reply = await self.rpc(msg)
         return reply
 
 
-
 class SSHClientFacade(Type):
-    name = 'SSHClient'
+    name = "SSHClient"
     version = 4
-    schema =     {'definitions': {'CloudCredential': {'additionalProperties': False,
-                                         'properties': {'attrs': {'patternProperties': {'.*': {'type': 'string'}},
-                                                                  'type': 'object'},
-                                                        'auth-type': {'type': 'string'},
-                                                        'redacted': {'items': {'type': 'string'},
-                                                                     'type': 'array'}},
-                                         'required': ['auth-type'],
-                                         'type': 'object'},
-                     'CloudSpec': {'additionalProperties': False,
-                                   'properties': {'cacertificates': {'items': {'type': 'string'},
-                                                                     'type': 'array'},
-                                                  'credential': {'$ref': '#/definitions/CloudCredential'},
-                                                  'endpoint': {'type': 'string'},
-                                                  'identity-endpoint': {'type': 'string'},
-                                                  'is-controller-cloud': {'type': 'boolean'},
-                                                  'name': {'type': 'string'},
-                                                  'region': {'type': 'string'},
-                                                  'skip-tls-verify': {'type': 'boolean'},
-                                                  'storage-endpoint': {'type': 'string'},
-                                                  'type': {'type': 'string'}},
-                                   'required': ['type', 'name'],
-                                   'type': 'object'},
-                     'CloudSpecResult': {'additionalProperties': False,
-                                         'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                        'result': {'$ref': '#/definitions/CloudSpec'}},
-                                         'type': 'object'},
-                     'Entities': {'additionalProperties': False,
-                                  'properties': {'entities': {'items': {'$ref': '#/definitions/Entity'},
-                                                              'type': 'array'}},
-                                  'required': ['entities'],
-                                  'type': 'object'},
-                     'Entity': {'additionalProperties': False,
-                                'properties': {'tag': {'type': 'string'}},
-                                'required': ['tag'],
-                                'type': 'object'},
-                     'Error': {'additionalProperties': False,
-                               'properties': {'code': {'type': 'string'},
-                                              'info': {'patternProperties': {'.*': {'additionalProperties': True,
-                                                                                    'type': 'object'}},
-                                                       'type': 'object'},
-                                              'message': {'type': 'string'}},
-                               'required': ['message', 'code'],
-                               'type': 'object'},
-                     'SSHAddressResult': {'additionalProperties': False,
-                                          'properties': {'address': {'type': 'string'},
-                                                         'error': {'$ref': '#/definitions/Error'}},
-                                          'type': 'object'},
-                     'SSHAddressResults': {'additionalProperties': False,
-                                           'properties': {'results': {'items': {'$ref': '#/definitions/SSHAddressResult'},
-                                                                      'type': 'array'}},
-                                           'required': ['results'],
-                                           'type': 'object'},
-                     'SSHAddressesResult': {'additionalProperties': False,
-                                            'properties': {'addresses': {'items': {'type': 'string'},
-                                                                         'type': 'array'},
-                                                           'error': {'$ref': '#/definitions/Error'}},
-                                            'required': ['addresses'],
-                                            'type': 'object'},
-                     'SSHAddressesResults': {'additionalProperties': False,
-                                             'properties': {'results': {'items': {'$ref': '#/definitions/SSHAddressesResult'},
-                                                                        'type': 'array'}},
-                                             'required': ['results'],
-                                             'type': 'object'},
-                     'SSHProxyResult': {'additionalProperties': False,
-                                        'properties': {'use-proxy': {'type': 'boolean'}},
-                                        'required': ['use-proxy'],
-                                        'type': 'object'},
-                     'SSHPublicKeysResult': {'additionalProperties': False,
-                                             'properties': {'error': {'$ref': '#/definitions/Error'},
-                                                            'public-keys': {'items': {'type': 'string'},
-                                                                            'type': 'array'}},
-                                             'type': 'object'},
-                     'SSHPublicKeysResults': {'additionalProperties': False,
-                                              'properties': {'results': {'items': {'$ref': '#/definitions/SSHPublicKeysResult'},
-                                                                         'type': 'array'}},
-                                              'required': ['results'],
-                                              'type': 'object'}},
-     'properties': {'AllAddresses': {'description': 'AllAddresses reports all '
-                                                    'addresses that might have SSH '
-                                                    'listening for each\n'
-                                                    'entity in args. The result is '
-                                                    'sorted with public addresses '
-                                                    'first.\n'
-                                                    'Machines and units are '
-                                                    'supported as entity types.',
-                                     'properties': {'Params': {'$ref': '#/definitions/Entities'},
-                                                    'Result': {'$ref': '#/definitions/SSHAddressesResults'}},
-                                     'type': 'object'},
-                    'ModelCredentialForSSH': {'description': 'ModelCredentialForSSH '
-                                                             'returns a cloud spec '
-                                                             'for ssh purpose.\n'
-                                                             'This facade call is '
-                                                             'only used for k8s '
-                                                             'model.',
-                                              'properties': {'Result': {'$ref': '#/definitions/CloudSpecResult'}},
-                                              'type': 'object'},
-                    'PrivateAddress': {'description': 'PrivateAddress reports the '
-                                                      'preferred private network '
-                                                      'address for one or\n'
-                                                      'more entities. Machines and '
-                                                      'units are supported.',
-                                       'properties': {'Params': {'$ref': '#/definitions/Entities'},
-                                                      'Result': {'$ref': '#/definitions/SSHAddressResults'}},
-                                       'type': 'object'},
-                    'Proxy': {'description': 'Proxy returns whether SSH '
-                                             'connections should be proxied '
-                                             'through the\n'
-                                             'controller hosts for the model '
-                                             'associated with the API connection.',
-                              'properties': {'Result': {'$ref': '#/definitions/SSHProxyResult'}},
-                              'type': 'object'},
-                    'PublicAddress': {'description': 'PublicAddress reports the '
-                                                     'preferred public network '
-                                                     'address for one\n'
-                                                     'or more entities. Machines '
-                                                     'and units are supported.',
-                                      'properties': {'Params': {'$ref': '#/definitions/Entities'},
-                                                     'Result': {'$ref': '#/definitions/SSHAddressResults'}},
-                                      'type': 'object'},
-                    'PublicKeys': {'description': 'PublicKeys returns the public '
-                                                  'SSH hosts for one or more\n'
-                                                  'entities. Machines and units '
-                                                  'are supported.',
-                                   'properties': {'Params': {'$ref': '#/definitions/Entities'},
-                                                  'Result': {'$ref': '#/definitions/SSHPublicKeysResults'}},
-                                   'type': 'object'}},
-     'type': 'object'}
-    
+    schema = {
+        "definitions": {
+            "CloudCredential": {
+                "additionalProperties": False,
+                "properties": {
+                    "attrs": {
+                        "patternProperties": {".*": {"type": "string"}},
+                        "type": "object",
+                    },
+                    "auth-type": {"type": "string"},
+                    "redacted": {"items": {"type": "string"}, "type": "array"},
+                },
+                "required": ["auth-type"],
+                "type": "object",
+            },
+            "CloudSpec": {
+                "additionalProperties": False,
+                "properties": {
+                    "cacertificates": {"items": {"type": "string"}, "type": "array"},
+                    "credential": {"$ref": "#/definitions/CloudCredential"},
+                    "endpoint": {"type": "string"},
+                    "identity-endpoint": {"type": "string"},
+                    "is-controller-cloud": {"type": "boolean"},
+                    "name": {"type": "string"},
+                    "region": {"type": "string"},
+                    "skip-tls-verify": {"type": "boolean"},
+                    "storage-endpoint": {"type": "string"},
+                    "type": {"type": "string"},
+                },
+                "required": ["type", "name"],
+                "type": "object",
+            },
+            "CloudSpecResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "result": {"$ref": "#/definitions/CloudSpec"},
+                },
+                "type": "object",
+            },
+            "Entities": {
+                "additionalProperties": False,
+                "properties": {
+                    "entities": {
+                        "items": {"$ref": "#/definitions/Entity"},
+                        "type": "array",
+                    }
+                },
+                "required": ["entities"],
+                "type": "object",
+            },
+            "Entity": {
+                "additionalProperties": False,
+                "properties": {"tag": {"type": "string"}},
+                "required": ["tag"],
+                "type": "object",
+            },
+            "Error": {
+                "additionalProperties": False,
+                "properties": {
+                    "code": {"type": "string"},
+                    "info": {
+                        "patternProperties": {
+                            ".*": {"additionalProperties": True, "type": "object"}
+                        },
+                        "type": "object",
+                    },
+                    "message": {"type": "string"},
+                },
+                "required": ["message", "code"],
+                "type": "object",
+            },
+            "SSHAddressResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "address": {"type": "string"},
+                    "error": {"$ref": "#/definitions/Error"},
+                },
+                "type": "object",
+            },
+            "SSHAddressResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/SSHAddressResult"},
+                        "type": "array",
+                    }
+                },
+                "required": ["results"],
+                "type": "object",
+            },
+            "SSHAddressesResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "addresses": {"items": {"type": "string"}, "type": "array"},
+                    "error": {"$ref": "#/definitions/Error"},
+                },
+                "required": ["addresses"],
+                "type": "object",
+            },
+            "SSHAddressesResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/SSHAddressesResult"},
+                        "type": "array",
+                    }
+                },
+                "required": ["results"],
+                "type": "object",
+            },
+            "SSHProxyResult": {
+                "additionalProperties": False,
+                "properties": {"use-proxy": {"type": "boolean"}},
+                "required": ["use-proxy"],
+                "type": "object",
+            },
+            "SSHPublicKeysResult": {
+                "additionalProperties": False,
+                "properties": {
+                    "error": {"$ref": "#/definitions/Error"},
+                    "public-keys": {"items": {"type": "string"}, "type": "array"},
+                },
+                "type": "object",
+            },
+            "SSHPublicKeysResults": {
+                "additionalProperties": False,
+                "properties": {
+                    "results": {
+                        "items": {"$ref": "#/definitions/SSHPublicKeysResult"},
+                        "type": "array",
+                    }
+                },
+                "required": ["results"],
+                "type": "object",
+            },
+        },
+        "properties": {
+            "AllAddresses": {
+                "description": "AllAddresses reports all "
+                "addresses that might have SSH "
+                "listening for each\n"
+                "entity in args. The result is "
+                "sorted with public addresses "
+                "first.\n"
+                "Machines and units are "
+                "supported as entity types.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/Entities"},
+                    "Result": {"$ref": "#/definitions/SSHAddressesResults"},
+                },
+                "type": "object",
+            },
+            "ModelCredentialForSSH": {
+                "description": "ModelCredentialForSSH "
+                "returns a cloud spec "
+                "for ssh purpose.\n"
+                "This facade call is "
+                "only used for k8s "
+                "model.",
+                "properties": {"Result": {"$ref": "#/definitions/CloudSpecResult"}},
+                "type": "object",
+            },
+            "PrivateAddress": {
+                "description": "PrivateAddress reports the "
+                "preferred private network "
+                "address for one or\n"
+                "more entities. Machines and "
+                "units are supported.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/Entities"},
+                    "Result": {"$ref": "#/definitions/SSHAddressResults"},
+                },
+                "type": "object",
+            },
+            "Proxy": {
+                "description": "Proxy returns whether SSH "
+                "connections should be proxied "
+                "through the\n"
+                "controller hosts for the model "
+                "associated with the API connection.",
+                "properties": {"Result": {"$ref": "#/definitions/SSHProxyResult"}},
+                "type": "object",
+            },
+            "PublicAddress": {
+                "description": "PublicAddress reports the "
+                "preferred public network "
+                "address for one\n"
+                "or more entities. Machines "
+                "and units are supported.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/Entities"},
+                    "Result": {"$ref": "#/definitions/SSHAddressResults"},
+                },
+                "type": "object",
+            },
+            "PublicKeys": {
+                "description": "PublicKeys returns the public "
+                "SSH hosts for one or more\n"
+                "entities. Machines and units "
+                "are supported.",
+                "properties": {
+                    "Params": {"$ref": "#/definitions/Entities"},
+                    "Result": {"$ref": "#/definitions/SSHPublicKeysResults"},
+                },
+                "type": "object",
+            },
+        },
+        "type": "object",
+    }
 
     @ReturnMapping(SSHAddressesResults)
     async def AllAddresses(self, entities=None):
-        '''
+        """
         AllAddresses reports all addresses that might have SSH listening for each
         entity in args. The result is sorted with public addresses first.
         Machines and units are supported as entity types.
 
         entities : typing.Sequence[~Entity]
         Returns -> SSHAddressesResults
-        '''
+        """
         if entities is not None and not isinstance(entities, (bytes, str, list)):
-            raise Exception("Expected entities to be a Sequence, received: {}".format(type(entities)))
+            raise Exception(
+                "Expected entities to be a Sequence, received: {}".format(
+                    type(entities)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='SSHClient',
-                   request='AllAddresses',
-                   version=4,
-                   params=_params)
-        _params['entities'] = entities
+        msg = dict(type="SSHClient", request="AllAddresses", version=4, params=_params)
+        _params["entities"] = entities
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(CloudSpecResult)
     async def ModelCredentialForSSH(self):
-        '''
+        """
         ModelCredentialForSSH returns a cloud spec for ssh purpose.
         This facade call is only used for k8s model.
 
 
         Returns -> CloudSpecResult
-        '''
+        """
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='SSHClient',
-                   request='ModelCredentialForSSH',
-                   version=4,
-                   params=_params)
+        msg = dict(
+            type="SSHClient", request="ModelCredentialForSSH", version=4, params=_params
+        )
 
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(SSHAddressResults)
     async def PrivateAddress(self, entities=None):
-        '''
+        """
         PrivateAddress reports the preferred private network address for one or
         more entities. Machines and units are supported.
 
         entities : typing.Sequence[~Entity]
         Returns -> SSHAddressResults
-        '''
+        """
         if entities is not None and not isinstance(entities, (bytes, str, list)):
-            raise Exception("Expected entities to be a Sequence, received: {}".format(type(entities)))
+            raise Exception(
+                "Expected entities to be a Sequence, received: {}".format(
+                    type(entities)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='SSHClient',
-                   request='PrivateAddress',
-                   version=4,
-                   params=_params)
-        _params['entities'] = entities
+        msg = dict(
+            type="SSHClient", request="PrivateAddress", version=4, params=_params
+        )
+        _params["entities"] = entities
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(SSHProxyResult)
     async def Proxy(self):
-        '''
+        """
         Proxy returns whether SSH connections should be proxied through the
         controller hosts for the model associated with the API connection.
 
 
         Returns -> SSHProxyResult
-        '''
+        """
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='SSHClient',
-                   request='Proxy',
-                   version=4,
-                   params=_params)
+        msg = dict(type="SSHClient", request="Proxy", version=4, params=_params)
 
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(SSHAddressResults)
     async def PublicAddress(self, entities=None):
-        '''
+        """
         PublicAddress reports the preferred public network address for one
         or more entities. Machines and units are supported.
 
         entities : typing.Sequence[~Entity]
         Returns -> SSHAddressResults
-        '''
+        """
         if entities is not None and not isinstance(entities, (bytes, str, list)):
-            raise Exception("Expected entities to be a Sequence, received: {}".format(type(entities)))
+            raise Exception(
+                "Expected entities to be a Sequence, received: {}".format(
+                    type(entities)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='SSHClient',
-                   request='PublicAddress',
-                   version=4,
-                   params=_params)
-        _params['entities'] = entities
+        msg = dict(type="SSHClient", request="PublicAddress", version=4, params=_params)
+        _params["entities"] = entities
         reply = await self.rpc(msg)
         return reply
 
-
-
     @ReturnMapping(SSHPublicKeysResults)
     async def PublicKeys(self, entities=None):
-        '''
+        """
         PublicKeys returns the public SSH hosts for one or more
         entities. Machines and units are supported.
 
         entities : typing.Sequence[~Entity]
         Returns -> SSHPublicKeysResults
-        '''
+        """
         if entities is not None and not isinstance(entities, (bytes, str, list)):
-            raise Exception("Expected entities to be a Sequence, received: {}".format(type(entities)))
+            raise Exception(
+                "Expected entities to be a Sequence, received: {}".format(
+                    type(entities)
+                )
+            )
 
         # map input types to rpc msg
         _params = dict()
-        msg = dict(type='SSHClient',
-                   request='PublicKeys',
-                   version=4,
-                   params=_params)
-        _params['entities'] = entities
+        msg = dict(type="SSHClient", request="PublicKeys", version=4, params=_params)
+        _params["entities"] = entities
         reply = await self.rpc(msg)
         return reply
-
-

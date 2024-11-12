@@ -20,12 +20,13 @@ def test_basics():
 def test_from_connection():
     connection = mock.Mock()
     connection.facades = {"Action": 7}
-    connection.info = {"server-version": '3.0'}
+    connection.info = {"server-version": "3.0"}
     action_facade = client.ActionFacade.from_connection(connection)
     assert action_facade
 
 
 def test_to_json():
     uml = client.UserModelList([client.UserModel()])
-    assert uml.to_json() == ('{"user-models": [{"last-connection": null, '
-                             '"model": null}]}')
+    assert uml.to_json() == (
+        '{"user-models": [{"last-connection": null, "model": null}]}'
+    )

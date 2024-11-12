@@ -15,11 +15,11 @@ class Endpoint:
         self.data = data
 
     def __repr__(self):
-        return '<Endpoint {}:{}>'.format(self.data['application-name'], self.name)
+        return "<Endpoint {}:{}>".format(self.data["application-name"], self.name)
 
     @property
     def application_name(self):
-        return self.data['application-name']
+        return self.data["application-name"]
 
     @property
     def application(self):
@@ -28,36 +28,35 @@ class Endpoint:
         this scenario it is expected that you disconnect and reconnect to the
         model.
         """
-        app_name = self.data['application-name']
+        app_name = self.data["application-name"]
         if app_name in self.model.applications:
             return self.model.applications[app_name]
         raise JujuEntityNotFoundError(app_name, ["application"])
 
     @property
     def name(self):
-        return self.data['relation']['name']
+        return self.data["relation"]["name"]
 
     @property
     def interface(self):
-        return self.data['relation']['interface']
+        return self.data["relation"]["interface"]
 
     @property
     def role(self):
-        return self.data['relation']['role']
+        return self.data["relation"]["role"]
 
     @property
     def scope(self):
-        return self.data['relation']['scope']
+        return self.data["relation"]["scope"]
 
 
 class Relation(model.ModelEntity):
     def __repr__(self):
-        return '<Relation id={} {}>'.format(self.entity_id, self.key)
+        return "<Relation id={} {}>".format(self.entity_id, self.key)
 
     @property
     def endpoints(self):
-        return [Endpoint(self.model, data)
-                for data in self.safe_data['endpoints']]
+        return [Endpoint(self.model, data) for data in self.safe_data["endpoints"]]
 
     @property
     def provides(self):
@@ -65,7 +64,7 @@ class Relation(model.ModelEntity):
         The endpoint on the provides side of this relation, or None.
         """
         for endpoint in self.endpoints:
-            if endpoint.role == 'provider':
+            if endpoint.role == "provider":
                 return endpoint
         return None
 
@@ -75,7 +74,7 @@ class Relation(model.ModelEntity):
         The endpoint on the requires side of this relation, or None.
         """
         for endpoint in self.endpoints:
-            if endpoint.role == 'requirer':
+            if endpoint.role == "requirer":
                 return endpoint
         return None
 
@@ -85,17 +84,17 @@ class Relation(model.ModelEntity):
         The peers endpoint of this relation, or None.
         """
         for endpoint in self.endpoints:
-            if endpoint.role == 'peer':
+            if endpoint.role == "peer":
                 return endpoint
         return None
 
     @property
     def is_subordinate(self):
-        return any(ep.scope == 'container' for ep in self.endpoints)
+        return any(ep.scope == "container" for ep in self.endpoints)
 
     @property
     def is_peer(self):
-        return any(ep.role == 'peer' for ep in self.endpoints)
+        return any(ep.role == "peer" for ep in self.endpoints)
 
     def matches(self, *specs):
         """
@@ -112,6 +111,7 @@ class Relation(model.ModelEntity):
 
         :return: True if all specs match.
         """
+
         # Matches expects that the underlying application exists when it walks
         # over the endpoints.
         # This isn't directly required, but it validates that the framework
@@ -131,14 +131,16 @@ class Relation(model.ModelEntity):
             return model_app_name == app_name
 
         for spec in specs:
-            if ':' in spec:
-                app_name, endpoint_name = spec.split(':')
+            if ":" in spec:
+                app_name, endpoint_name = spec.split(":")
             else:
                 app_name, endpoint_name = spec, None
             for endpoint in self.endpoints:
-                if app_name == endpoint.application_name and \
-                   model_application_exists(app_name) and \
-                   endpoint_name in (endpoint.name, None):
+                if (
+                    app_name == endpoint.application_name
+                    and model_application_exists(app_name)
+                    and endpoint_name in (endpoint.name, None)
+                ):
                     # found a match for this spec, so move to next one
                     break
             else:

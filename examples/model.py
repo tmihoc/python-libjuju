@@ -9,6 +9,7 @@ This example shows how to reconnect to a model if you encounter an error
 3. Disconnect then reconnect.
 
 """
+
 from juju import jasyncio
 from juju.model import Model
 from juju.errors import JujuEntityNotFoundError
@@ -21,7 +22,7 @@ async def main():
     for i in range(0, retryCount):
         await model.connect_current()
         try:
-            model.applications['foo'].relations
+            model.applications["foo"].relations
         except JujuEntityNotFoundError as e:
             print(e.entity_name)
         finally:
@@ -29,5 +30,5 @@ async def main():
         # Everything worked out, continue on wards.
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     jasyncio.run(main())

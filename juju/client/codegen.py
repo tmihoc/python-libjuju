@@ -12,6 +12,7 @@ class CodeWriter(StringIO):
     holding the source code for a Python class and associated methods.
 
     """
+
     INDENT = "    "
 
     CLASS = 0

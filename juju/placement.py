@@ -37,7 +37,7 @@ def parse(directive):
         return [directive]
 
     # Juju 2.0 can't handle lxc containers.
-    directive = directive.replace('lxc', 'lxd')
+    directive = directive.replace("lxc", "lxd")
 
     if ":" in directive:
         # Planner has given us a scope and directive in string form

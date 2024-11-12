@@ -7,14 +7,11 @@ from juju.errors import JujuError
 
 
 class Juju(object):
-
     def __init__(self, jujudata=None):
         self.jujudata = jujudata or FileJujuData()
 
     def get_controllers(self):
-        """Return list of all available controllers.
-
-        """
+        """Return list of all available controllers."""
         return self.jujudata.controllers()
 
     async def get_controller(self, name, include_passwords=False):
@@ -30,7 +27,9 @@ class Juju(object):
         controllers = self.jujudata.controllers()
         assert isinstance(controllers, dict)
         if name not in controllers:
-            raise JujuError('%s is not among the controllers: %s' % (name, controllers.keys()))
+            raise JujuError(
+                "%s is not among the controllers: %s" % (name, controllers.keys())
+            )
 
         # make a new Controller object that's connected to the
         # controller with the given name

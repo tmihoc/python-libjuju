@@ -18,22 +18,23 @@ from .errors import JujuError
 
 
 async def execute_process(*cmd, log=None):
-    '''
+    """
     Wrapper around asyncio.create_subprocess_exec.
 
-    '''
+    """
     p = await jasyncio.create_subprocess_exec(
         *cmd,
         stdin=jasyncio.subprocess.PIPE,
         stdout=jasyncio.subprocess.PIPE,
-        stderr=jasyncio.subprocess.PIPE)
+        stderr=jasyncio.subprocess.PIPE,
+    )
     stdout, stderr = await p.communicate()
     if log:
         log.debug("Exec %s -> %d", cmd, p.returncode)
         if stdout:
-            log.debug(stdout.decode('utf-8'))
+            log.debug(stdout.decode("utf-8"))
         if stderr:
-            log.debug(stderr.decode('utf-8'))
+            log.debug(stderr.decode("utf-8"))
     return p.returncode == 0
 
 
@@ -48,14 +49,14 @@ def juju_config_dir():
 
     """
     # Set it to ~/.local/share/juju as default
-    config_dir = Path('~/.local/share/juju')
+    config_dir = Path("~/.local/share/juju")
 
     # Check $JUJU_DATA
-    if juju_data := os.environ.get('JUJU_DATA'):
+    if juju_data := os.environ.get("JUJU_DATA"):
         config_dir = Path(juju_data)
     # Secondly check: $XDG_DATA_HOME for ~/.local/share
-    elif xdg_data_home := os.environ.get('XDG_DATA_HOME'):
-        config_dir = Path(xdg_data_home) / 'juju'
+    elif xdg_data_home := os.environ.get("XDG_DATA_HOME"):
+        config_dir = Path(xdg_data_home) / "juju"
 
     return str(config_dir.expanduser().resolve())
 
@@ -66,31 +67,31 @@ def juju_ssh_key_paths():
 
     """
     config_dir = juju_config_dir()
-    public_key_path = os.path.join(config_dir, 'ssh', 'juju_id_rsa.pub')
-    private_key_path = os.path.join(config_dir, 'ssh', 'juju_id_rsa')
+    public_key_path = os.path.join(config_dir, "ssh", "juju_id_rsa.pub")
+    private_key_path = os.path.join(config_dir, "ssh", "juju_id_rsa")
 
     return public_key_path, private_key_path
 
 
 def _read_ssh_key():
-    '''
+    """
     Inner function for read_ssh_key, suitable for passing to our
     Executor.
 
-    '''
+    """
     public_key_path_str, _ = juju_ssh_key_paths()
     ssh_key_path = Path(public_key_path_str)
-    with ssh_key_path.open('r') as ssh_key_file:
+    with ssh_key_path.open("r") as ssh_key_file:
         ssh_key = ssh_key_file.readlines()[0].strip()
     return ssh_key
 
 
 async def read_ssh_key():
-    '''
+    """
     Attempt to read the local juju admin's public ssh key, so that it
     can be passed on to a model.
 
-    '''
+    """
     loop = jasyncio.get_running_loop()
     return await loop.run_in_executor(None, _read_ssh_key)
 
@@ -124,20 +125,26 @@ async def block_until(*conditions, timeout=None, wait_period=0.5):
     asyncio.TimeoutError.
 
     """
+
     async def _block():
         while not all(c() for c in conditions):
             await jasyncio.sleep(wait_period)
+
     await jasyncio.shield(jasyncio.wait_for(_block(), timeout))
 
 
-async def block_until_with_coroutine(condition_coroutine, timeout=None, wait_period=0.5):
+async def block_until_with_coroutine(
+    condition_coroutine, timeout=None, wait_period=0.5
+):
     """Return only after the given coroutine returns True.
     If a timeout occurs, it cancels the task and raises
     asyncio.TimeoutError.
     """
+
     async def _block():
         while not await condition_coroutine():
             await jasyncio.sleep(wait_period)
+
     await jasyncio.shield(jasyncio.wait_for(_block(), timeout=timeout))
 
 
@@ -153,7 +160,7 @@ async def wait_for_bundle(model, bundle, **kwargs):
         if bundle_path.is_file():
             bundle = bundle_path.read_text()
         elif (bundle_path / "bundle.yaml").is_file():
-            bundle = (bundle_path / "bundle.yaml")
+            bundle = bundle_path / "bundle.yaml"
     except OSError:
         pass
     bundle = yaml.safe_load(textwrap.dedent(bundle).strip())
@@ -174,10 +181,11 @@ async def run_with_interrupt(task, *events, log=None):
     :param events: One or more `asyncio.Event`s which, if set, will interrupt
         `task` and cause it to be cancelled.
     """
-    task = jasyncio.create_task_with_handler(task, 'tmp', log)
+    task = jasyncio.create_task_with_handler(task, "tmp", log)
     event_tasks = [jasyncio.ensure_future(event.wait()) for event in events]
-    done, pending = await jasyncio.wait([task] + event_tasks,
-                                        return_when=jasyncio.FIRST_COMPLETED)
+    done, pending = await jasyncio.wait(
+        [task] + event_tasks, return_when=jasyncio.FIRST_COMPLETED
+    )
     for f in pending:
         f.cancel()  # cancel unfinished tasks
     for f in pending:
@@ -211,11 +219,14 @@ class RegistrationInfo(univ.Sequence):
         ControllerName string
     }
     """
+
     pass
 
 
-def generate_user_controller_access_token(username, controller_endpoints, secret_key, controller_name):
-    """" Implement in python what is currently done in GO
+def generate_user_controller_access_token(
+    username, controller_endpoints, secret_key, controller_name
+):
+    """ " Implement in python what is currently done in GO
     https://github.com/juju/juju/blob/a5ab92ec9b7f5da3678d9ac603fe52d45af24412/cmd/juju/user/utils.go#L16
 
     :param username: name of the user to register
@@ -226,7 +237,7 @@ def generate_user_controller_access_token(username, controller_endpoints, secret
 
     # Secret key is returned as base64 encoded string in:
     # https://websockets.readthedocs.io/en/stable/_modules/websockets/protocol.html#WebSocketCommonProtocol.recv
-    # Deconding it before marshalling into the ASN.1 message
+    # Decoding it before marshalling into the ASN.1 message
     secret_key = base64.b64decode(secret_key)
     addr = Addrs()
     for endpoint in controller_endpoints:
@@ -252,8 +263,8 @@ def get_local_charm_data(path, yaml_file):
 
     :return: Object of charm metadata
     """
-    if str(path).endswith('.charm'):
-        with zipfile.ZipFile(str(path), 'r') as charm_file:
+    if str(path).endswith(".charm"):
+        with zipfile.ZipFile(str(path), "r") as charm_file:
             metadata = yaml.load(charm_file.read(yaml_file), Loader=yaml.FullLoader)
     else:
         entity_path = Path(path)
@@ -266,15 +277,15 @@ def get_local_charm_data(path, yaml_file):
 
 
 def get_local_charm_metadata(path):
-    return get_local_charm_data(path, 'metadata.yaml')
+    return get_local_charm_data(path, "metadata.yaml")
 
 
 def get_local_charm_manifest(path):
-    return get_local_charm_data(path, 'manifest.yaml')
+    return get_local_charm_data(path, "manifest.yaml")
 
 
 def get_local_charm_charmcraft_yaml(path):
-    return get_local_charm_data(path, 'charmcraft.yaml')
+    return get_local_charm_data(path, "charmcraft.yaml")
 
 
 PRECISE = "precise"
@@ -332,9 +343,7 @@ UBUNTU_SERIES = {
 }
 
 KUBERNETES = "kubernetes"
-KUBERNETES_SERIES = {
-    KUBERNETES: "kubernetes"
-}
+KUBERNETES_SERIES = {KUBERNETES: "kubernetes"}
 
 ALL_SERIES_VERSIONS = {**UBUNTU_SERIES, **KUBERNETES_SERIES}
 
@@ -370,47 +379,46 @@ def get_local_charm_base(series, charm_path, base_class):
     :param str series: This may come from the argument or the metadata.yaml
     :param str charm_path: Path of charm directory/.charm file
     :param class base_class:
-    :return: Instance of the baseCls with channel/osname informaiton
+    :return: Instance of the baseCls with channel/osname information
     """
 
-    channel_for_base = ''
-    os_name_for_base = ''
+    channel_for_base = ""
+    os_name_for_base = ""
 
     # We should know the series, so use it to get a channel
     if series:
-        channel_for_base = get_series_version(series) if series else ''
+        channel_for_base = get_series_version(series) if series else ""
         if channel_for_base:
             # we currently only support ubuntu series (statically)
             # TODO (cderici) : go juju/core/series/supported.go and get the
             #  others here too
             if series in KUBERNETES_SERIES:
-                os_name_for_base = 'kubernetes'
+                os_name_for_base = "kubernetes"
             else:
-                os_name_for_base = 'ubuntu'
+                os_name_for_base = "ubuntu"
 
     # Check the charm manifest
-    if channel_for_base == '':
+    if channel_for_base == "":
         charm_manifest = get_local_charm_manifest(charm_path)
-        if 'bases' in charm_manifest:
-            channel_for_base = charm_manifest['bases'][0]['channel']
-            os_name_for_base = charm_manifest['bases'][0]['name']
+        if "bases" in charm_manifest:
+            channel_for_base = charm_manifest["bases"][0]["channel"]
+            os_name_for_base = charm_manifest["bases"][0]["name"]
 
     # Also check the charmcraft.yaml
-    if channel_for_base == '':
+    if channel_for_base == "":
         charmcraft_yaml = get_local_charm_charmcraft_yaml(charm_path)
-        if 'bases' in charmcraft_yaml:
-            channel_for_base = charmcraft_yaml['bases'][0]['run-on'][0]['channel']
-            os_name_for_base = charmcraft_yaml['bases'][0]['run-on'][0]['name']
+        if "bases" in charmcraft_yaml:
+            channel_for_base = charmcraft_yaml["bases"][0]["run-on"][0]["channel"]
+            os_name_for_base = charmcraft_yaml["bases"][0]["run-on"][0]["name"]
 
-    if channel_for_base == '':
-        raise errors.JujuError("Unable to determine base for charm : %s" %
-                               charm_path)
+    if channel_for_base == "":
+        raise errors.JujuError("Unable to determine base for charm : %s" % charm_path)
 
     # Legacy k8s charms - assume ubuntu focal
     # as per juju/cmd/juju/application/utils.DeduceOrigin()
     if channel_for_base == "kubernetes" or os_name_for_base == "kubernetes":
-        channel_for_base = '20.04/stable'
-        os_name_for_base = 'ubuntu'
+        channel_for_base = "20.04/stable"
+        os_name_for_base = "ubuntu"
     return base_class(channel_for_base, os_name_for_base)
 
 
@@ -429,30 +437,38 @@ def parse_base_arg(base):
     """
     client.CharmBase()
     if not (isinstance(base, str) and "@" in base):
-        raise errors.JujuError(f"expected base string to contain os and channel separated by '@', got : {base}")
+        raise errors.JujuError(
+            f"expected base string to contain os and channel separated by '@', got : {base}"
+        )
 
-    name, channel = base.split('@')
+    name, channel = base.split("@")
     return client.Base(name=name, channel=channel)
 
 
-DEFAULT_SUPPORTED_LTS = 'jammy'
-DEFAULT_SUPPORTED_LTS_BASE = client.Base(channel='22.04', name='ubuntu')
+DEFAULT_SUPPORTED_LTS = "jammy"
+DEFAULT_SUPPORTED_LTS_BASE = client.Base(channel="22.04", name="ubuntu")
 
 
 def base_channel_from_series(track, risk, series):
-    return origin.Channel(track=track, risk=risk).normalize().compute_base_channel(series=series)
+    return (
+        origin.Channel(track=track, risk=risk)
+        .normalize()
+        .compute_base_channel(series=series)
+    )
 
 
 def get_os_from_series(series):
     if series in UBUNTU_SERIES:
-        return 'ubuntu'
-    raise JujuError(f'os for the series {series} needs to be added')
+        return "ubuntu"
+    raise JujuError(f"os for the series {series} needs to be added")
 
 
 def get_base_from_origin_or_channel(origin_or_channel, series=None):
     channel, os_name = None, None
     if series:
-        channel = base_channel_from_series(origin_or_channel.track, origin_or_channel.risk, series)
+        channel = base_channel_from_series(
+            origin_or_channel.track, origin_or_channel.risk, series
+        )
         os_name = get_os_from_series(series)
     return client.Base(channel=channel, name=os_name)
 
@@ -463,21 +479,23 @@ def series_for_charm(requested_series, supported_series):
     If the requested series is empty, then the first supported series is used,
     otherwise the requested series is validated against the supported series.
     """
-    if len(supported_series) == 1 and supported_series[0] == '':
+    if len(supported_series) == 1 and supported_series[0] == "":
         raise JujuError("invalid supported series reported by charm : ['']")
     if len(supported_series) == 0:
-        if requested_series == '':
+        if requested_series == "":
             raise JujuError("missing series")
         return requested_series
 
     # use the charm default
-    if requested_series == '':
+    if requested_series == "":
         return supported_series[-1]
 
     for s in supported_series:
         if requested_series == s:
             return requested_series
-    raise JujuError(f'requested series {requested_series} is not among the supported series {supported_series}')
+    raise JujuError(
+        f"requested series {requested_series} is not among the supported series {supported_series}"
+    )
 
 
 def user_requested(series_arg, supported_series, force):
@@ -488,7 +506,9 @@ def user_requested(series_arg, supported_series, force):
     return series
 
 
-def series_selector(series_arg='', charm_url=None, model_config=None, supported_series=[], force=False):
+def series_selector(
+    series_arg="", charm_url=None, model_config=None, supported_series=[], force=False
+):
     """
     series_selector corresponds to the CharmSeries() in
     https://github.com/juju/juju/blob/develop/core/charm/series_selector.go
@@ -513,8 +533,8 @@ def series_selector(series_arg='', charm_url=None, model_config=None, supported_
 
     # No series explicitly requested by the user.
     # Use model default series, if explicitly set and supported by the charm.
-    if model_config and model_config['default-base'].value:
-        default_base = model_config['default-base'].value
+    if model_config and model_config["default-base"].value:
+        default_base = model_config["default-base"].value
         base = parse_base_arg(default_base)
         series = base_channel_to_series(base.channel)
         return user_requested(series, supported_series, force)
@@ -525,7 +545,7 @@ def series_selector(series_arg='', charm_url=None, model_config=None, supported_
     # order (precise, xenial, bionic, trusty, etc).
     try:
         # TODO (cderici): restrict the supported_series with JujuSupportedSeries
-        return user_requested('', supported_series, force)
+        return user_requested("", supported_series, force)
     except JujuError:
         pass
 
@@ -548,7 +568,7 @@ def should_upgrade_resource(available_resource, existing_resources, arg_resource
     """
 
     # should upgrade resource?
-    res_name = available_resource.get('Name', available_resource.get('name'))
+    res_name = available_resource.get("Name", available_resource.get("name"))
 
     if res_name in arg_resources:
         return True
@@ -556,12 +576,14 @@ def should_upgrade_resource(available_resource, existing_resources, arg_resource
     # do we have it already?
     if res_name in existing_resources:
         # no upgrade, if it's upload
-        if existing_resources[res_name].origin == 'upload':
+        if existing_resources[res_name].origin == "upload":
             return False
         # no upgrade, if upstream doesn't have a newer revision of the resource available
-        available_rev = available_resource.get('Revision', available_resource.get('revision', -1))
+        available_rev = available_resource.get(
+            "Revision", available_resource.get("revision", -1)
+        )
         u_fields = existing_resources[res_name].unknown_fields
-        existing_rev = u_fields.get('Revision', u_fields.get('revision', -1))
+        existing_rev = u_fields.get("Revision", u_fields.get("revision", -1))
         if existing_rev >= available_rev:
             return False
     return True

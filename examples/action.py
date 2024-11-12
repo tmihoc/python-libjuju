@@ -10,6 +10,7 @@ This example:
 4. Waits for the action results to come back, then exits.
 
 """
+
 import logging
 
 from juju import jasyncio
@@ -17,10 +18,10 @@ from juju.model import Model
 
 
 async def run_action(unit):
-    logging.debug('Running action on unit %s', unit.name)
+    logging.debug("Running action on unit %s", unit.name)
 
     # unit.run() returns a juju.action.Action instance
-    action = await unit.run_action('add-repo', repo='myrepo')
+    action = await unit.run_action("add-repo", repo="myrepo")
     # wait for the action to complete
     action = await action.wait()
 
@@ -33,10 +34,10 @@ async def main():
     await model.connect()
 
     app = await model.deploy(
-        'git',
-        application_name='git',
-        series='trusty',
-        channel='stable',
+        "git",
+        application_name="git",
+        series="trusty",
+        channel="stable",
     )
 
     for unit in app.units:
@@ -46,8 +47,8 @@ async def main():
     await model.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    ws_logger = logging.getLogger('websockets.protocol')
+    ws_logger = logging.getLogger("websockets.protocol")
     ws_logger.setLevel(logging.INFO)
     jasyncio.run(main())

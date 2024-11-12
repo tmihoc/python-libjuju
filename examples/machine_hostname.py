@@ -14,6 +14,7 @@ This example:
 
 NOTE: this example requires a 2.8.10+ controller.
 """
+
 import logging
 
 from juju import jasyncio
@@ -30,8 +31,7 @@ async def main():
     try:
         # Add a machine and wait until the machine agents starts
         machine1 = await model.add_machine()
-        await model.block_until(
-            lambda: machine1.agent_status == 'started')
+        await model.block_until(lambda: machine1.agent_status == "started")
 
         # At this point we can access the reported hostname via the hostname
         # property of the machine model.
@@ -42,9 +42,9 @@ async def main():
         await model.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    ws_logger = logging.getLogger('websockets.protocol')
+    ws_logger = logging.getLogger("websockets.protocol")
     ws_logger.setLevel(logging.INFO)
 
     jasyncio.run(main())

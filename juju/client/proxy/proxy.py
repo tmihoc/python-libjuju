@@ -10,7 +10,7 @@ class ProxyNotConnectedError(Exception):
     pass
 
 
-class Proxy():
+class Proxy:
     """
     Abstract class to represent a generic controller connection proxy
     """

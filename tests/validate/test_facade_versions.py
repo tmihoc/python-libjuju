@@ -8,7 +8,11 @@ from typing import Dict, List, Sequence
 
 import pytest
 
-from juju.client.facade_versions import client_facade_versions, excluded_facade_versions, known_unsupported_facades
+from juju.client.facade_versions import (
+    client_facade_versions,
+    excluded_facade_versions,
+    known_unsupported_facades,
+)
 
 
 @pytest.fixture
@@ -26,8 +30,8 @@ def generated_code_facades(project_root: Path) -> Dict[str, Sequence[int]]:
     manually marked as incompatible with the current version of python-libjuju.
     """
     facades: Dict[str, List[int]] = defaultdict(list)
-    for file in project_root.glob('juju/client/_client*.py'):
-        module = importlib.import_module(f'juju.client.{file.stem}')
+    for file in project_root.glob("juju/client/_client*.py"):
+        module = importlib.import_module(f"juju.client.{file.stem}")
         for cls_name in dir(module):
             cls = getattr(module, cls_name)
             try:  # duck typing check for facade types

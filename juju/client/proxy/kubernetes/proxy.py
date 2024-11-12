@@ -8,18 +8,18 @@ from juju.client.proxy.proxy import Proxy, ProxyNotConnectedError
 from kubernetes import client
 from kubernetes.stream import portforward
 
-log = logging.getLogger('juju.client.connection')
+log = logging.getLogger("juju.client.connection")
 
 
 class KubernetesProxy(Proxy):
     def __init__(
-            self,
-            api_host,
-            namespace,
-            remote_port,
-            service,
-            service_account_token,
-            ca_cert=None,
+        self,
+        api_host,
+        namespace,
+        remote_port,
+        service,
+        service_account_token,
+        ca_cert=None,
     ):
         config = client.Configuration()
         config.host = api_host
@@ -37,7 +37,7 @@ class KubernetesProxy(Proxy):
 
         if ca_cert:
             self.temp_ca_file = tempfile.NamedTemporaryFile(delete=False)
-            self.temp_ca_file.write(bytes(ca_cert, 'utf-8'))
+            self.temp_ca_file.write(bytes(ca_cert, "utf-8"))
             self.temp_ca_file.flush()
             config.ssl_ca_cert = self.temp_ca_file.name
 
@@ -47,7 +47,7 @@ class KubernetesProxy(Proxy):
         corev1 = client.CoreV1Api(self.api_client)
         service = corev1.read_namespaced_service(self.service, self.namespace)
 
-        label_selector = ','.join(k + '=' + v for k, v in service.spec.selector.items())
+        label_selector = ",".join(k + "=" + v for k, v in service.spec.selector.items())
 
         pods = corev1.list_namespaced_pod(
             namespace=self.namespace,

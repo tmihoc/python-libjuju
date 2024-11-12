@@ -9,28 +9,29 @@ This example:
 3. Destroys the units and applications
 
 """
+
 from juju import jasyncio
 from juju.model import Model
 
 
 async def main():
     model = Model()
-    print('Connecting to model')
+    print("Connecting to model")
     # Connect to current model with current user, per Juju CLI
     await model.connect()
 
     try:
-        print('Deploying bundle')
+        print("Deploying bundle")
         await model.deploy(
-            './examples/k8s-local-bundle/big-k8s-bundle.yaml',
-            channel='edge',
+            "./examples/k8s-local-bundle/big-k8s-bundle.yaml",
+            channel="edge",
             trust=True,
         )
     finally:
-        print('Disconnecting from model')
+        print("Disconnecting from model")
         await model.disconnect()
         print("Success")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     jasyncio.run(main())

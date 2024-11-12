@@ -10,6 +10,7 @@ This example:
 4. Runs forever (kill with Ctrl-C)
 
 """
+
 import asyncio
 import logging
 
@@ -34,11 +35,11 @@ async def watch():
         await asyncio.sleep(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    ws_logger = logging.getLogger('websockets.protocol')
+    ws_logger = logging.getLogger("websockets.protocol")
     ws_logger.setLevel(logging.INFO)
-    logging.getLogger('juju.client.connection').setLevel(logging.INFO)
+    logging.getLogger("juju.client.connection").setLevel(logging.INFO)
     # Run loop until the process is manually stopped (watch will loop
     # forever).
     jasyncio.run(watch())

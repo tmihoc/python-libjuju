@@ -22,19 +22,19 @@ from . import codegen
 
 _marker = object()
 
-JUJU_VERSION = re.compile(r'[0-9]+\.[0-9-]+[\.\-][0-9a-z]+(\.[0-9]+)?')
+JUJU_VERSION = re.compile(r"[0-9]+\.[0-9-]+[\.\-][0-9a-z]+(\.[0-9]+)?")
 # Workaround for https://bugs.launchpad.net/juju/+bug/1683906
-NAUGHTY_CLASSES = ['ClientFacade', 'Client', 'ModelStatusInfo']
+NAUGHTY_CLASSES = ["ClientFacade", "Client", "ModelStatusInfo"]
 
 
 # Map basic types to Python's typing with a callable
 SCHEMA_TO_PYTHON = {
-    'string': str,
-    'integer': int,
-    'float': float,
-    'number': float,
-    'boolean': bool,
-    'object': Any,
+    "string": str,
+    "integer": int,
+    "float": float,
+    "number": float,
+    "boolean": bool,
+    "object": Any,
 }
 
 
@@ -110,20 +110,21 @@ class TypeFactory:
 
 '''
 
-CLIENT_TABLE = '''
+CLIENT_TABLE = """
 CLIENTS = {{
     {clients}
 }}
 
-'''
+"""
 
 
 class KindRegistry(dict):
-
     def register(self, name, version, obj):
-        self[name] = {version: {
-            "object": obj,
-        }}
+        self[name] = {
+            version: {
+                "object": obj,
+            }
+        }
 
     def lookup(self, name, version=None):
         """If version is omitted, max version is used"""
@@ -143,7 +144,6 @@ class KindRegistry(dict):
 
 
 class TypeRegistry(dict):
-
     def __init__(self, schema):
         self.schema = schema
 
@@ -161,7 +161,7 @@ class TypeRegistry(dict):
         return self.get(ref)
 
     def objType(self, obj):
-        kind = obj.get('type')
+        kind = obj.get("type")
         if not kind:
             raise ValueError("%s has no type" % obj)
         result = SCHEMA_TO_PYTHON.get(kind)
@@ -188,10 +188,10 @@ basic_types = [str, bool, int, float]
 
 
 type_mapping = {
-    'str': '(bytes, str)',
-    'Sequence': '(bytes, str, list)',
-    'Union': 'dict',
-    'Mapping': 'dict',
+    "str": "(bytes, str)",
+    "Sequence": "(bytes, str, list)",
+    "Union": "dict",
+    "Mapping": "dict",
 }
 
 
@@ -204,12 +204,12 @@ def name_to_py(name):
 
 
 def var_type_to_py(kind):
-    return 'None'
+    return "None"
 
 
 def kind_to_py(kind):
     if kind is None or kind is typing.Any:
-        return 'None', '', False
+        return "None", "", False
 
     name = ""
     if typing_inspect.is_generic_type(kind):
@@ -218,9 +218,9 @@ def kind_to_py(kind):
     else:
         name = kind.__name__
 
-    if (kind in basic_types or type(kind) in basic_types):
+    if kind in basic_types or type(kind) in basic_types:
         return name, type_mapping.get(name) or name, True
-    if (name in type_mapping):
+    if name in type_mapping:
         return name, type_mapping[name], True
 
     suffix = name.lstrip("~")
@@ -228,13 +228,12 @@ def kind_to_py(kind):
 
 
 def strcast(kind, keep_builtins=False):
-    if (kind in basic_types or
-            type(kind) in basic_types) and keep_builtins is False:
+    if (kind in basic_types or type(kind) in basic_types) and keep_builtins is False:
         return kind.__name__
-    if str(kind).startswith('~'):
+    if str(kind).startswith("~"):
         return str(kind)[1:]
     if kind is typing.Any:
-        return 'Any'
+        return "Any"
     try:
         if issubclass(kind, typing.GenericMeta):
             return str(kind)[1:]
@@ -244,7 +243,6 @@ def strcast(kind, keep_builtins=False):
 
 
 class Args(list):
-
     def __init__(self, schema, defs):
         self.schema = schema
         self.defs = defs
@@ -263,9 +261,13 @@ class Args(list):
             return False
         if kind in basic_types or type(kind) is typing.TypeVar:
             return False
-        if typing_inspect.is_generic_type(kind) and issubclass(typing_inspect.get_origin(kind), Sequence):
+        if typing_inspect.is_generic_type(kind) and issubclass(
+            typing_inspect.get_origin(kind), Sequence
+        ):
             return False
-        if typing_inspect.is_generic_type(kind) and issubclass(typing_inspect.get_origin(kind), Mapping):
+        if typing_inspect.is_generic_type(kind) and issubclass(
+            typing_inspect.get_origin(kind), Mapping
+        ):
             return False
         self.clear()
         self.extend(Args(self.schema, kind))
@@ -285,10 +287,7 @@ class Args(list):
 
     def _format(self, name, rtype, typed=True):
         if typed:
-            return "{} : {}".format(
-                name_to_py(name),
-                strcast(rtype)
-            )
+            return "{} : {}".format(name_to_py(name), strcast(rtype))
         else:
             return name_to_py(name)
 
@@ -300,7 +299,7 @@ class Args(list):
             if joined:
                 return joined.join(parts)
             return parts
-        return ''
+        return ""
 
     def as_kwargs(self):
         if self:
@@ -308,9 +307,9 @@ class Args(list):
             for item in self:
                 var_name = name_to_py(item[0])
                 var_type = var_type_to_py(item[1])
-                parts.append('{}={}'.format(var_name, var_type))
-            return ', '.join(parts)
-        return ''
+                parts.append("{}={}".format(var_name, var_type))
+            return ", ".join(parts)
+        return ""
 
     def as_validation(self):
         """
@@ -323,7 +322,7 @@ class Args(list):
             var_type, var_sub_type, ok = kind_to_py(item[1])
             if ok:
                 parts.append(buildValidation(var_name, var_type, var_sub_type))
-        return '\n'.join(parts)
+        return "\n".join(parts)
 
     def typed(self):
         return self._get_arg_str(True)
@@ -339,17 +338,20 @@ def buildValidation(name, instance_type, instance_sub_type, ident=None):
     INDENT = ident or "    "
     source = """{ident}if {name} is not None and not isinstance({name}, {instance_sub_type}):
 {ident}    raise Exception("Expected {name} to be a {instance_type}, received: {{}}".format(type({name})))
-""".format(ident=INDENT,
-           name=name,
-           instance_type=instance_type,
-           instance_sub_type=instance_sub_type)
+""".format(
+        ident=INDENT,
+        name=name,
+        instance_type=instance_type,
+        instance_sub_type=instance_sub_type,
+    )
     return source
 
 
 def buildTypes(schema, capture):
     INDENT = "    "
-    for kind in sorted((k for k in schema.types if not isinstance(k, str)),
-                       key=lambda x: str(x)):
+    for kind in sorted(
+        (k for k in schema.types if not isinstance(k, str)), key=lambda x: str(x)
+    ):
         name = schema.types[kind]
         if not name:
             # when running on juju 3.1.0 client-only schemas, we get a seemingly empty entry with no name
@@ -363,7 +365,8 @@ def buildTypes(schema, capture):
         # Write Factory class for _client.py
         make_factory(name)
         # Write actual class
-        source = ["""
+        source = [
+            """
 class {}(Type):
     _toSchema = {}
     _toPy = {}
@@ -371,13 +374,15 @@ class {}(Type):
         '''
 {}
         '''""".format(
-            name,
-            # pprint these to get stable ordering across regens
-            pprint.pformat(args.PyToSchemaMapping(), width=999),
-            pprint.pformat(args.SchemaToPyMapping(), width=999),
-            ", " if args else "",
-            args.as_kwargs(),
-            textwrap.indent(args.get_doc(), INDENT * 2))]
+                name,
+                # pprint these to get stable ordering across regens
+                pprint.pformat(args.PyToSchemaMapping(), width=999),
+                pprint.pformat(args.SchemaToPyMapping(), width=999),
+                ", " if args else "",
+                args.as_kwargs(),
+                textwrap.indent(args.get_doc(), INDENT * 2),
+            )
+        ]
 
         if not args:
             source.append("{}self.unknown_fields = unknown_fields".format(INDENT * 2))
@@ -388,71 +393,67 @@ class {}(Type):
                 arg_type = arg[1]
                 arg_type_name = strcast(arg_type)
                 if arg_type in basic_types or arg_type is typing.Any:
-                    source.append("{}{}_ = {}".format(INDENT * 2,
-                                                      arg_name,
-                                                      arg_name))
+                    source.append("{}{}_ = {}".format(INDENT * 2, arg_name, arg_name))
                 elif type(arg_type) is typing.TypeVar:
-                    source.append("{}{}_ = {}.from_json({}) "
-                                  "if {} else None".format(INDENT * 2,
-                                                           arg_name,
-                                                           arg_type_name,
-                                                           arg_name,
-                                                           arg_name))
-                elif typing_inspect.is_generic_type(arg_type) and issubclass(typing_inspect.get_origin(arg_type), Sequence):
-                    parameters = typing_inspect.get_parameters(arg_type)
-                    value_type = (
-                        parameters[0]
-                        if len(parameters)
-                        else None
+                    source.append(
+                        "{}{}_ = {}.from_json({}) if {} else None".format(
+                            INDENT * 2, arg_name, arg_type_name, arg_name, arg_name
+                        )
                     )
+                elif typing_inspect.is_generic_type(arg_type) and issubclass(
+                    typing_inspect.get_origin(arg_type), Sequence
+                ):
+                    parameters = typing_inspect.get_parameters(arg_type)
+                    value_type = parameters[0] if len(parameters) else None
                     if type(value_type) is typing.TypeVar:
                         source.append(
-                            "{}{}_ = [{}.from_json(o) "
-                            "for o in {} or []]".format(INDENT * 2,
-                                                        arg_name,
-                                                        strcast(value_type),
-                                                        arg_name))
+                            "{}{}_ = [{}.from_json(o) for o in {} or []]".format(
+                                INDENT * 2, arg_name, strcast(value_type), arg_name
+                            )
+                        )
                     else:
-                        source.append("{}{}_ = {}".format(INDENT * 2,
-                                                          arg_name,
-                                                          arg_name))
-                elif typing_inspect.is_generic_type(arg_type) and issubclass(typing_inspect.get_origin(arg_type), Mapping):
+                        source.append(
+                            "{}{}_ = {}".format(INDENT * 2, arg_name, arg_name)
+                        )
+                elif typing_inspect.is_generic_type(arg_type) and issubclass(
+                    typing_inspect.get_origin(arg_type), Mapping
+                ):
                     parameters = typing_inspect.get_parameters(arg_type)
-                    value_type = (
-                        parameters[0]
-                        if len(parameters)
-                        else None
-                    )
+                    value_type = parameters[0] if len(parameters) else None
                     if type(value_type) is typing.TypeVar:
                         source.append(
                             "{}{}_ = {{k: {}.from_json(v) "
                             "for k, v in ({} or dict()).items()}}".format(
-                                INDENT * 2,
-                                arg_name,
-                                strcast(value_type),
-                                arg_name))
+                                INDENT * 2, arg_name, strcast(value_type), arg_name
+                            )
+                        )
                     else:
-                        source.append("{}{}_ = {}".format(INDENT * 2,
-                                                          arg_name,
-                                                          arg_name))
+                        source.append(
+                            "{}{}_ = {}".format(INDENT * 2, arg_name, arg_name)
+                        )
                 else:
-                    source.append("{}{}_ = {}".format(INDENT * 2,
-                                                      arg_name,
-                                                      arg_name))
+                    source.append("{}{}_ = {}".format(INDENT * 2, arg_name, arg_name))
             if len(args) > 0:
-                source.append('\n{}# Validate arguments against known Juju API types.'.format(INDENT * 2))
+                source.append(
+                    "\n{}# Validate arguments against known Juju API types.".format(
+                        INDENT * 2
+                    )
+                )
             for arg in args:
                 arg_name = "{}_".format(name_to_py(arg[0]))
                 arg_type, arg_sub_type, ok = kind_to_py(arg[1])
                 if ok:
-                    source.append('{}'.format(buildValidation(arg_name,
-                                                              arg_type,
-                                                              arg_sub_type,
-                                                              ident=INDENT * 2)))
+                    source.append(
+                        "{}".format(
+                            buildValidation(
+                                arg_name, arg_type, arg_sub_type, ident=INDENT * 2
+                            )
+                        )
+                    )
 
             for arg in args:
                 arg_name = name_to_py(arg[0])
-                source.append('{}self.{} = {}_'.format(INDENT * 2, arg_name, arg_name))
+                source.append("{}self.{} = {}_".format(INDENT * 2, arg_name, arg_name))
             # Ensure that we take the kwargs (unknown_fields) and put it on the
             # Results/Params so we can inspect it.
             source.append("{}self.unknown_fields = unknown_fields".format(INDENT * 2))
@@ -493,9 +494,11 @@ def ReturnMapping(cls):
             reply = await f(*args, **kwargs)
             if cls is None:
                 return reply
-            if 'error' in reply:
-                cls = CLASSES['Error']
-            if typing_inspect.is_generic_type(cls) and issubclass(typing_inspect.get_origin(cls), Sequence):
+            if "error" in reply:
+                cls = CLASSES["Error"]
+            if typing_inspect.is_generic_type(cls) and issubclass(
+                typing_inspect.get_origin(cls), Sequence
+            ):
                 parameters = typing_inspect.get_parameters(cls)
                 result = []
                 item_cls = parameters[0]
@@ -509,10 +512,12 @@ def ReturnMapping(cls):
                     result.append(cls.from_json(item))
                     """
             else:
-                result = cls.from_json(reply['response'])
+                result = cls.from_json(reply["response"])
 
             return result
+
         return wrapper
+
     return decorator
 
 
@@ -522,9 +527,7 @@ def makeFunc(cls, name, description, params, result, _async=True):
     assignments = []
     toschema = args.PyToSchemaMapping()
     for arg in args._get_arg_str(False, False):
-        assignments.append("{}_params[\'{}\'] = {}".format(INDENT,
-                                                           toschema[arg],
-                                                           arg))
+        assignments.append("{}_params['{}'] = {}".format(INDENT, toschema[arg], arg))
     assignments = "\n".join(assignments)
     res = retspec(cls.schema, result)
     source = """
@@ -551,17 +554,19 @@ def makeFunc(cls, name, description, params, result, _async=True):
     if description != "":
         description = "{}\n\n".format(description)
     doc_string = "{}{}".format(description, args.get_doc())
-    fsource = source.format(_async="async " if _async else "",
-                            name=name,
-                            argsep=", " if args else "",
-                            args=args.as_kwargs(),
-                            res=res,
-                            validation=args.as_validation(),
-                            rettype=result.__name__ if result else None,
-                            docstring=textwrap.indent(doc_string, INDENT),
-                            cls=cls,
-                            assignments=assignments,
-                            _await="await " if _async else "")
+    fsource = source.format(
+        _async="async " if _async else "",
+        name=name,
+        argsep=", " if args else "",
+        args=args.as_kwargs(),
+        res=res,
+        validation=args.as_validation(),
+        rettype=result.__name__ if result else None,
+        docstring=textwrap.indent(doc_string, INDENT),
+        cls=cls,
+        assignments=assignments,
+        _await="await " if _async else "",
+    )
     ns = _getns(cls.schema)
     exec(fsource, ns)
     func = ns[name]
@@ -591,7 +596,7 @@ async def rpc(self, msg):
 
 
 def buildMethods(cls, capture):
-    properties = cls.schema['properties']
+    properties = cls.schema["properties"]
     for methodname in sorted(properties):
         method, source = _buildMethod(cls, methodname)
         setattr(cls, methodname, method)
@@ -601,26 +606,26 @@ def buildMethods(cls, capture):
 def _buildMethod(cls, name):
     params = None
     result = None
-    method = cls.schema['properties'][name]
+    method = cls.schema["properties"][name]
     description = ""
-    if 'description' in method:
-        description = method['description']
-    if 'properties' in method:
-        prop = method['properties']
-        spec = prop.get('Params')
+    if "description" in method:
+        description = method["description"]
+    if "properties" in method:
+        prop = method["properties"]
+        spec = prop.get("Params")
         if spec:
-            params = cls.schema.types.get(spec['$ref'])
-        spec = prop.get('Result')
+            params = cls.schema.types.get(spec["$ref"])
+        spec = prop.get("Result")
         if spec:
-            if '$ref' in spec:
-                result = cls.schema.types.get(spec['$ref'])
+            if "$ref" in spec:
+                result = cls.schema.types.get(spec["$ref"])
             else:
-                result = SCHEMA_TO_PYTHON[spec['type']]
+                result = SCHEMA_TO_PYTHON[spec["type"]]
     return makeFunc(cls, name, description, params, result)
 
 
 def buildWatcherRPCMethods(cls, capture):
-    properties = cls.schema['properties']
+    properties = cls.schema["properties"]
     if "Next" in properties and "Stop" in properties:
         method, source = makeRPCFunc(cls)
         setattr(cls, "rpc", method)
@@ -628,17 +633,21 @@ def buildWatcherRPCMethods(cls, capture):
 
 
 def buildFacade(schema):
-    cls = type(schema.name, (Type,), dict(name=schema.name,
-                                          version=schema.version,
-                                          schema=schema))
+    cls = type(
+        schema.name,
+        (Type,),
+        dict(name=schema.name, version=schema.version, schema=schema),
+    )
     source = """
 class {name}Facade(Type):
     name = '{name}'
     version = {version}
     schema = {schema}
-    """.format(name=schema.name,
-               version=schema.version,
-               schema=textwrap.indent(pprint.pformat(schema), "    "))
+    """.format(
+        name=schema.name,
+        version=schema.version,
+        schema=textwrap.indent(pprint.pformat(schema), "    "),
+    )
     return cls, source
 
 
@@ -670,15 +679,15 @@ class Type:
     def from_json(cls, data):
         def _parse_nested_list_entry(expr, result_dict):
             if isinstance(expr, str):
-                if '>' in expr or '>=' in expr:
+                if ">" in expr or ">=" in expr:
                     # something like juju >= 2.9.31
-                    i = expr.index('>')
+                    i = expr.index(">")
                     _key = expr[:i].strip()
                     _value = expr[i:].strip()
                     result_dict[_key] = _value
                 else:
                     # this is a simple entry
-                    result_dict[expr] = ''
+                    result_dict[expr] = ""
             elif isinstance(expr, dict):
                 for _, v in expr.items():
                     _parse_nested_list_entry(v, result_dict)
@@ -686,7 +695,9 @@ class Type:
                 for v in expr:
                     _parse_nested_list_entry(v, result_dict)
             else:
-                raise TypeError(f"Unexpected type of entry in assumes expression: {expr}")
+                raise TypeError(
+                    f"Unexpected type of entry in assumes expression: {expr}"
+                )
 
         if isinstance(data, cls):
             return data
@@ -743,9 +754,9 @@ class Type:
 
 class Schema(dict):
     def __init__(self, schema):
-        self.name = schema['Name']
-        self.version = schema['Version']
-        self.update(schema['Schema'])
+        self.name = schema["Name"]
+        self.version = schema["Version"]
+        self.update(schema["Schema"])
 
         self.registry = KindRegistry()
         self.types = TypeRegistry(self)
@@ -761,7 +772,7 @@ class Schema(dict):
         # but these may contain references themselves
         # so we dfs to the bottom and build upwards
         # when a types is already in the registry
-        defs = self.get('definitions')
+        defs = self.get("definitions")
         if not defs:
             return
         definitions = {}
@@ -793,7 +804,7 @@ class Schema(dict):
                 if "$ref" in prop:
                     add((p, self.types.refType(prop)))
                 else:
-                    kind = prop['type']
+                    kind = prop["type"]
                     if kind == "array":
                         add((p, self.buildArray(prop)))
                     elif kind == "object":
@@ -803,8 +814,8 @@ class Schema(dict):
         if pprops:
             if ".*" not in pprops:
                 raise ValueError(
-                    "Cannot handle actual pattern in patternProperties %s" %
-                    pprops)
+                    "Cannot handle actual pattern in patternProperties %s" % pprops
+                )
             pprop = pprops[".*"]
             if "$ref" in pprop:
                 add((name, Mapping[str, self.types.refType(pprop)]))
@@ -815,8 +826,8 @@ class Schema(dict):
             else:
                 add((name, Mapping[str, SCHEMA_TO_PYTHON[ppkind]]))
 
-        if not struct and node.get('additionalProperties', False):
-            add((name, SCHEMA_TO_PYTHON.get('object')))
+        if not struct and node.get("additionalProperties", False):
+            add((name, SCHEMA_TO_PYTHON.get("object")))
 
         return struct
 
@@ -827,17 +838,14 @@ class Schema(dict):
         else:
             kind = obj.get("type")
             if kind and kind == "array":
-                items = obj['items']
+                items = obj["items"]
                 return self.buildArray(items)
             else:
                 return Sequence[self.types.objType(obj)]
 
 
 def _getns(schema):
-    ns = {'Type': Type,
-          'typing': typing,
-          'ReturnMapping': ReturnMapping
-          }
+    ns = {"Type": Type, "typing": typing, "ReturnMapping": ReturnMapping}
     # Copy our types into the globals of the method
     for facade in schema.registry:
         ns[facade] = schema.registry.getObj(facade)
@@ -861,8 +869,7 @@ def write_facades(captures, options):
             f.write(HEADER)
             f.write("from juju.client.facade import Type, ReturnMapping\n")
             f.write("from juju.client._definitions import *\n\n")
-            for key in sorted(
-                    [k for k in captures[version].keys() if "Facade" in k]):
+            for key in sorted([k for k in captures[version].keys() if "Facade" in k]):
                 print(captures[version][key], file=f)
 
     # Return the last (most recent) version for use in other routines.
@@ -871,8 +878,8 @@ def write_facades(captures, options):
 
 def write_definitions(captures, options):
     """
-    Write auxillary (non versioned) classes to
-    _definitions.py The auxillary classes currently get
+    Write auxiliary (non versioned) classes to
+    _definitions.py The auxiliary classes currently get
     written redudantly into each capture object, so we can look in
     one of them -- we just use the last one from the loop above.
 
@@ -880,8 +887,7 @@ def write_definitions(captures, options):
     with open("{}/_definitions.py".format(options.output_dir), "w") as f:
         f.write(HEADER)
         f.write("from juju.client.facade import Type, ReturnMapping\n\n")
-        for key in sorted(
-                [k for k in captures.keys() if "Facade" not in k]):
+        for key in sorted([k for k in captures.keys() if "Facade" not in k]):
             print(captures[key], file=f)
 
 
@@ -899,8 +905,13 @@ def write_client(captures, options):
         # from juju.client import _client2, _client1, _client3 ...
         f.write("\nfrom juju.client import " + clients + "\n\n")
         # CLIENTS = { ....
-        f.write(CLIENT_TABLE.format(clients=",\n    ".join(
-            ['"{}": _client{}'.format(v, v) for v in captures])))
+        f.write(
+            CLIENT_TABLE.format(
+                clients=",\n    ".join([
+                    '"{}": _client{}'.format(v, v) for v in captures
+                ])
+            )
+        )
 
         f.write(LOOKUP_FACADE)
         f.write(TYPE_FACTORY)
@@ -909,7 +920,7 @@ def write_client(captures, options):
 
 
 def generate_definitions(schemas):
-    # Build all of the auxillary (unversioned) classes
+    # Build all of the auxiliary (unversioned) classes
     # TODO: get rid of some of the excess trips through loops in the
     # called functions.
     definitions = codegen.Capture()
@@ -927,7 +938,9 @@ def generate_definitions(schemas):
     return definitions
 
 
-def generate_facades(schemas: Dict[str, List[Schema]]) -> Dict[str, Dict[int, codegen.Capture]]:
+def generate_facades(
+    schemas: Dict[str, List[Schema]],
+) -> Dict[str, Dict[int, codegen.Capture]]:
     captures = defaultdict(codegen.Capture)
 
     # Build the Facade classes
@@ -989,5 +1002,5 @@ def main():
     write_client(captures, options)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

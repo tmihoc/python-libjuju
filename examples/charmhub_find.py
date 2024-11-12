@@ -5,6 +5,7 @@
 Example to show how to connect to the current model and search the charm-hub
 repository for charms.
 """
+
 import logging
 
 from juju import jasyncio
@@ -27,10 +28,10 @@ async def main():
             print("{}\t{}".format("N" if resp.type_ == "charm" else "Y", resp.name))
     finally:
         if model.is_connected():
-            print('Disconnecting from model')
+            print("Disconnecting from model")
             await model.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     jasyncio.run(main())

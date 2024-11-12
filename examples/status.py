@@ -5,6 +5,7 @@
 This example demonstrate how status works
 
 """
+
 from juju import jasyncio
 import logging
 import sys
@@ -21,10 +22,10 @@ async def main():
     await model.connect_current()
 
     application = await model.deploy(
-        'ch:ubuntu',
-        application_name='ubuntu',
-        series='jammy',
-        channel='stable',
+        "ch:ubuntu",
+        application_name="ubuntu",
+        series="jammy",
+        channel="stable",
     )
     await jasyncio.sleep(10)
     # Print the status to observe the evolution
@@ -41,11 +42,12 @@ async def main():
             print(e)
         await jasyncio.sleep(5)
 
-    print('Removing ubuntu')
+    print("Removing ubuntu")
     await application.remove()
 
-    print('Disconnecting from model')
+    print("Disconnecting from model")
     await model.disconnect()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     jasyncio.run(main())

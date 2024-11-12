@@ -19,7 +19,6 @@ arches = [
     [re.compile(r"aarch64"), "arm64"],
     [re.compile(r"ppc64|ppc64el|ppc64le"), "ppc64el"],
     [re.compile(r"s390x?"), "s390x"],
-
 ]
 
 
@@ -61,6 +60,7 @@ fi
 
 class SSHProvisioner:
     """Provision a manually created machine via SSH."""
+
     user = ""
     host = ""
     private_key_path = ""
@@ -89,7 +89,7 @@ class SSHProvisioner:
 
         # Read the private key into a paramiko.RSAKey
         if os.path.exists(key):
-            with open(key, 'r') as f:
+            with open(key, "r") as f:
                 pkey = paramiko.RSAKey.from_private_key(f)
 
         #######################################################################
@@ -108,7 +108,7 @@ class SSHProvisioner:
         try:
             ssh.connect(host, port=22, username=user, pkey=pkey)
         except paramiko.ssh_exception.SSHException as e:
-            if 'Error reading SSH protocol banner' == str(e):
+            if "Error reading SSH protocol banner" == str(e):
                 # Once more, with feeling
                 ssh.connect(host, port=22, username=user, pkey=pkey)
             else:
@@ -135,17 +135,16 @@ class SSHProvisioner:
         if type(cmd) is not list:
             cmd = [cmd]
 
-        cmds = ' '.join(cmd)
+        cmds = " ".join(cmd)
         stdin, stdout, stderr = ssh.exec_command(cmds, get_pty=pty)
         retcode = stdout.channel.recv_exit_status()
 
         if retcode > 0:
             output = stderr.read().strip()
-            raise CalledProcessError(returncode=retcode, cmd=cmd,
-                                     output=output)
+            raise CalledProcessError(returncode=retcode, cmd=cmd, output=output)
         return (
-            stdout.read().decode('utf-8').strip(),
-            stderr.read().decode('utf-8').strip()
+            stdout.read().decode("utf-8").strip(),
+            stderr.read().decode("utf-8").strip(),
         )
 
     def _init_ubuntu_user(self):
@@ -193,9 +192,7 @@ class SSHProvisioner:
             )
 
             self._run_command(
-                ssh,
-                ["sudo", "/bin/bash -c " + shlex.quote(script)],
-                pty=True
+                ssh, ["sudo", "/bin/bash -c " + shlex.quote(script)], pty=True
             )
         except paramiko.ssh_exception.AuthenticationException as e:
             raise e
@@ -212,10 +209,10 @@ class SSHProvisioner:
         """
 
         info = {
-            'series': '',
-            'arch': '',
-            'cpu-cores': '',
-            'mem': '',
+            "series": "",
+            "arch": "",
+            "cpu-cores": "",
+            "mem": "",
         }
 
         stdout, stderr = self._run_command(
@@ -225,13 +222,13 @@ class SSHProvisioner:
         )
 
         lines = stdout.split("\n")
-        info['series'] = lines[0].strip()
-        info['arch'] = normalize_arch(lines[1].strip())
+        info["series"] = lines[0].strip()
+        info["arch"] = normalize_arch(lines[1].strip())
 
-        memKb = re.split(r'\s+', lines[2])[1]
+        memKb = re.split(r"\s+", lines[2])[1]
 
         # Convert megabytes -> kilobytes
-        info['mem'] = round(int(memKb) / 1024)
+        info["mem"] = round(int(memKb) / 1024)
 
         # Detect available CPUs
         recorded = {}
@@ -245,7 +242,7 @@ class SSHProvisioner:
                 cores = line.split(":")[1].strip()
 
                 if physical_id not in recorded.keys():
-                    info['cpu-cores'] += cores
+                    info["cpu-cores"] += cores
                     recorded[physical_id] = True
 
         return info
@@ -261,30 +258,27 @@ class SSHProvisioner:
 
         if self._init_ubuntu_user():
             try:
-
-                ssh = self._get_ssh_client(
-                    self.host,
-                    self.user,
-                    self.private_key_path
-                )
+                ssh = self._get_ssh_client(self.host, self.user, self.private_key_path)
 
                 hw = self._detect_hardware_and_os(ssh)
-                params.series = hw['series']
+                params.series = hw["series"]
                 params.instance_id = "manual:{}".format(self.host)
                 params.nonce = "manual:{}:{}".format(
                     self.host,
                     str(uuid.uuid4()),  # a nop for Juju w/manual machines
                 )
                 params.hardware_characteristics = {
-                    'arch': hw['arch'],
-                    'mem': int(hw['mem']),
-                    'cpu-cores': int(hw['cpu-cores']),
+                    "arch": hw["arch"],
+                    "mem": int(hw["mem"]),
+                    "cpu-cores": int(hw["cpu-cores"]),
                 }
-                params.addresses = [{
-                    'value': self.host,
-                    'type': 'ipv4',
-                    'scope': 'public',
-                }]
+                params.addresses = [
+                    {
+                        "value": self.host,
+                        "type": "ipv4",
+                        "scope": "public",
+                    }
+                ]
 
             except paramiko.ssh_exception.AuthenticationException as e:
                 raise e
@@ -333,7 +327,7 @@ class SSHProvisioner:
         """
 
         _, tmpFile = tempfile.mkstemp()
-        with open(tmpFile, 'w') as f:
+        with open(tmpFile, "w") as f:
             f.write(script)
 
         try:

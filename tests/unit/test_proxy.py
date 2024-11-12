@@ -8,24 +8,29 @@ from juju.client.proxy.kubernetes.proxy import KubernetesProxy
 
 
 class TestJujuDataFactory(unittest.TestCase):
-
     def test_proxy_from_config_unknown_type(self):
         """
         Test that a unknown proxy type results in a UnknownProxyTypeError
         exception
         """
-        self.assertRaises(ValueError, proxy_from_config, {
-            "config": {},
-            "type": "does-not-exists",
-        })
+        self.assertRaises(
+            ValueError,
+            proxy_from_config,
+            {
+                "config": {},
+                "type": "does-not-exists",
+            },
+        )
 
     def test_proxy_from_config_missing_type(self):
         """
         Test that a nil proxy type returns None
         """
-        self.assertIsNone(proxy_from_config({
-            "config": {},
-        }))
+        self.assertIsNone(
+            proxy_from_config({
+                "config": {},
+            })
+        )
 
     def test_proxy_from_config_non_arg(self):
         """

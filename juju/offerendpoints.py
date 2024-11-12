@@ -6,9 +6,16 @@
 #
 
 
-from .names import (MatchType, match_application, match_endpoint, match_model,
-                    match_model_application, match_relation,
-                    match_source_endpoint, match_user)
+from .names import (
+    MatchType,
+    match_application,
+    match_endpoint,
+    match_model,
+    match_model_application,
+    match_relation,
+    match_source_endpoint,
+    match_user,
+)
 
 
 class ParseError(Exception):
@@ -27,26 +34,32 @@ class OfferEndpoints:
     def __eq__(self, other):
         if not isinstance(other, OfferEndpoints):
             return NotImplemented
-        return (self.application == other.application and
-                self.endpoints == other.endpoints and
-                self.model == other.model and
-                self.qualified_model_name == other.qualified_model_name)
+        return (
+            self.application == other.application
+            and self.endpoints == other.endpoints
+            and self.model == other.model
+            and self.qualified_model_name == other.qualified_model_name
+        )
 
 
 def parse_offer_endpoint(endpoint):
     if ":" not in endpoint:
-        raise ParseError("endpoint must conform to format \"<application-name>:<endpoint-name>\"")
+        raise ParseError(
+            'endpoint must conform to format "<application-name>:<endpoint-name>"'
+        )
 
     matches = match_endpoint(endpoint, MatchType.SEARCH)
     if matches is None:
-        raise ParseError("endpoint must conform to format \"<application-name>:<endpoint-name>\"")
+        raise ParseError(
+            'endpoint must conform to format "<application-name>:<endpoint-name>"'
+        )
     model_group = matches.group("model")
     application_group = matches.group("appname")
     endpoints_group = matches.group("endpoints")
 
     qualified_model_name = None
     if (model_group is not None) and (model_group != ""):
-        if ("/" not in model_group):
+        if "/" not in model_group:
             raise NotImplementedError()
         qualified_model_name = model_group
         model_group = model_group.split("/")[0]
@@ -63,7 +76,9 @@ def parse_offer_endpoint(endpoint):
     if len(endpoints) == 0 or len(endpoints_group) == 0:
         raise ParseError("specify endpoints for {}".format(application))
 
-    return OfferEndpoints(application, endpoints, model=model, qualified_model_name=qualified_model_name)
+    return OfferEndpoints(
+        application, endpoints, model=model, qualified_model_name=qualified_model_name
+    )
 
 
 class OfferURL:
@@ -76,10 +91,12 @@ class OfferURL:
     def __eq__(self, other):
         if not isinstance(other, OfferURL):
             return NotImplemented
-        return (self.source == other.source and
-                self.user == other.user and
-                self.model == other.model and
-                self.application == other.application)
+        return (
+            self.source == other.source
+            and self.user == other.user
+            and self.model == other.model
+            and self.application == other.application
+        )
 
     def has_empty_source(self):
         return self.source is None or self.source == ""
@@ -109,7 +126,11 @@ def parse_offer_url(url):
     valid = url[0] != ":"
     valid = valid and match_model_application(rest)
     if not valid:
-        raise ParseError("application offer URL has invalid form, must be [<user/]<model>.<appname>: {}".format(url))
+        raise ParseError(
+            "application offer URL has invalid form, must be [<user/]<model>.<appname>: {}".format(
+                url
+            )
+        )
 
     offer_source = source
 
@@ -119,7 +140,11 @@ def parse_offer_url(url):
     offer_application = _get_or_else(matches.group("application"), "")
 
     if valid and (("/" in offer_model) or ("/" in offer_application)):
-        raise ParseError("application offer URL has invalid form, must be [<user/]<model>.<appname>: {}".format(url))
+        raise ParseError(
+            "application offer URL has invalid form, must be [<user/]<model>.<appname>: {}".format(
+                url
+            )
+        )
     if not offer_model:
         raise ParseError("application offer URL is missing model")
     if not offer_application:
@@ -134,8 +159,12 @@ def parse_offer_url(url):
     if app_name and not match_application(app_name):
         raise ParseError("application name {} not valid".format(app_name))
 
-    return OfferURL(source=offer_source, user=offer_user, model=offer_model,
-                    application=offer_application)
+    return OfferURL(
+        source=offer_source,
+        user=offer_user,
+        model=offer_model,
+        application=offer_application,
+    )
 
 
 def _get_or_else(val, res):
@@ -163,8 +192,7 @@ class LocalEndpoint:
     def __eq__(self, other):
         if not isinstance(other, LocalEndpoint):
             return NotImplemented
-        return (self.relation == other.relation and
-                self.application == other.application)
+        return self.relation == other.relation and self.application == other.application
 
 
 def parse_local_endpoint(url):

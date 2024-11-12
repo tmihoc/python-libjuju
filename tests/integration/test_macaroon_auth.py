@@ -23,20 +23,22 @@ log = logging.getLogger(__name__)
 # this test must be run serially because it modifies the login password
 @base.bootstrapped
 @pytest.mark.serial
-@pytest.mark.skip('one of old macaroon_auth tests, needs to be revised')
+@pytest.mark.skip("one of old macaroon_auth tests, needs to be revised")
 async def test_macaroon_auth_serial():
     jujudata = FileJujuData()
     account = jujudata.accounts()[jujudata.current_controller()]
-    with base.patch_file('~/.local/share/juju/accounts.yaml'):
-        if 'password' in account:
+    with base.patch_file("~/.local/share/juju/accounts.yaml"):
+        if "password" in account:
             # force macaroon auth by "changing" password to current password
             result = subprocess.run(
-                ['juju', 'change-user-password'],
-                input='{0}\n{0}\n'.format(account['password']),
+                ["juju", "change-user-password"],
+                input="{0}\n{0}\n".format(account["password"]),
                 universal_newlines=True,
-                stderr=subprocess.PIPE)
-            assert result.returncode == 0, ('Failed to change password: '
-                                            '{}'.format(result.stderr))
+                stderr=subprocess.PIPE,
+            )
+            assert result.returncode == 0, "Failed to change password: {}".format(
+                result.stderr
+            )
         controller = Controller()
         try:
             await controller.connect()
@@ -50,7 +52,7 @@ async def test_macaroon_auth_serial():
 
 @base.bootstrapped
 # @pytest.mark.xfail
-@pytest.mark.skip('one of old macaroon_auth tests, needs to be revised')
+@pytest.mark.skip("one of old macaroon_auth tests, needs to be revised")
 async def test_macaroon_auth():
     auth_info, username = agent_auth_info()
     # Create a bakery client that can do agent authentication.
@@ -61,7 +63,7 @@ async def test_macaroon_auth():
 
     async with base.CleanModel(bakery_client=client) as m:
         async with await m.get_controller() as c:
-            await c.grant_model(username, m.info.uuid, 'admin')
+            await c.grant_model(username, m.info.uuid, "admin")
         async with Model(
             jujudata=NoAccountsJujuData(m._connector.jujudata),
             bakery_client=client,
@@ -71,7 +73,7 @@ async def test_macaroon_auth():
 
 @base.bootstrapped
 # @pytest.mark.xfail
-@pytest.mark.skip('one of old macaroon_auth tests, needs to be revised')
+@pytest.mark.skip("one of old macaroon_auth tests, needs to be revised")
 async def test_macaroon_auth_with_bad_key():
     auth_info, username = agent_auth_info()
     # Use a random key rather than the correct key.
@@ -84,13 +86,13 @@ async def test_macaroon_auth_with_bad_key():
 
     async with base.CleanModel(bakery_client=client) as m:
         async with await m.get_controller() as c:
-            await c.grant_model(username, m.info.uuid, 'admin')
+            await c.grant_model(username, m.info.uuid, "admin")
         try:
             async with Model(
                 jujudata=NoAccountsJujuData(m._connector.jujudata),
                 bakery_client=client,
             ):
-                pytest.fail('Should not be able to connect with invalid key')
+                pytest.fail("Should not be able to connect with invalid key")
         except httpbakery.BakeryException:
             # We're expecting this because we're using the
             # wrong key.
@@ -99,7 +101,7 @@ async def test_macaroon_auth_with_bad_key():
 
 @base.bootstrapped
 # @pytest.mark.xfail
-@pytest.mark.skip('one of old macaroon_auth tests, needs to be revised')
+@pytest.mark.skip("one of old macaroon_auth tests, needs to be revised")
 async def test_macaroon_auth_with_unauthorized_user():
     auth_info, username = agent_auth_info()
     # Create a bakery client can do agent authentication.
@@ -114,7 +116,7 @@ async def test_macaroon_auth_with_unauthorized_user():
                 jujudata=NoAccountsJujuData(m._connector.jujudata),
                 bakery_client=client,
             ):
-                pytest.fail('Should not be able to connect without grant')
+                pytest.fail("Should not be able to connect without grant")
         except (JujuAPIError, httpbakery.DischargeError):
             # We're expecting this because we're using the
             # wrong user name.
@@ -122,13 +124,14 @@ async def test_macaroon_auth_with_unauthorized_user():
 
 
 def agent_auth_info():
-    agent_data = os.environ.get('TEST_AGENTS')
+    agent_data = os.environ.get("TEST_AGENTS")
     if agent_data is None:
-        pytest.skip('skipping macaroon_auth because no TEST_AGENTS '
-                    'environment variable is set')
+        pytest.skip(
+            "skipping macaroon_auth because no TEST_AGENTS environment variable is set"
+        )
     auth_info = agent.read_auth_info(agent_data)
     if len(auth_info.agents) != 1:
-        raise Exception('TEST_AGENTS agent data requires exactly one agent')
+        raise Exception("TEST_AGENTS agent data requires exactly one agent")
     return auth_info, auth_info.agents[0].username
 
 

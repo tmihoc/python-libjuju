@@ -7,6 +7,7 @@ This example:
 2. Deploy a bundle from charmhub and waits until it reports itself active
 3. Destroys the unit and application
 """
+
 from juju import jasyncio
 from juju.model import Model
 
