@@ -1,6 +1,5 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
-
 """Tests for the gocookies code."""
 
 import os
@@ -236,8 +235,9 @@ class TestGoCookieJar(unittest.TestCase):
         return jar
 
     def assert_jar_queries(self, jar, queries):
-        """Assert that all the given queries (see cookie_content_queries)
-        are satisfied when run on the given cookie jar.
+        """Assert that all the given queries (see cookie_content_queries) are
+        satisfied when run on the given cookie jar.
+
         :param jar CookieJar: the cookie jar to query
         :param queries: the queries to run.
         """

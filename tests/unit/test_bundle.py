@@ -199,9 +199,11 @@ class TestAddApplicationChangeRun:
         )
 
     async def test_run_with_storage_variations(self):
-        """Test that various valid storage constraints are parsed as expected before model._deploy is called.
+        """Test that various valid storage constraints are parsed as expected
+        before model._deploy is called.
 
-        Uses the mock call logic from test_run_with_charmhub_charm, which will run before this test.
+        Uses the mock call logic from test_run_with_charmhub_charm,
+        which will run before this test.
         """
         storage_arg_pairs: List[
             Tuple[Dict[str, str], Dict[str, constraints.StorageConstraintDict]]
@@ -295,9 +297,9 @@ class TestAddApplicationChangeRun:
             )
 
     async def test_run_with_charmhub_charm_no_channel(self):
-        """Test to verify if when the given channel is None, the channel defaults to "local/stable", which
-        is the default channel value for the Charm Hub
-        """
+        """Test to verify if when the given channel is None, the channel
+        defaults to "local/stable", which is the default channel value for the
+        Charm Hub."""
         storage_label = "some-label"
         storage_constraint = "ebs,100G,1"
         change = AddApplicationChange(

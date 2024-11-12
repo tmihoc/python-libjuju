@@ -141,9 +141,10 @@ class TestConsume(unittest.IsolatedAsyncioTestCase):
         mock_connection,
         mock_create_consume_args,
     ):
-        """Test consuming an offer from an external controller. This would be
-        better suited as an integration test however pylibjuju does not allow
-        for bootstrapping of extra controllers.
+        """Test consuming an offer from an external controller.
+
+        This would be better suited as an integration test however
+        pylibjuju does not allow for bootstrapping of extra controllers.
         """
         mock_create_consume_args.return_value = None
         mock_connection.return_value = None

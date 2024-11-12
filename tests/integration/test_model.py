@@ -678,16 +678,17 @@ async def add_manual_machine_ssh(is_root=False):
 
 @base.bootstrapped
 async def test_add_manual_machine_ssh():
-    """Test manual machine provisioning with a non-root user
+    """Test manual machine provisioning with a non-root user.
 
-    Tests manual machine provisioning using a randomized username with sudo access.
+    Tests manual machine provisioning using a randomized username with
+    sudo access.
     """
     await add_manual_machine_ssh(is_root=False)
 
 
 @base.bootstrapped
 async def test_add_manual_machine_ssh_root():
-    """Test manual machine provisioning with the root user"""
+    """Test manual machine provisioning with the root user."""
     await add_manual_machine_ssh(is_root=True)
 
 
@@ -968,10 +969,8 @@ async def test_wait_for_idle_with_exact_units():
 @base.bootstrapped
 @pytest.mark.wait_for_idle
 async def test_wait_for_idle_with_exact_units_scale_down():
-    """Deploys 3 units, waits for them to be idle, then removes 2 of them,
-    then waits for exactly 1 unit to be left.
-
-    """
+    """Deploys 3 units, waits for them to be idle, then removes 2 of them, then
+    waits for exactly 1 unit to be left."""
     pytest.skip("This is testing juju functionality")
     async with base.CleanModel() as model:
         app = await model.deploy(
@@ -997,10 +996,8 @@ async def test_wait_for_idle_with_exact_units_scale_down():
 
 @base.bootstrapped
 async def test_wait_for_idle_with_exact_units_scale_down_zero():
-    """Deploys 3 units, waits for them to be idle, then removes 3 of them,
-    then waits for exactly 0 unit to be left.
-
-    """
+    """Deploys 3 units, waits for them to be idle, then removes 3 of them, then
+    waits for exactly 0 unit to be left."""
     pytest.skip("This is testing juju functionality")
     async with base.CleanModel() as model:
         app = await model.deploy(
@@ -1221,9 +1218,7 @@ async def test_connect_current():
 @base.bootstrapped
 async def test_model_cache_update():
     """Connecting to a new model shouldn't fail because the cache is not
-    updated yet
-
-    """
+    updated yet."""
     async with base.CleanController() as controller:
         await controller.connect_current()
 

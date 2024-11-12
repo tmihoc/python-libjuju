@@ -1,7 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
-
-"""Tests for generated client code"""
+"""Tests for generated client code."""
 
 from unittest import mock
 

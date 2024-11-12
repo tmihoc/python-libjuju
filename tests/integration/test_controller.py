@@ -191,10 +191,11 @@ async def test_add_remove_cloud():
 
 @base.bootstrapped
 async def test_secrets_backend_lifecycle():
-    """Testing the add_secret_backends is particularly
-    costly in term of resources. This test sets a vault
-    charm, add it to the controller and plays with the
-    list, removal, and update.
+    """Testing the add_secret_backends is particularly costly in term of
+    resources.
+
+    This test sets a vault charm, add it to the controller and plays
+    with the list, removal, and update.
     """
     async with base.CleanModel() as m:
         controller = await m.get_controller()

@@ -29,8 +29,8 @@ test_run_nonce = uuid.uuid4().hex[-4:]
 
 
 class CleanController:
-    """Context manager that automatically connects and disconnects from
-    the currently active controller.
+    """Context manager that automatically connects and disconnects from the
+    currently active controller.
 
     Note: Unlike CleanModel, this will not create a new controller for you,
     and an active controller must already be available.
@@ -50,8 +50,8 @@ class CleanController:
 
 class CleanModel:
     """Context manager that automatically connects to the currently active
-    controller, adds a fresh model, returns the connection to that model,
-    and automatically disconnects and cleans up the model.
+    controller, adds a fresh model, returns the connection to that model, and
+    automatically disconnects and cleans up the model.
 
     The new model is also set as the current default for the controller
     connection.
@@ -128,9 +128,8 @@ class TestJujuData(FileJujuData):
 
 @contextmanager
 def patch_file(filename):
-    """ "Patch" a file so that its current contents are automatically restored
-    when the context is exited.
-    """
+    """"Patch" a file so that its current contents are automatically restored
+    when the context is exited."""
     filepath = Path(filename).expanduser()
     data = filepath.read_bytes()
     try:
