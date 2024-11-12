@@ -12,7 +12,8 @@ GB = 1024
 @base.bootstrapped
 async def test_juju_api_error():
     """Verify that we raise a JujuAPIError for responses with an error in a top
-    level key (for completely invalid requests)."""
+    level key (for completely invalid requests).
+    """
     from juju.errors import JujuAPIError
 
     async with base.CleanModel() as model:
@@ -50,7 +51,8 @@ async def test_juju_error_in_results_list():
 @base.bootstrapped
 async def test_juju_error_in_result():
     """Verify that we raise a JujuError when appropriate when we are looking at
-    a single result coming back."""
+    a single result coming back.
+    """
     from juju.client import client
     from juju.errors import JujuError
 

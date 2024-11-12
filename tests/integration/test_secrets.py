@@ -30,7 +30,8 @@ async def test_add_secret():
 @base.bootstrapped
 async def test_list_secrets():
     """Use the charm-secret charm definition and see if the arguments defined
-    in the secret are correct or not."""
+    in the secret are correct or not.
+    """
     charm_path = TESTS_DIR / "charm-secret/charm-secret_ubuntu-22.04-amd64.charm"
 
     async with base.CleanModel() as model:

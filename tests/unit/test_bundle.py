@@ -299,7 +299,8 @@ class TestAddApplicationChangeRun:
     async def test_run_with_charmhub_charm_no_channel(self):
         """Test to verify if when the given channel is None, the channel
         defaults to "local/stable", which is the default channel value for the
-        Charm Hub."""
+        Charm Hub.
+        """
         storage_label = "some-label"
         storage_constraint = "ebs,100G,1"
         change = AddApplicationChange(

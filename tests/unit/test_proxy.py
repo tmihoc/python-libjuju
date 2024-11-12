@@ -10,7 +10,8 @@ from juju.client.proxy.kubernetes.proxy import KubernetesProxy
 class TestJujuDataFactory(unittest.TestCase):
     def test_proxy_from_config_unknown_type(self):
         """Test that a unknown proxy type results in a UnknownProxyTypeError
-        exception."""
+        exception.
+        """
         self.assertRaises(
             ValueError,
             proxy_from_config,
@@ -30,7 +31,8 @@ class TestJujuDataFactory(unittest.TestCase):
 
     def test_proxy_from_config_non_arg(self):
         """Tests that providing an empty proxy config results in a None
-        proxy."""
+        proxy.
+        """
         self.assertIsNone(proxy_from_config(None))
 
     def test_proxy_from_config_kubernetes(self):
