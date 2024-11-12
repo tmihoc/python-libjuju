@@ -101,7 +101,7 @@ async def test_macaroon_auth_with_bad_key():
 # @pytest.mark.xfail
 @pytest.mark.skip("one of old macaroon_auth tests, needs to be revised")
 async def test_macaroon_auth_with_unauthorized_user():
-    auth_info, username = agent_auth_info()
+    auth_info, _ = agent_auth_info()
     # Create a bakery client can do agent authentication.
     client = httpbakery.Client(
         key=auth_info.key,

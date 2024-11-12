@@ -13,12 +13,11 @@ from juju.client import client
 from juju.url import URL, Schema
 
 from .. import base
+from ..utils import INTEGRATION_TEST_DIR
 
 MB = 1
 
 logger = logging.getLogger(__name__)
-
-from ..utils import INTEGRATION_TEST_DIR
 
 
 @base.bootstrapped
@@ -27,7 +26,7 @@ async def test_action():
         app = await model.deploy("juju-qa-test")
         await jasyncio.sleep(10)
         actions = await app.get_actions(schema=True)
-        assert "fortune" in actions.keys(), 'mis"fortune" in charm actions'
+        assert "fortune" in actions
 
 
 @base.bootstrapped

@@ -33,7 +33,7 @@ from ..utils import GB, INTEGRATION_TEST_DIR, MB, OVERLAYS_DIR, SSH_KEY, TESTS_D
 async def test_model_name():
     model = Model()
     with pytest.raises(JujuModelError):
-        model.name
+        assert model.name
 
     async with base.CleanModel() as new_model:
         await model.connect(new_model.name)

@@ -21,6 +21,6 @@ class TestRegistrationString(unittest.TestCase):
         )
         assert (
             reg_string
-            == b"MH4TCnRlc3QtMDEyMzQwORMRMTkyLjE2OC4xLjE6MTcwNzATETE5Mi4xNjguMS4yOjE3MDcwExExOTIuMTY4"  # noqa: E501
+            == b"MH4TCnRlc3QtMDEyMzQwORMRMTkyLjE2OC4xLjE6MTcwNzATETE5Mi4xNjguMS4yOjE3MDcwExExOTIuMTY4"
             b"LjEuMzoxNzA3MAQgpaNZrqOw51ONk1kTER6rkm4hdPcg5VgC_dzXYxtUZaMTE2xvY2FsaG9zdC1sb2NhbGhvc3QA"
         )

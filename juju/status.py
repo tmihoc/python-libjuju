@@ -50,7 +50,7 @@ async def formatted_status(model, target=None, raw=False, filters=None):
     :param bool raw: if `true` this functions returns the raw
         `FullStatus` object returned by Juju. This is similar to
         invoking `get_status`.
-    :param str fileters: Optional list of applications, units, or machines
+    :param str filters: Optional list of applications, units, or machines
         to include, which can use wildcards ('*').
     """
     client_facade = client.ClientFacade.from_connection(model.connection())

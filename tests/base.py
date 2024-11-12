@@ -128,7 +128,7 @@ class TestJujuData(FileJujuData):
 
 @contextmanager
 def patch_file(filename):
-    """ "Patch" a file so that its current contents are automatically restored
+    """Patch a file so that its current contents are automatically restored
     when the context is exited.
     """
     filepath = Path(filename).expanduser()
