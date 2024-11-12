@@ -7,26 +7,26 @@ import random
 import string
 import time
 import uuid
+from unittest import mock
 
-import mock
 import paramiko
-
 import pylxd
 import pytest
+
 from juju import jasyncio, tag, url
 from juju.client import client
 from juju.client._definitions import FullStatus
-from juju.errors import JujuError, JujuModelError, JujuUnitError, JujuConnectionError
+from juju.errors import JujuConnectionError, JujuError, JujuModelError, JujuUnitError
 from juju.model import Model, ModelObserver
 from juju.utils import (
+    base_channel_to_series,
     block_until,
     run_with_interrupt,
     wait_for_bundle,
-    base_channel_to_series,
 )
 
 from .. import base
-from ..utils import MB, GB, TESTS_DIR, OVERLAYS_DIR, SSH_KEY, INTEGRATION_TEST_DIR
+from ..utils import GB, INTEGRATION_TEST_DIR, MB, OVERLAYS_DIR, SSH_KEY, TESTS_DIR
 
 
 @base.bootstrapped
@@ -389,8 +389,8 @@ async def test_deploy_bundle_with_multiple_overlays_with_include_files():
         assert "memcached" not in model.applications
         assert "grafana" in model.applications
         assert "grafana" in model.application_offers
-        assert "grafana" == model.application_offers["grafana"].application_name
-        assert "dashboards" == model.application_offers["grafana"].offer_name
+        assert model.application_offers["grafana"].application_name == "grafana"
+        assert model.application_offers["grafana"].offer_name == "dashboards"
 
 
 @base.bootstrapped
@@ -453,7 +453,7 @@ async def test_deploy_from_ch_with_series():
     charm = "ch:ubuntu"
     for series in ["focal"]:
         async with base.CleanModel() as model:
-            app_name = "ubuntu-{}".format(series)
+            app_name = f"ubuntu-{series}"
             await model.deploy(charm, application_name=app_name, series=series)
             status = await model.get_status()
             app_status = status["applications"][app_name]
@@ -517,7 +517,7 @@ async def test_add_machine():
         )
 
         # add a lxd container to machine2
-        machine3 = await model.add_machine("lxd:{}".format(machine2.id))
+        machine3 = await model.add_machine(f"lxd:{machine2.id}")
 
         for m in (machine1, machine2, machine3):
             assert isinstance(m, Machine)
@@ -546,7 +546,7 @@ async def add_manual_machine_ssh(is_root=False):
         # connect using the local unix socket
         client = pylxd.Client()
 
-        test_name = "test-{}-add-manual-machine-ssh".format(uuid.uuid4().hex[-4:])
+        test_name = f"test-{uuid.uuid4().hex[-4:]}-add-manual-machine-ssh"
 
         if is_root:
             test_user = "root"
@@ -558,28 +558,28 @@ async def add_manual_machine_ssh(is_root=False):
 
         # create profile w/cloud-init and juju ssh key
         public_key = ""
-        with open(public_key_path, "r") as f:
+        with open(public_key_path) as f:
             public_key = f.readline()
 
-        cloud_init = """
+        cloud_init = f"""
         #cloud-config
         users:
-        - name: {}
+        - name: {test_user}
           ssh_pwauth: False
           ssh_authorized_keys:
-            - {}
+            - {public_key}
           sudo: ["ALL=(ALL) NOPASSWD:ALL"]
           groups: adm, sudoers
-        """.format(test_user, public_key)
+        """
 
         if is_root:
-            cloud_init = """
+            cloud_init = f"""
             #cloud-config
             users:
-            - name: {}
+            - name: {test_user}
               ssh_authorized_keys:
-                - {}
-            """.format(test_user, public_key)
+                - {public_key}
+            """
 
         profile = client.profiles.create(
             test_name,
@@ -688,7 +688,6 @@ async def test_add_manual_machine_ssh():
 @base.bootstrapped
 async def test_add_manual_machine_ssh_root():
     """Test manual machine provisioning with the root user"""
-
     await add_manual_machine_ssh(is_root=True)
 
 

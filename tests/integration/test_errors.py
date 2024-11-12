@@ -11,8 +11,7 @@ GB = 1024
 
 @base.bootstrapped
 async def test_juju_api_error():
-    """
-    Verify that we raise a JujuAPIError for responses with an error in
+    """Verify that we raise a JujuAPIError for responses with an error in
     a top level key (for completely invalid requests).
 
     """
@@ -25,8 +24,7 @@ async def test_juju_api_error():
 
 @base.bootstrapped
 async def test_juju_error_in_results_list():
-    """
-    Replicate the code that caused
+    """Replicate the code that caused
     https://github.com/juju/python-libjuju/issues/67, and verify that
     we get a JujuError instead of passing silently by the failure.
 
@@ -37,8 +35,8 @@ async def test_juju_error_in_results_list():
     is an error in one of a list of results.
 
     """
-    from juju.errors import JujuError
     from juju.client import client
+    from juju.errors import JujuError
 
     async with base.CleanModel() as model:
         ann_facade = client.AnnotationsFacade.from_connection(model.connection())
@@ -53,13 +51,12 @@ async def test_juju_error_in_results_list():
 
 @base.bootstrapped
 async def test_juju_error_in_result():
-    """
-    Verify that we raise a JujuError when appropriate when we are
+    """Verify that we raise a JujuError when appropriate when we are
     looking at a single result coming back.
 
     """
-    from juju.errors import JujuError
     from juju.client import client
+    from juju.errors import JujuError
 
     async with base.CleanModel() as model:
         app_facade = client.ApplicationFacade.from_connection(model.connection())

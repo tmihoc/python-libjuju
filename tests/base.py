@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
+
 from juju.client.jujudata import FileJujuData
 from juju.controller import Controller
 
@@ -28,8 +29,7 @@ test_run_nonce = uuid.uuid4().hex[-4:]
 
 
 class CleanController:
-    """
-    Context manager that automatically connects and disconnects from
+    """Context manager that automatically connects and disconnects from
     the currently active controller.
 
     Note: Unlike CleanModel, this will not create a new controller for you,
@@ -49,8 +49,7 @@ class CleanController:
 
 
 class CleanModel:
-    """
-    Context manager that automatically connects to the currently active
+    """Context manager that automatically connects to the currently active
     controller, adds a fresh model, returns the connection to that model,
     and automatically disconnects and cleans up the model.
 
@@ -77,11 +76,7 @@ class CleanModel:
         user_name = jujudata.accounts()[controller_name]["user"]
         await self._controller.connect(controller_name)
 
-        model_name = "test-{}-{}-{}".format(
-            test_run_nonce,
-            test_name,
-            model_nonce,
-        )
+        model_name = f"test-{test_run_nonce}-{test_name}-{model_nonce}"
         self._model = await self._controller.add_model(model_name)
 
         # Change the JujuData instance so that it will return the new
@@ -133,8 +128,7 @@ class TestJujuData(FileJujuData):
 
 @contextmanager
 def patch_file(filename):
-    """
-    "Patch" a file so that its current contents are automatically restored
+    """ "Patch" a file so that its current contents are automatically restored
     when the context is exited.
     """
     filepath = Path(filename).expanduser()

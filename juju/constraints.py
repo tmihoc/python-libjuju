@@ -20,8 +20,8 @@
 
 import re
 from typing import Dict, List, Optional, TypedDict, Union
-from typing_extensions import Required, NotRequired
 
+from typing_extensions import NotRequired, Required
 
 # Matches on a string specifying memory size
 MEM = re.compile("^[1-9][0-9]*[MGTP]$")
@@ -86,8 +86,7 @@ class ConstraintsDict(TypedDict, total=False):
 
 
 def parse(constraints: Union[str, ConstraintsDict]) -> Optional[ConstraintsDict]:
-    """
-    Constraints must be expressed as a string containing only spaces
+    """Constraints must be expressed as a string containing only spaces
     and key value pairs joined by an '='.
 
     """

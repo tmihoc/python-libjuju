@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to the current model
 2. Deploy a charm and waits until it reports itself active

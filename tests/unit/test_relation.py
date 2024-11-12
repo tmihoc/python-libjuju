@@ -2,8 +2,7 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import unittest
-
-import mock
+from unittest import mock
 
 from juju.model import Model
 from juju.relation import Relation

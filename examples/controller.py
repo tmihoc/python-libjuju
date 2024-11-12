@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to current controller.
 2. Creates a new model.
@@ -14,8 +13,8 @@ This example:
 
 import logging
 
-from juju.controller import Controller
 from juju import jasyncio
+from juju.controller import Controller
 
 
 async def main():

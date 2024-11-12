@@ -1,19 +1,18 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import datetime
 import unittest
-from unittest.mock import patch, PropertyMock
-
-import mock
+from unittest import mock
+from unittest.mock import PropertyMock, patch
 
 import pytest
-import datetime
 
-from juju.client.jujudata import FileJujuData
-from juju.model import Model
-from juju.application import Application
 from juju import jasyncio
+from juju.application import Application
+from juju.client.jujudata import FileJujuData
 from juju.errors import JujuConnectionError, JujuError
+from juju.model import Model
 
 
 def _make_delta(entity, type_, data=None):

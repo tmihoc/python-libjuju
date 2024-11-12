@@ -1,11 +1,10 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import unittest
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-import unittest
-
-import mock
+from unittest import mock
 
 from juju.client import client
 from juju.controller import Controller

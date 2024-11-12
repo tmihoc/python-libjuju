@@ -8,10 +8,10 @@ from . import _client, _definitions
 from .facade import ReturnMapping, Type, TypeEncoder
 
 __all__ = [
-    "Delta",
-    "Number",
     "Binary",
     "ConfigValue",
+    "Delta",
+    "Number",
     "Resource",
 ]
 
@@ -43,10 +43,7 @@ class Delta(Type):
     _toPy = {"deltas": "deltas"}
 
     def __init__(self, deltas=None):
-        """
-        :param deltas: [str, str, object]
-
-        """
+        """:param deltas: [str, str, object]"""
         self.deltas = deltas
 
         Change = namedtuple("Change", "entity type data")
@@ -99,10 +96,7 @@ class ResourcesFacade(Type):
 
 
 class AllWatcherFacade(Type):
-    """
-    Patch rpc method of allwatcher to add in 'id' stuff.
-
-    """
+    """Patch rpc method of allwatcher to add in 'id' stuff."""
 
     async def rpc(self, msg):
         if not hasattr(self, "Id"):
@@ -122,8 +116,7 @@ class ActionFacade(Type):
         _toPy = {"matches": "matches"}
 
         def __init__(self, matches=None, **unknown_fields):
-            """
-            FindTagsResults wraps the mapping between the requested prefix and the
+            """FindTagsResults wraps the mapping between the requested prefix and the
             matching tags for each requested prefix.
 
             Matches map[string][]Entity `json:"matches"`
@@ -135,8 +128,7 @@ class ActionFacade(Type):
 
     @ReturnMapping(_FindTagsResults)
     async def FindActionTagsByPrefix(self, prefixes):
-        """
-        prefixes : typing.Sequence[str]
+        """Prefixes : typing.Sequence[str]
         Returns -> typing.Sequence[~Entity]
         """
         # map input types to rpc msg
@@ -150,8 +142,7 @@ class ActionFacade(Type):
 
 
 class Number(_definitions.Number):
-    """
-    This type represents a semver string.
+    """This type represents a semver string.
 
     Because it is not standard JSON, the typical from_json parsing fails and
     the parsing must be handled specially.
@@ -161,13 +152,12 @@ class Number(_definitions.Number):
 
     numberPat = re.compile(
         r"^(\d{1,9})\.(\d{1,9})(?:\.|-([a-z]+))(\d{1,9})(\.\d{1,9})?$"
-    )  # noqa
+    )
 
     def __init__(
         self, major=None, minor=None, patch=None, tag=None, build=None, **unknown_fields
     ):
-        """
-        major : int
+        """Major : int
         minor : int
         patch : int
         tag : str
@@ -180,9 +170,7 @@ class Number(_definitions.Number):
         self.build = int(build or "0")
 
     def __repr__(self):
-        return "<Number major={} minor={} patch={} tag={} build={}>".format(
-            self.major, self.minor, self.patch, self.tag, self.build
-        )
+        return f"<Number major={self.major} minor={self.minor} patch={self.patch} tag={self.tag} build={self.build}>"
 
     def __str__(self):
         return self.serialize()
@@ -226,7 +214,7 @@ class Number(_definitions.Number):
                     "build": (match.group(5)[1:] if match.group(5) else 0),
                 }
         if not parsed:
-            raise TypeError("Unable to parse Number version string: {}".format(data))
+            raise TypeError(f"Unable to parse Number version string: {data}")
         d = {}
         for k, v in parsed.items():
             d[cls._toPy.get(k, k)] = v
@@ -236,11 +224,11 @@ class Number(_definitions.Number):
     def serialize(self):
         s = ""
         if not self.tag:
-            s = "{}.{}.{}".format(self.major, self.minor, self.patch)
+            s = f"{self.major}.{self.minor}.{self.patch}"
         else:
-            s = "{}.{}-{}{}".format(self.major, self.minor, self.tag, self.patch)
+            s = f"{self.major}.{self.minor}-{self.tag}{self.patch}"
         if self.build:
-            s = "{}.{}".format(s, self.build)
+            s = f"{s}.{self.build}"
         return s
 
     def to_json(self):
@@ -248,8 +236,7 @@ class Number(_definitions.Number):
 
 
 class Binary(_definitions.Binary):
-    """
-    This type represents a semver string with additional series and arch info.
+    """This type represents a semver string with additional series and arch info.
 
     Because it is not standard JSON, the typical from_json parsing fails and
     the parsing must be handled specially.
@@ -259,11 +246,10 @@ class Binary(_definitions.Binary):
 
     binaryPat = re.compile(
         r"^(\d{1,9})\.(\d{1,9})(?:\.|-([a-z]+))(\d{1,9})(\.\d{1,9})?-([^-]+)-([^-]+)$"
-    )  # noqa
+    )
 
     def __init__(self, number=None, series=None, arch=None, **unknown_fields):
-        """
-        number : Number
+        """Number : Number
         series : str
         arch : str
         """
@@ -272,9 +258,7 @@ class Binary(_definitions.Binary):
         self.arch = arch
 
     def __repr__(self):
-        return "<Binary number={} series={} arch={}>".format(
-            self.number, self.series, self.arch
-        )
+        return f"<Binary number={self.number} series={self.series} arch={self.arch}>"
 
     def __str__(self):
         return self.serialize()
@@ -311,7 +295,7 @@ class Binary(_definitions.Binary):
                     "arch": match.group(7),
                 }
         if parsed is None:
-            raise TypeError("Unable to parse Binary version string: {}".format(data))
+            raise TypeError(f"Unable to parse Binary version string: {data}")
         d = {}
         for k, v in parsed.items():
             d[cls._toPy.get(k, k)] = v
@@ -319,7 +303,7 @@ class Binary(_definitions.Binary):
         return cls(**d)
 
     def serialize(self):
-        return "{}-{}-{}".format(self.number.serialize(), self.series, self.arch)
+        return f"{self.number.serialize()}-{self.series}-{self.arch}"
 
     def to_json(self):
         return self.serialize()
@@ -327,9 +311,7 @@ class Binary(_definitions.Binary):
 
 class ConfigValue(_definitions.ConfigValue):
     def __repr__(self):
-        return "<{} source={} value={}>".format(
-            type(self).__name__, repr(self.source), repr(self.value)
-        )
+        return f"<{type(self).__name__} source={self.source!r} value={self.value!r}>"
 
 
 class Resource(Type):
@@ -366,8 +348,7 @@ class Resource(Type):
         origin=None,
         **unknown_fields,
     ):
-        """
-        charmresource : CharmResource
+        """Charmresource : CharmResource
         application : str
         id_ : str
         pending_id : str
@@ -407,8 +388,7 @@ class Macaroon(Type):
     def __init__(
         self, signature="", caveats=None, location=None, identifier="", **unknown_fields
     ):
-        """
-        signature : str
+        """Signature : str
         caveats : typing.Sequence<+T_co>[~RemoteSpace]<~RemoteSpace>
         location : str
         identifier : str
@@ -425,8 +405,6 @@ class Caveat(Type):
     _toPy = {"cid": "cid"}
 
     def __init__(self, cid="", **unknown_fields):
-        """
-        cid : str
-        """
+        """Cid : str"""
         self.cid = cid
         self.unknown_fields = unknown_fields

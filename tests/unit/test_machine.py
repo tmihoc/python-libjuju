@@ -1,10 +1,10 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-import mock
+from unittest import mock
 
-from juju.model import Model
 from juju.machine import Machine
+from juju.model import Model
 
 
 @mock.patch("juju.client.client.ClientFacade")

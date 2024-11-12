@@ -1,19 +1,18 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example demonstrates how to obtain a formatted full status
+"""This example demonstrates how to obtain a formatted full status
 description. For a similar solution using the FullStatus object
 check examples/fullstatus.py
 """
 
-from juju import jasyncio
 import logging
 import sys
-from logging import getLogger
-from juju.model import Model
 import tempfile
+from logging import getLogger
 
+from juju import jasyncio
+from juju.model import Model
 from juju.status import formatted_status
 
 LOG = getLogger(__name__)

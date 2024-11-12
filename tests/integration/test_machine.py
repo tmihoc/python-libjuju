@@ -5,8 +5,9 @@ import asyncio
 
 import pytest
 
-from .. import base
 from juju.machine import Machine
+
+from .. import base
 
 
 @base.bootstrapped

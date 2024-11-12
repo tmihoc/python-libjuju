@@ -3,14 +3,14 @@
 
 import asyncio
 import uuid
+
 import hvac
+import pytest
 
 from juju import access, controller
-from juju.client.connection import Connection
 from juju.client import client
+from juju.client.connection import Connection
 from juju.errors import JujuAPIError, JujuError
-
-import pytest
 
 from .. import base
 
@@ -18,7 +18,7 @@ from .. import base
 @base.bootstrapped
 async def test_add_remove_user():
     async with base.CleanController() as controller:
-        username = "test{}".format(uuid.uuid4())
+        username = f"test{uuid.uuid4()}"
         user = await controller.get_user(username)
         assert user is None
         user = await controller.add_user(username)
@@ -37,7 +37,7 @@ async def test_add_remove_user():
 @base.bootstrapped
 async def test_disable_enable_user():
     async with base.CleanController() as controller:
-        username = "test-disable{}".format(uuid.uuid4())
+        username = f"test-disable{uuid.uuid4()}"
         user = await controller.add_user(username)
 
         await user.disable()
@@ -60,7 +60,7 @@ async def test_disable_enable_user():
 @base.bootstrapped
 async def test_change_user_password():
     async with base.CleanController() as controller:
-        username = "test-password{}".format(uuid.uuid4())
+        username = f"test-password{uuid.uuid4()}"
         user = await controller.add_user(username)
         await user.set_password("password")
         # Check that we can connect with the new password.
@@ -80,7 +80,7 @@ async def test_change_user_password():
 @base.bootstrapped
 async def test_reset_user_password():
     async with base.CleanController() as controller:
-        username = "test{}".format(uuid.uuid4())
+        username = f"test{uuid.uuid4()}"
         user = await controller.add_user(username)
         origin_secret_key = user.secret_key
         await user.set_password("password")
@@ -117,7 +117,7 @@ async def test_list_models():
 async def test_get_model():
     async with base.CleanController() as controller:
         by_name, by_uuid = None, None
-        model_name = "test-{}".format(uuid.uuid4())
+        model_name = f"test-{uuid.uuid4()}"
         model = await controller.add_model(model_name)
         model_uuid = model.info.uuid
         await model.disconnect()
@@ -149,7 +149,7 @@ async def _wait_for_model_gone(controller, model_name):
 @base.bootstrapped
 async def test_destroy_model_by_name():
     async with base.CleanController() as controller:
-        model_name = "test-{}".format(uuid.uuid4())
+        model_name = f"test-{uuid.uuid4()}"
         model = await controller.add_model(model_name)
         await model.disconnect()
         await asyncio.wait_for(_wait_for_model(controller, model_name), timeout=60)
@@ -162,7 +162,7 @@ async def test_destroy_model_by_name():
 @base.bootstrapped
 async def test_add_destroy_model_by_uuid():
     async with base.CleanController() as controller:
-        model_name = "test-{}".format(uuid.uuid4())
+        model_name = f"test-{uuid.uuid4()}"
         model = await controller.add_model(model_name)
         model_uuid = model.info.uuid
         await model.disconnect()
@@ -174,7 +174,7 @@ async def test_add_destroy_model_by_uuid():
 @base.bootstrapped
 async def test_add_remove_cloud():
     async with base.CleanController() as controller:
-        cloud_name = "test-{}".format(uuid.uuid4())
+        cloud_name = f"test-{uuid.uuid4()}"
         cloud = client.Cloud(
             auth_types=["userpass"],
             endpoint="http://localhost:1234",
@@ -194,7 +194,8 @@ async def test_secrets_backend_lifecycle():
     """Testing the add_secret_backends is particularly
     costly in term of resources. This test sets a vault
     charm, add it to the controller and plays with the
-    list, removal, and update."""
+    list, removal, and update.
+    """
     async with base.CleanModel() as m:
         controller = await m.get_controller()
         # deploy postgresql
@@ -280,7 +281,7 @@ async def test_secrets_backend_lifecycle():
 @base.bootstrapped
 async def test_grant_revoke_controller_access():
     async with base.CleanController() as controller:
-        username = "test-grant{}".format(uuid.uuid4())
+        username = f"test-grant{uuid.uuid4()}"
         user = await controller.add_user(username)
         await user.grant("superuser")
         assert user.access == "superuser"
@@ -324,10 +325,10 @@ async def test_connection_lazy_jujudata():
 @base.bootstrapped
 async def test_grant_revoke_model_access():
     async with base.CleanController() as controller:
-        username = "test-grant{}".format(uuid.uuid4())
+        username = f"test-grant{uuid.uuid4()}"
         user = await controller.add_user(username)
 
-        model_name = "test-{}".format(uuid.uuid4())
+        model_name = f"test-{uuid.uuid4()}"
         model = await controller.add_model(model_name)
 
         with pytest.raises(JujuError):

@@ -81,7 +81,6 @@ class SSHProvisioner:
         :raises: :class:`paramiko.ssh_exception.SSHException` if the
             connection failed
         """
-
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -89,7 +88,7 @@ class SSHProvisioner:
 
         # Read the private key into a paramiko.RSAKey
         if os.path.exists(key):
-            with open(key, "r") as f:
+            with open(key) as f:
                 pkey = paramiko.RSAKey.from_private_key(f)
 
         #######################################################################
@@ -108,7 +107,7 @@ class SSHProvisioner:
         try:
             ssh.connect(host, port=22, username=user, pkey=pkey)
         except paramiko.ssh_exception.SSHException as e:
-            if "Error reading SSH protocol banner" == str(e):
+            if str(e) == "Error reading SSH protocol banner":
                 # Once more, with feeling
                 ssh.connect(host, port=22, username=user, pkey=pkey)
             else:
@@ -128,7 +127,6 @@ class SSHProvisioner:
         :return: tuple: The stdout and stderr of the command execution
         :raises: :class:`CalledProcessError` if the command fails
         """
-
         if isinstance(cmd, str):
             cmd = shlex.split(cmd)
 
@@ -154,7 +152,6 @@ class SSHProvisioner:
         :raises: :class:`paramiko.ssh_exception.AuthenticationException`
             if the authentication fails
         """
-
         ssh = None
         try:
             # Run w/o allocating a pty, so we fail if sudo prompts for a passwd
@@ -172,14 +169,12 @@ class SSHProvisioner:
 
         # Infer the public key
         public_key = None
-        public_key_path = "{}.pub".format(self.private_key_path)
+        public_key_path = f"{self.private_key_path}.pub"
 
         if not os.path.exists(public_key_path):
-            raise FileNotFoundError(
-                "Public key '{}' doesn't exist.".format(public_key_path)
-            )
+            raise FileNotFoundError(f"Public key '{public_key_path}' doesn't exist.")
 
-        with open(public_key_path, "r") as f:
+        with open(public_key_path) as f:
             public_key = f.readline()
 
         script = INITIALIZE_UBUNTU_SCRIPT.format(public_key)
@@ -207,7 +202,6 @@ class SSHProvisioner:
         :param object ssh: The SSHClient
         :return: str: A raw string containing OS and hardware information.
         """
-
         info = {
             "series": "",
             "arch": "",
@@ -241,7 +235,7 @@ class SSHProvisioner:
             elif line.find("cpu cores") == 0:
                 cores = line.split(":")[1].strip()
 
-                if physical_id not in recorded.keys():
+                if physical_id not in recorded:
                     info["cpu-cores"] += cores
                     recorded[physical_id] = True
 
@@ -262,7 +256,7 @@ class SSHProvisioner:
 
                 hw = self._detect_hardware_and_os(ssh)
                 params.series = hw["series"]
-                params.instance_id = "manual:{}".format(self.host)
+                params.instance_id = f"manual:{self.host}"
                 params.nonce = "manual:{}:{}".format(
                     self.host,
                     str(uuid.uuid4()),  # a nop for Juju w/manual machines
@@ -288,14 +282,12 @@ class SSHProvisioner:
         return params
 
     async def install_agent(self, connection, nonce, machine_id):
-        """
-        :param object connection: Connection to Juju API
+        """:param object connection: Connection to Juju API
         :param str nonce: The nonce machine specification
         :param str machine_id: The id assigned to the machine
 
         :return: bool: If the initialization was successful
         """
-
         # The path where the Juju agent should be installed.
         data_dir = "/var/lib/juju"
 
@@ -325,7 +317,6 @@ class SSHProvisioner:
         :raises: :class:`paramiko.ssh_exception.AuthenticationException`
             if the upload fails
         """
-
         _, tmpFile = tempfile.mkstemp()
         with open(tmpFile, "w") as f:
             f.write(script)
@@ -348,7 +339,7 @@ class SSHProvisioner:
             # run the provisioning script
             stdout, stderr = self._run_command(
                 ssh,
-                "sudo /bin/bash {}".format(tmpFile),
+                f"sudo /bin/bash {tmpFile}",
             )
 
         except paramiko.ssh_exception.AuthenticationException as e:

@@ -1,9 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-Tests for the gocookies code.
-"""
+"""Tests for the gocookies code."""
 
 import os
 import shutil
@@ -12,6 +10,7 @@ import unittest
 import urllib.request
 
 import pyrfc3339
+
 from juju.client.gocookies import GoCookieJar
 
 # cookie_content holds the JSON contents of a Go-produced
@@ -264,5 +263,5 @@ class TestGoCookieJar(unittest.TestCase):
             self.assertEqual(
                 got_cookies,
                 want_cookies,
-                msg="query {}; got {}; want {}".format(url, got_cookies, want_cookies),
+                msg=f"query {url}; got {got_cookies}; want {want_cookies}",
             )

@@ -2,10 +2,9 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import unittest
-
+from random import sample
 
 from juju.status import derive_status
-from random import sample
 
 
 class TestStatus(unittest.TestCase):

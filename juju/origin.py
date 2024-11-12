@@ -2,9 +2,9 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 from enum import Enum
-from .errors import JujuError
 
 from . import utils
+from .errors import JujuError
 
 
 class Source(Enum):
@@ -27,9 +27,7 @@ class Origin:
         self.platform = platform
 
     def __str__(self):
-        return "origin using source {} for channel {} and platform {}".format(
-            str(self.source), self.channel, self.platform
-        )
+        return f"origin using source {self.source!s} for channel {self.channel} and platform {self.platform}"
 
 
 class Risk(Enum):
@@ -67,14 +65,14 @@ class Channel:
 
     def __init__(self, track=None, risk=None):
         if not Risk.valid(risk):
-            raise JujuError("unexpected risk {}".format(risk))
+            raise JujuError(f"unexpected risk {risk}")
 
         self.track = track or ""
         self.risk = risk
 
     @staticmethod
     def parse(s: str):
-        """parse a channel from a given string.
+        """Parse a channel from a given string.
         Parse does not take into account branches.
 
         """
@@ -95,14 +93,12 @@ class Channel:
             track = p[0]
             risk = p[1]
         else:
-            raise JujuError(
-                "channel is malformed and has too many components {}".format(s)
-            )
+            raise JujuError(f"channel is malformed and has too many components {s}")
 
         if risk is not None and not Risk.valid(risk):
-            raise JujuError("risk in channel {} is not valid".format(s))
+            raise JujuError(f"risk in channel {s} is not valid")
         if track is not None and track == "":
-            raise JujuError("track in channel {} is not valid".format(s))
+            raise JujuError(f"track in channel {s} is not valid")
 
         return Channel(track, risk)
 
@@ -119,7 +115,7 @@ class Channel:
     def __str__(self):
         path = self.risk
         if self.track != "":
-            path = "{}/{}".format(self.track, path)
+            path = f"{self.track}/{path}"
         return path
 
     def compute_base_channel(self, series):
@@ -146,7 +142,6 @@ class Platform:
     To indicate something is missing `unknown` can be used in place.
 
     Examples:
-
      1. `<arch>/<os>/<series>`
      2. `<arch>`
      3. `<arch>/<series>`
@@ -179,16 +174,14 @@ class Platform:
             os = p[1]
             series = p[2]
         else:
-            raise JujuError(
-                "platform is malformed and has too many components {}".format(s)
-            )
+            raise JujuError(f"platform is malformed and has too many components {s}")
 
         if not arch:
-            raise JujuError("architecture in platform {} is not valid".format(s))
+            raise JujuError(f"architecture in platform {s} is not valid")
         if os is not None and os == "":
-            raise JujuError("os in platform {} is not valid".format(s))
+            raise JujuError(f"os in platform {s} is not valid")
         if series is not None and series == "":
-            raise JujuError("series in platform {} is not valid".format(s))
+            raise JujuError(f"series in platform {s} is not valid")
 
         return Platform(arch, series, os)
 
@@ -213,7 +206,7 @@ class Platform:
     def __str__(self):
         path = self.arch
         if self.os is not None and self.os != "":
-            path = "{}/{}".format(path, self.os)
+            path = f"{path}/{self.os}"
         if self.series is not None and self.series != "":
-            path = "{}/{}".format(path, self.series)
+            path = f"{path}/{self.series}"
         return path

@@ -3,8 +3,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to the current model
 2. Creates two machines and a lxd container
@@ -43,7 +42,7 @@ async def main():
         )
 
         # add a lxd container to machine2
-        machine3 = await model.add_machine("lxd:{}".format(machine2.id), series="jammy")
+        machine3 = await model.add_machine(f"lxd:{machine2.id}", series="jammy")
 
         # deploy charm to the lxd container
         application = await model.deploy(

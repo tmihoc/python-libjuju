@@ -1,15 +1,13 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example demonstrate how status works
+"""This example demonstrate how status works"""
 
-"""
-
-from juju import jasyncio
 import logging
 import sys
 from logging import getLogger
+
+from juju import jasyncio
 from juju.model import Model
 from juju.status import formatted_status
 

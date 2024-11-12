@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to current controller.
 2. Loads kube config from microk8s.
@@ -11,10 +10,11 @@ This example:
 
 """
 
+import base64
 import logging
 import os
+
 import yaml
-import base64
 
 from juju import jasyncio
 from juju.client import client

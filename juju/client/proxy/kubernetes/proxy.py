@@ -1,12 +1,13 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+import logging
 import os
 import tempfile
-import logging
 
-from juju.client.proxy.proxy import Proxy, ProxyNotConnectedError
 from kubernetes import client
 from kubernetes.stream import portforward
+
+from juju.client.proxy.proxy import Proxy, ProxyNotConnectedError
 
 log = logging.getLogger("juju.client.connection")
 
@@ -33,7 +34,7 @@ class KubernetesProxy(Proxy):
         try:
             self.remote_port = int(remote_port)
         except ValueError:
-            raise ValueError("Invalid port number: {}".format(remote_port))
+            raise ValueError(f"Invalid port number: {remote_port}")
 
         if ca_cert:
             self.temp_ca_file = tempfile.NamedTemporaryFile(delete=False)

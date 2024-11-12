@@ -52,7 +52,7 @@ class Endpoint:
 
 class Relation(model.ModelEntity):
     def __repr__(self):
-        return "<Relation id={} {}>".format(self.entity_id, self.key)
+        return f"<Relation id={self.entity_id} {self.key}>"
 
     @property
     def endpoints(self):
@@ -60,9 +60,7 @@ class Relation(model.ModelEntity):
 
     @property
     def provides(self):
-        """
-        The endpoint on the provides side of this relation, or None.
-        """
+        """The endpoint on the provides side of this relation, or None."""
         for endpoint in self.endpoints:
             if endpoint.role == "provider":
                 return endpoint
@@ -70,9 +68,7 @@ class Relation(model.ModelEntity):
 
     @property
     def requires(self):
-        """
-        The endpoint on the requires side of this relation, or None.
-        """
+        """The endpoint on the requires side of this relation, or None."""
         for endpoint in self.endpoints:
             if endpoint.role == "requirer":
                 return endpoint
@@ -80,9 +76,7 @@ class Relation(model.ModelEntity):
 
     @property
     def peers(self):
-        """
-        The peers endpoint of this relation, or None.
-        """
+        """The peers endpoint of this relation, or None."""
         for endpoint in self.endpoints:
             if endpoint.role == "peer":
                 return endpoint
@@ -97,8 +91,7 @@ class Relation(model.ModelEntity):
         return any(ep.role == "peer" for ep in self.endpoints)
 
     def matches(self, *specs):
-        """
-        Check if this relation matches relationship specs.
+        """Check if this relation matches relationship specs.
 
         Relation specs are strings that would be given to Juju to establish a
         relation, and should be in the form ``<application>[:<endpoint_name>]``
@@ -150,7 +143,5 @@ class Relation(model.ModelEntity):
 
     @property
     def applications(self):
-        """
-        All applications involved in this relation.
-        """
+        """All applications involved in this relation."""
         return [ep.application for ep in self.endpoints]

@@ -3,7 +3,7 @@
 
 import unittest
 
-from juju.url import Schema, URL
+from juju.url import URL, Schema
 
 
 class TestURLV1(unittest.TestCase):

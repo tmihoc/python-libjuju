@@ -7,8 +7,7 @@ from textwrap import indent
 
 
 class CodeWriter(StringIO):
-    """
-    Blob of text that, when used in the context of facade.py, ends up
+    """Blob of text that, when used in the context of facade.py, ends up
     holding the source code for a Python class and associated methods.
 
     """
@@ -30,8 +29,7 @@ class CodeWriter(StringIO):
 
 
 class Capture(defaultdict):
-    """
-    A collection of CodeWriter objects, together representing a Python
+    """A collection of CodeWriter objects, together representing a Python
     module.
 
     """
@@ -40,8 +38,7 @@ class Capture(defaultdict):
         super(Capture, self).__init__(default_factory, *args, **kwargs)
 
     def clear(self, name):
-        """
-        Reset one of the keys in this class, if it exists.
+        """Reset one of the keys in this class, if it exists.
 
         This is necessary, because we don't worry about de-duplicating
         the schemas for each version of juju up front, and this gives

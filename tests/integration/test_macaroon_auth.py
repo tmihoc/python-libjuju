@@ -2,18 +2,18 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import logging
-import subprocess
 import os
+import subprocess
 
 import macaroonbakery.bakery as bakery
 import macaroonbakery.httpbakery as httpbakery
 import macaroonbakery.httpbakery.agent as agent
-from juju.errors import JujuAPIError
-from juju.model import Model
+import pytest
+
 from juju.client.jujudata import FileJujuData
 from juju.controller import Controller
-
-import pytest
+from juju.errors import JujuAPIError
+from juju.model import Model
 
 from .. import base
 
@@ -33,12 +33,10 @@ async def test_macaroon_auth_serial():
             result = subprocess.run(
                 ["juju", "change-user-password"],
                 input="{0}\n{0}\n".format(account["password"]),
-                universal_newlines=True,
+                text=True,
                 stderr=subprocess.PIPE,
             )
-            assert result.returncode == 0, "Failed to change password: {}".format(
-                result.stderr
-            )
+            assert result.returncode == 0, f"Failed to change password: {result.stderr}"
         controller = Controller()
         try:
             await controller.connect()

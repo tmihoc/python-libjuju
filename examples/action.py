@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to current model and resets it.
 2. Deploys a git unit.

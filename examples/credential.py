@@ -2,6 +2,7 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import sys
+
 from juju import jasyncio
 from juju.controller import Controller
 
@@ -19,7 +20,7 @@ async def main(cloud_name, credential_name):
         )
 
         # verify credential
-        print("Verify model's credential: {}".format(model.info.cloud_credential_tag))
+        print(f"Verify model's credential: {model.info.cloud_credential_tag}")
 
         # verify we can deploy
         print("Deploying ubuntu")

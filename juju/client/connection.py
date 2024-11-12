@@ -9,24 +9,25 @@ import urllib.request
 import warnings
 import weakref
 from http.client import HTTPSConnection
-from dateutil.parser import parse
 from typing import Dict, Literal, Optional, Sequence
 
 import macaroonbakery.bakery as bakery
 import macaroonbakery.httpbakery as httpbakery
 import websockets
-from juju import errors, tag, utils, jasyncio
+from dateutil.parser import parse
+
+from juju import errors, jasyncio, tag, utils
 from juju.client import client
 from juju.utils import IdQueue
 from juju.version import CLIENT_VERSION
+
 from .facade_versions import client_facade_versions, known_unsupported_facades
 
 log = logging.getLogger("juju.client.connection")
 
 
 def facade_versions(name, versions):
-    """
-    facade_versions returns a new object that correctly returns a object in
+    """facade_versions returns a new object that correctly returns a object in
     format expected by the connection facades inspection.
     :param name: name of the facade
     :param versions: versions to support by the facade
@@ -39,8 +40,7 @@ def facade_versions(name, versions):
 
 
 class Monitor:
-    """
-    Monitor helper class for our Connection class.
+    """Monitor helper class for our Connection class.
 
     Contains a reference to an instantiated Connection, along with a
     reference to the Connection.receiver Future. Upon inspection of
@@ -65,8 +65,7 @@ class Monitor:
 
     @property
     def status(self):
-        """
-        Determine the status of the connection and receiver, and return
+        """Determine the status of the connection and receiver, and return
         ERROR, CONNECTED, or DISCONNECTED as appropriate.
 
         For simplicity, we only consider ourselves to be connected
@@ -107,12 +106,11 @@ class Monitor:
 
 
 class Connection:
-    """
-    Usage::
+    """Usage::
 
-        # Connect to an arbitrary api server
-        client = await Connection.connect(
-            api_endpoint, model_uuid, username, password, cacert)
+    # Connect to an arbitrary api server
+    client = await Connection.connect(
+        api_endpoint, model_uuid, username, password, cacert)
 
     """
 
@@ -256,7 +254,7 @@ class Connection:
                 lastError = e
                 continue
             except OSError as e:
-                logging.debug("Cannot access endpoint {}: {}".format(_ep, e.strerror))
+                logging.debug(f"Cannot access endpoint {_ep}: {e.strerror}")
                 lastError = e
                 continue
         if lastError is not None:
@@ -303,13 +301,11 @@ class Connection:
     async def _open(self, endpoint, cacert):
         if self.is_debug_log_connection:
             assert self.uuid
-            url = "wss://user-{}:{}@{}/model/{}/log".format(
-                self.username, self.password, endpoint, self.uuid
-            )
+            url = f"wss://user-{self.username}:{self.password}@{endpoint}/model/{self.uuid}/log"
         elif self.uuid:
-            url = "wss://{}/model/{}/api".format(endpoint, self.uuid)
+            url = f"wss://{endpoint}/model/{self.uuid}/api"
         else:
-            url = "wss://{}/api".format(endpoint)
+            url = f"wss://{endpoint}/api"
 
         # We need to establish a server_hostname here for TLS sni if we are
         # connecting through a proxy as the Juju controller certificates will
@@ -506,8 +502,7 @@ class Connection:
             raise
 
     async def _pinger(self):
-        """
-        A Controller can time us out if we are silent for too long. This
+        """A Controller can time us out if we are silent for too long. This
         is especially true in JaaS, which has a fairly strict timeout.
 
         To prevent timing out, we send a ping every ten seconds.
@@ -555,7 +550,7 @@ class Connection:
         if "version" not in msg:
             msg["version"] = self.facades[msg["type"]]
         outgoing = json.dumps(msg, indent=2, cls=encoder)
-        log.debug("connection id: {} ---> {}".format(id(self), outgoing))
+        log.debug(f"connection id: {id(self)} ---> {outgoing}")
         for attempt in range(3):
             if self.monitor.status == Monitor.DISCONNECTED:
                 # closed cleanly; shouldn't try to reconnect
@@ -581,7 +576,7 @@ class Connection:
                     log.error("RPC: Automatic reconnect failed")
                     raise
         result = await self._recv(msg["request-id"])
-        log.debug("connection id : {} <--- {}".format(id(self), result))
+        log.debug(f"connection id : {id(self)} <--- {result}")
 
         if not result:
             return result
@@ -624,7 +619,7 @@ class Connection:
 
         creds = "{}:{}".format(self.usertag, self.password or "")
         token = base64.b64encode(creds.encode())
-        return {"Authorization": "Basic {}".format(token.decode())}
+        return {"Authorization": f"Basic {token.decode()}"}
 
     def https_connection(self):
         """Return an https connection to this Connection's endpoint.
@@ -650,7 +645,7 @@ class Connection:
             context=self._get_ssl(self.cacert),
         )
 
-        path = "/model/{}".format(self.uuid) if self.uuid else ""
+        path = f"/model/{self.uuid}" if self.uuid else ""
         return conn, self._http_headers(), path
 
     async def clone(self):
@@ -737,15 +732,13 @@ class Connection:
                 _endpoints_str = ", ".join([endpoint for endpoint, cacert in endpoints])
                 if attempt < self._retries:
                     log.debug(
-                        "Retrying connection to endpoints: {}; attempt {} of {}".format(
-                            _endpoints_str, attempt + 1, self._retries + 1
-                        )
+                        f"Retrying connection to endpoints: {_endpoints_str}; attempt {attempt + 1} of {self._retries + 1}"
                     )
                     await jasyncio.sleep((attempt + 1) * self._retry_backoff)
                     continue
                 else:
                     raise errors.JujuConnectionError(
-                        "Unable to connect to any endpoint: {}".format(_endpoints_str)
+                        f"Unable to connect to any endpoint: {_endpoints_str}"
                     )
             # only executed if inner loop's else did not continue
             # (i.e., inner loop did break due to successful connection)
@@ -904,7 +897,8 @@ class Connection:
 
 def _macaroons_for_domain(cookies, domain):
     """Return any macaroons from the given cookie jar that
-    apply to the given domain name."""
+    apply to the given domain name.
+    """
     req = urllib.request.Request("https://" + domain + "/")
     cookies.add_cookie_header(req)
     return httpbakery.extract_macaroons(req)

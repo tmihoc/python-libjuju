@@ -4,13 +4,13 @@
 import asyncio
 import json
 from collections import deque
-
-import mock
-from juju.errors import JujuRedirectException
-from juju.client.connection import Connection
-from websockets.exceptions import ConnectionClosed
+from unittest import mock
 
 import pytest
+from websockets.exceptions import ConnectionClosed
+
+from juju.client.connection import Connection
+from juju.errors import JujuRedirectException
 
 
 class WebsocketMock:

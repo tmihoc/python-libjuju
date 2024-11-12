@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Creates a model on the current controller
 2. Deploys a charm to it.
@@ -10,12 +9,12 @@ This example:
 
 """
 
-from juju import jasyncio
-from juju import utils
-from juju.controller import Controller
 import asyncio
-from logging import getLogger
 import uuid
+from logging import getLogger
+
+from juju import jasyncio, utils
+from juju.controller import Controller
 
 LOG = getLogger(__name__)
 
@@ -27,8 +26,8 @@ async def main():
     await controller.connect()
 
     try:
-        model_name = "addmodeltest-{}".format(uuid.uuid4())
-        print("Adding model {}".format(model_name))
+        model_name = f"addmodeltest-{uuid.uuid4()}"
+        print(f"Adding model {model_name}")
         model = await controller.add_model(model_name)
 
         print("Deploying ubuntu")
@@ -56,7 +55,7 @@ async def main():
         await controller.destroy_model(model.info.uuid)
 
     except Exception:
-        LOG.exception("Test failed! Model {} may not be cleaned up".format(model_name))
+        LOG.exception(f"Test failed! Model {model_name} may not be cleaned up")
 
     finally:
         print("Disconnecting from controller")

@@ -170,7 +170,7 @@ class Unit(model.ModelEntity):
         )
         result = res.results[0]
         if result.error is not None:
-            raise JujuError("{}".format(result.error))
+            raise JujuError(f"{result.error}")
         storage_details = result.result
         return storage_details.storage_tags
 
@@ -181,9 +181,7 @@ class Unit(model.ModelEntity):
         :return:
         """
         if not storage_ids:
-            raise JujuError(
-                "Expected a storage ID to be attached to unit {}".format(self.name)
-            )
+            raise JujuError(f"Expected a storage ID to be attached to unit {self.name}")
 
         storage_facade = client.StorageFacade.from_connection(self.connection)
         return await storage_facade.Attach(
@@ -269,7 +267,7 @@ class Unit(model.ModelEntity):
 
         error = action_result.error
         if error:
-            raise JujuError("Action error - {} : {}".format(error.code, error.message))
+            raise JujuError(f"Action error - {error.code} : {error.message}")
 
         action = await self.model._wait_for_new("action", action_id)
         if block:
@@ -362,8 +360,7 @@ class Unit(model.ModelEntity):
         return await self.machine.ssh(command, user, proxy, ssh_opts)
 
     async def is_leader_from_status(self):
-        """
-        Check to see if this unit is the leader. Returns True if so, and
+        """Check to see if this unit is the leader. Returns True if so, and
         False if it is not, or if leadership does not make sense
         (e.g., there is no leader in this application.)
 

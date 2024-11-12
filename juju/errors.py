@@ -62,12 +62,13 @@ class JujuEntityNotFoundError(JujuError):
     expected that the entity was found in state and this is a terminal
     condition.
     To fix this condition, you should disconnect and reconnect to ensure that
-    any missing entities are correctly picked up."""
+    any missing entities are correctly picked up.
+    """
 
     def __init__(self, entity_name, entity_types=None):
         self.entity_name = entity_name
         self.entity_types = entity_types
-        super().__init__("Entity not found: {}".format(entity_name))
+        super().__init__(f"Entity not found: {entity_name}")
 
 
 class JujuModelError(JujuError):

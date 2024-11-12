@@ -1,9 +1,9 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import asyncio
 import logging
 from pathlib import Path
-import asyncio
 
 import pytest
 
@@ -390,7 +390,7 @@ async def test_app_charm_name():
         app = await model.deploy("ubuntu")
         await model.wait_for_idle(status="active")
         assert "ubuntu" in app.charm_url
-        assert "ubuntu" == app.charm_name
+        assert app.charm_name == "ubuntu"
 
 
 @base.bootstrapped

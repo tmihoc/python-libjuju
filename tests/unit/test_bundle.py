@@ -3,12 +3,14 @@
 
 import unittest
 from pathlib import Path
-from unittest import mock
-from mock import patch, Mock, ANY
 from typing import Dict, List, Tuple
+from unittest import mock
+from unittest.mock import ANY, Mock, patch
 
 import yaml
+from toposort import CircularDependencyError
 
+from juju import charmhub, constraints
 from juju.bundle import (
     AddApplicationChange,
     AddCharmChange,
@@ -23,10 +25,7 @@ from juju.bundle import (
     ScaleChange,
     SetAnnotationsChange,
 )
-from juju import charmhub
-from juju import constraints
 from juju.client import client
-from toposort import CircularDependencyError
 
 
 class TestChangeSet(unittest.TestCase):

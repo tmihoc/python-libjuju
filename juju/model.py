@@ -7,9 +7,9 @@ import hashlib
 import json
 import logging
 import os
-import sys
 import re
 import stat
+import sys
 import tempfile
 import warnings
 import weakref
@@ -19,27 +19,30 @@ from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
 
-import yaml
 import websockets
+import yaml
 
-from . import provisioner, tag, utils, jasyncio
+from . import jasyncio, provisioner, tag, utils
 from .annotationhelper import _get_annotations, _set_annotations
 from .bundle import BundleHandler, get_charm_series, is_local_charm
 from .charmhub import CharmHub
 from .client import client, connector
 from .client.overrides import Caveat, Macaroon
 from .constraints import parse as parse_constraints
-from .controller import Controller, ConnectedController
+from .controller import ConnectedController, Controller
 from .delta import get_entity_class, get_entity_delta
-from .errors import JujuAPIError, JujuError, JujuModelConfigError, JujuBackupError
 from .errors import (
-    JujuModelError,
-    JujuAppError,
-    JujuUnitError,
     JujuAgentError,
+    JujuAPIError,
+    JujuAppError,
+    JujuBackupError,
+    JujuError,
     JujuMachineError,
-    PylibjujuError,
+    JujuModelConfigError,
+    JujuModelError,
     JujuNotSupportedError,
+    JujuUnitError,
+    PylibjujuError,
 )
 from .exceptions import DeadEntityException
 from .names import is_valid_application
@@ -104,12 +107,10 @@ class _Observer:
 
 
 class ModelObserver:
-    """
-    Base class for creating observers that react to changes in a model.
-    """
+    """Base class for creating observers that react to changes in a model."""
 
     async def __call__(self, delta, old, new, model):
-        handler_name = "on_{}_{}".format(delta.entity, delta.type)
+        handler_name = f"on_{delta.entity}_{delta.type}"
         method = getattr(self, handler_name, self.on_change)
         await method(delta, old, new, model)
 
@@ -243,7 +244,6 @@ class ModelState:
         history_index, an index into the history deque for the entity.
 
         """
-
         if history_index < 0 and history_index != -1:
             history_index += len(self.entity_history(entity_type, entity_id))
             if history_index < 0:
@@ -283,7 +283,7 @@ class ModelEntity:
         self._status = "unknown"
 
     def __repr__(self):
-        return '<{} entity_id="{}">'.format(type(self).__name__, self.entity_id)
+        return f'<{type(self).__name__} entity_id="{self.entity_id}">'
 
     def __getattr__(self, name):
         """Fetch object attributes from the underlying data dict held in the
@@ -381,11 +381,9 @@ class ModelEntity:
         """
         if self.data is None:
             raise DeadEntityException(
-                "Entity {}:{} is dead - its attributes can no longer be "
+                f"Entity {self.entity_type}:{self.entity_id} is dead - its attributes can no longer be "
                 "accessed. Use the .previous() method on this object to get "
-                "a copy of the object at its previous state.".format(
-                    self.entity_type, self.entity_id
-                )
+                "a copy of the object at its previous state."
             )
         return self.data
 
@@ -472,13 +470,12 @@ class LocalDeployType:
         force=False,
         model_conf=None,
     ):
-        """resolve attempts to resolve a local charm or bundle using the url
+        """Resolve attempts to resolve a local charm or bundle using the url
         and architecture. If information is missing, it will attempt to backfill
         that information, before sending the result back.
 
         -- revision flag is ignored for local charms
         """
-
         entity_path = Path(charm_path)
         if entity_path.suffix == ".yaml":
             bundle_path = entity_path
@@ -487,7 +484,7 @@ class LocalDeployType:
 
         origin = client.CharmOrigin(source="local", architecture=architecture)
         if not (entity_path.is_dir() or entity_path.is_file()):
-            raise JujuError("{} path not found".format(entity_url))
+            raise JujuError(f"{entity_url} path not found")
 
         is_bundle = bundle_path.exists()
 
@@ -529,7 +526,7 @@ class CharmhubDeployType:
         force=False,
         model_conf=None,
     ):
-        """resolve attempts to resolve charmhub charms or bundles. A request to
+        """Resolve attempts to resolve charmhub charms or bundles. A request to
         the charmhub API is required to correctly determine the charm url and
         underlying origin.
         """
@@ -578,9 +575,7 @@ class CharmhubDeployType:
 
 
 class Model:
-    """
-    The main API for interacting with a Juju model.
-    """
+    """The main API for interacting with a Juju model."""
 
     def __init__(
         self,
@@ -628,7 +623,8 @@ class Model:
 
     def connection(self):
         """Return the current Connection object. It raises an exception
-        if the Model is disconnected"""
+        if the Model is disconnected
+        """
         return self._connector.connection()
 
     async def get_controller(self):
@@ -745,16 +741,14 @@ class Model:
             await self._after_connect(model_name, model_uuid)
 
     async def connect_model(self, model_name, **kwargs):
-        """
-        .. deprecated:: 0.6.2
-           Use ``connect(model_name=model_name)`` instead.
+        """.. deprecated:: 0.6.2
+        Use ``connect(model_name=model_name)`` instead.
         """
         return await self.connect(model_name=model_name, **kwargs)
 
     async def connect_current(self):
-        """
-        .. deprecated:: 0.6.2
-           Use ``connect()`` instead.
+        """.. deprecated:: 0.6.2
+        Use ``connect()`` instead.
         """
         return await self.connect()
 
@@ -1301,9 +1295,7 @@ class Model:
                             entity = get_entity_delta(delta)
                         except KeyError:
                             if self.strict_mode:
-                                raise JujuError(
-                                    "unknown delta type '{}'".format(delta.entity)
-                                )
+                                raise JujuError(f"unknown delta type '{delta.entity}'")
 
                         if not self.strict_mode and entity is None:
                             continue
@@ -1348,8 +1340,7 @@ class Model:
                 jasyncio.ensure_future(o(delta, old_obj, new_obj, self))
 
     async def _wait(self, entity_type, entity_id, action, predicate=None):
-        """
-        Block the calling routine until a given action has happened to the
+        """Block the calling routine until a given action has happened to the
         given entity
 
         :param entity_type: The entity's type.
@@ -1389,7 +1380,6 @@ class Model:
 
     async def wait_for_action(self, action_id):
         """Given an action, wait for it to complete."""
-
         if action_id.startswith("action-"):
             # if we've been passed action.tag, transform it into the
             # id that the api deltas will use.
@@ -1527,9 +1517,8 @@ class Model:
         return await self._wait_for_new("machine", machine_id)
 
     async def add_relation(self, relation1, relation2):
-        """
-        .. deprecated:: 2.9.9
-           Use ``relate()`` instead
+        """.. deprecated:: 2.9.9
+        Use ``relate()`` instead
         """
         return await self.relate(relation1, relation2)
 
@@ -1569,9 +1558,7 @@ class Model:
             if facade_cls.best_facade_version(self.connection()) < 5:
                 # old clients don't support cross model capability
                 raise JujuError(
-                    "cannot add relation to {}: remote endpoints not supported".format(
-                        remote_endpoint.string()
-                    )
+                    f"cannot add relation to {remote_endpoint.string()}: remote endpoints not supported"
                 )
 
             if remote_endpoint.has_empty_source():
@@ -1600,9 +1587,7 @@ class Model:
             if rel:
                 return rel
             raise JujuError(
-                "Relation {} {} exists but not in model".format(
-                    endpoints[0], endpoints[1]
-                )
+                f"Relation {endpoints[0]} {endpoints[1]} exists but not in model"
             )
 
         specs = [
@@ -1785,21 +1770,16 @@ class Model:
         :param str[] attach_storage: Existing storage to attach to the deployed unit
             (not available on k8s models)
         """
-
         if storage:
             storage = {k: client.Constraints(**v) for k, v in storage.items()}
         if trust and (self.info.agent_version < client.Number.from_json("2.4.0")):
             raise NotImplementedError(
-                "trusted is not supported on model version {}".format(
-                    self.info.agent_version
-                )
+                f"trusted is not supported on model version {self.info.agent_version}"
             )
 
         if not all([isinstance(st, str) for st in attach_storage]):
             raise JujuError(
-                "Expected attach_storage to be a list of strings, given {}".format(
-                    attach_storage
-                )
+                f"Expected attach_storage to be a list of strings, given {attach_storage}"
             )
 
         # Ensure what we pass in, is a string.
@@ -1822,9 +1802,7 @@ class Model:
             name = url.name
 
         if schema not in self.deploy_types:
-            raise JujuError(
-                "unknown deploy type {}, expected charmhub or local".format(schema)
-            )
+            raise JujuError(f"unknown deploy type {schema}, expected charmhub or local")
 
         model_conf = await self.get_config()
         res = await self.deploy_types[schema].resolve(
@@ -1840,7 +1818,7 @@ class Model:
         )
 
         if res.identifier is None:
-            raise JujuError("unknown charm or bundle {}".format(entity_url))
+            raise JujuError(f"unknown charm or bundle {entity_url}")
         identifier = res.identifier
 
         charm_series = series
@@ -1925,7 +1903,7 @@ class Model:
                 if base is None and charm_series is None:
                     raise JujuError(
                         "Either series or base is needed to deploy the "
-                        "charm at {}. ".format(charm_dir)
+                        f"charm at {charm_dir}. "
                     )
 
                 identifier = await self.add_local_charm_dir(charm_dir, charm_series)
@@ -2021,7 +1999,7 @@ class Model:
             resolve=[{"reference": str(url), "charm-origin": resolve_origin}]
         )
         if len(resp.results) != 1:
-            raise JujuError("expected one result, received {}".format(resp.results))
+            raise JujuError(f"expected one result, received {resp.results}")
 
         result = resp.results[0]
         if result.error:
@@ -2143,11 +2121,7 @@ class Model:
         for name, path in resources.items():
             resource_type = metadata["resources"][name]["type"]
             if resource_type not in {"oci-image", "file"}:
-                log.info(
-                    "Resource {} of type {} is not supported".format(
-                        name, resource_type
-                    )
-                )
+                log.info(f"Resource {name} of type {resource_type} is not supported")
                 continue
 
             charmresource = {
@@ -2189,14 +2163,12 @@ class Model:
     def _upload(self, data, path, app_name, res_name, res_type, pending_id):
         conn, headers, path_prefix = self.connection().https_connection()
 
-        query = "?pendingid={}".format(pending_id)
-        url = "{}/applications/{}/resources/{}{}".format(
-            path_prefix, app_name, res_name, query
-        )
+        query = f"?pendingid={pending_id}"
+        url = f"{path_prefix}/applications/{app_name}/resources/{res_name}{query}"
         if res_type == "oci-image":
-            disp = 'multipart/form-data; filename="{}"'.format(path)
+            disp = f'multipart/form-data; filename="{path}"'
         else:
-            disp = 'form-data; filename="{}"'.format(path)
+            disp = f'form-data; filename="{path}"'
 
         headers["Content-Type"] = "application/octet-stream"
         headers["Content-Length"] = len(data)
@@ -2355,7 +2327,6 @@ class Model:
         :return str: Path to the archive file
 
         """
-
         conn, headers, path_prefix = self.connection().https_connection()
         path = "%s/backups" % path_prefix
         headers["Content-Type"] = "application/json"
@@ -2382,7 +2353,7 @@ class Model:
         with open(str(file_name), "wb") as f:
             try:
                 f.write(result)
-            except (OSError, IOError) as e:
+            except OSError as e:
                 raise JujuBackupError(
                     "backup ID : %s was fetched, but : %s" % (archive_id, e)
                 )
@@ -2537,7 +2508,6 @@ class Model:
 
         :param dict config: Mapping of model constraints
         """
-
         facade_cls = client.ModelConfigFacade
 
         facade = facade_cls.from_connection(self.connection())
@@ -2653,8 +2623,7 @@ class Model:
         return metrics
 
     async def create_offer(self, endpoint, offer_name=None, application_name=None):
-        """
-        Offer a deployed application using a series of endpoints for use by
+        """Offer a deployed application using a series of endpoints for use by
         consumers.
 
         @param endpoint: holds the application and endpoint you want to offer
@@ -2669,16 +2638,14 @@ class Model:
             )
 
     async def list_offers(self):
-        """
-        Offers list information about applications' endpoints that have been
+        """Offers list information about applications' endpoints that have been
         shared and who is connected.
         """
         async with ConnectedController(self.connection()) as controller:
             return await controller.list_offers(self.name)
 
     async def remove_offer(self, endpoint, force=False):
-        """
-        Remove offer for an application.
+        """Remove offer for an application.
 
         Offers will also remove relations to those offers, use force to do
         so, without an error.
@@ -2689,15 +2656,13 @@ class Model:
     async def consume(
         self, endpoint, application_alias="", controller_name=None, controller=None
     ):
-        """
-        Adds a remote offer to the model. Relations can be created later using
+        """Adds a remote offer to the model. Relations can be created later using
         "juju relate".
 
         If consuming a relation from a model on different controller the
         controller name must be included in the endpoint. The controller_name
         argument is being deprecated.
         """
-
         if controller and controller_name:
             raise JujuError("cannot set both controller_name and controller")
         try:
@@ -2706,9 +2671,7 @@ class Model:
             log.error(e.message)
             raise
         if offer.has_endpoint():
-            raise JujuError(
-                "remote offer {} should not include an endpoint".format(endpoint)
-            )
+            raise JujuError(f"remote offer {endpoint} should not include an endpoint")
         if offer.user == "":
             offer.user = self.info.username
             endpoint = offer.string()
@@ -2740,9 +2703,7 @@ class Model:
         if not controller:
             await source.disconnect()
         if consume_details is None or consume_details.offer is None:
-            raise JujuAPIError(
-                "missing consuming offer url for {}".format(offer.string())
-            )
+            raise JujuAPIError(f"missing consuming offer url for {offer.string()}")
 
         offer_url = parse_offer_url(consume_details.offer.offer_url)
         offer_url.source = offer.source
@@ -2759,9 +2720,7 @@ class Model:
         facade = client.ApplicationFacade.from_connection(self.connection())
         results = await facade.Consume(args=[arg])
         if len(results.results) != 1:
-            raise JujuAPIError(
-                "expected 1 result, received {}".format(len(results.results))
-            )
+            raise JujuAPIError(f"expected 1 result, received {len(results.results)}")
         if results.results[0].error is not None:
             raise JujuAPIError(results.results[0].error)
         local_name = offer_url.application
@@ -2770,13 +2729,12 @@ class Model:
         return local_name
 
     async def remove_saas(self, name):
-        """
-        Removing a consumed (SAAS) application will terminate any relations that
+        """Removing a consumed (SAAS) application will terminate any relations that
         application has, potentially leaving any related local applications
         in a non-functional state.
         """
         if not is_valid_application(name):
-            raise JujuError("invalid SAAS application name {}".format(name))
+            raise JujuError(f"invalid SAAS application name {name}")
 
         arg = client.DestroyConsumedApplicationParams()
         arg.application_tag = application_tag(name)
@@ -2785,9 +2743,7 @@ class Model:
         return await facade.DestroyConsumedApplications(applications=[arg])
 
     async def export_bundle(self, filename=None):
-        """
-        Exports the current model configuration as a reusable bundle.
-        """
+        """Exports the current model configuration as a reusable bundle."""
         facade = client.BundleFacade.from_connection(self.connection())
         result = await facade.ExportBundle()
         if result.error is not None:
@@ -2799,7 +2755,7 @@ class Model:
         try:
             with open(str(filename), "w") as file:
                 file.write(result.result)
-        except IOError:
+        except OSError:
             raise
 
     async def add_secret(self, name, data_args, file="", info=""):
@@ -2875,9 +2831,7 @@ class Model:
             raise JujuAPIError(result_error.error)
 
     async def list_secrets(self, filter=None, show_secrets=False):
-        """
-        Returns the list of available secrets.
-        """
+        """Returns the list of available secrets."""
         facade = client.SecretsFacade.from_connection(self.connection())
         results = await facade.ListSecrets(
             filter_=filter,
@@ -3155,22 +3109,12 @@ class Model:
 
                         if now - idle_start < idle_period:
                             busy.append(
-                                "{} [{}] {}: {}".format(
-                                    unit.name,
-                                    unit.agent_status,
-                                    unit.workload_status,
-                                    unit.workload_status_message,
-                                )
+                                f"{unit.name} [{unit.agent_status}] {unit.workload_status}: {unit.workload_status_message}"
                             )
                     else:
                         idle_times.pop(unit.name, None)
                         busy.append(
-                            "{} [{}] {}: {}".format(
-                                unit.name,
-                                unit.agent_status,
-                                unit.workload_status,
-                                unit.workload_status_message,
-                            )
+                            f"{unit.name} [{unit.agent_status}] {unit.workload_status}: {unit.workload_status_message}"
                         )
             _raise_for_status(errors, "error")
             _raise_for_status(blocks, "blocked")
@@ -3186,8 +3130,7 @@ class Model:
 
 
 def _create_consume_args(offer, macaroon, controller_info):
-    """
-    Convert a typed object that has been normalised to a overridden typed
+    """Convert a typed object that has been normalised to a overridden typed
     definition.
 
     @param offer: takes an offer and serialises it into a valid type
@@ -3241,8 +3184,7 @@ def _create_consume_args(offer, macaroon, controller_info):
 
 
 class CharmArchiveGenerator:
-    """
-    Create a Zip archive of a local charm directory for upload to a controller.
+    """Create a Zip archive of a local charm directory for upload to a controller.
 
     This is used automatically by
     `Model.add_local_charm_dir <#juju.model.Model.add_local_charm_dir>`_.

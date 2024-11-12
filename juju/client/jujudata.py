@@ -2,7 +2,6 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import abc
-import io
 import os
 import pathlib
 
@@ -57,14 +56,10 @@ class JujuData:
             # by using the current user for the controller.
             accounts = self.accounts().get(controller_name)
             if accounts is None:
-                raise JujuError(
-                    "No account found for controller {} ".format(controller_name)
-                )
+                raise JujuError(f"No account found for controller {controller_name} ")
             username = accounts.get("user")
             if username is None:
-                raise JujuError(
-                    "No username found for controller {}".format(controller_name)
-                )
+                raise JujuError(f"No username found for controller {controller_name}")
             model_name = username + "/" + model_name
 
         return controller_name, model_name
@@ -72,7 +67,8 @@ class JujuData:
 
 class FileJujuData(JujuData):
     """Provide access to the Juju client configuration files.
-    Any configuration file is read once and then cached."""
+    Any configuration file is read once and then cached.
+    """
 
     def __init__(self):
         self.path = juju_config_dir()
@@ -178,7 +174,7 @@ class FileJujuData(JujuData):
             return self._loaded[filename].get(key)
         # TODO use the file lock like Juju does.
         filepath = os.path.join(self.path, filename)
-        with io.open(filepath, "rt") as f:
+        with open(filepath) as f:
             data = yaml.safe_load(f)
             self._loaded[filename] = data
             return data.get(key)

@@ -89,7 +89,7 @@ def _print_status_model(result_status):
     cloud = m.cloud_tag.split("-")[1]
     timestamp = result_status.controller_timestamp
     if m.available_version is not None and m.available_version != "":
-        available_version = "upgrade available: {}".format(m.available_version)
+        available_version = f"upgrade available: {m.available_version}"
     else:
         available_version = ""
     result_str += "{:<25} {:<25} {:<15} {:<15} {:<30} {:<30}".format(
@@ -101,7 +101,8 @@ def _print_status_model(result_status):
 
 def _print_status_apps(result_status):
     """Auxiliary function to print the apps received
-    in a status result"""
+    in a status result
+    """
     apps = result_status.applications
     if apps is None or len(apps) == 0:
         return ""
@@ -129,8 +130,8 @@ def _print_status_apps(result_status):
 
 def _print_status_units(result_status):
     """Auxiliary function to print the units received
-    in a status result"""
-
+    in a status result
+    """
     apps = result_status.applications
     if apps is None or len(apps) == 0:
         return

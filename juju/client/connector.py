@@ -4,9 +4,8 @@
 import copy
 import logging
 
-from packaging import version
-
 import macaroonbakery.httpbakery as httpbakery
+from packaging import version
 
 from juju.client import client
 from juju.client.connection import Connection
@@ -21,7 +20,8 @@ log = logging.getLogger("connector")
 
 class NoConnectionException(Exception):
     """Raised by Connector when the connection method is called
-    and there is no current connection."""
+    and there is no current connection.
+    """
 
     pass
 
@@ -38,7 +38,8 @@ class Connector:
         jujudata=None,
     ):
         """Initialize a connector that will use the given parameters
-        by default when making a new connection"""
+        by default when making a new connection
+        """
         self.max_frame_size = max_frame_size
         self.bakery_client = bakery_client
         self._connection = None
@@ -53,7 +54,8 @@ class Connector:
 
     def connection(self):
         """Return the current connection; raises an exception if there
-        is no current connection."""
+        is no current connection.
+        """
         if not self.is_connected():
             raise NoConnectionException("not connected")
         return self._connection
@@ -166,14 +168,13 @@ class Connector:
 
         :param str model: <controller>:<model>
         """
-
         try:
             controller_name, _model_name = self.jujudata.parse_model(_model_name)
             controller = self.jujudata.controllers().get(controller_name)
         except JujuError as e:
             raise JujuConnectionError(e.message) from e
         if controller is None:
-            raise JujuConnectionError("Controller {} not found".format(controller_name))
+            raise JujuConnectionError(f"Controller {controller_name} not found")
         endpoints = controller[API_ENDPOINTS_KEY]
         account = self.jujudata.accounts().get(controller_name, {})
         models = self.jujudata.models().get(controller_name, {}).get("models", {})
@@ -195,7 +196,7 @@ class Connector:
                     model_uuid = user_model.model.uuid
 
         if model_uuid is None:
-            raise JujuConnectionError("Model not found: {}".format(_model_name))
+            raise JujuConnectionError(f"Model not found: {_model_name}")
 
         proxy = proxy_from_config(controller.get("proxy-config", None))
 

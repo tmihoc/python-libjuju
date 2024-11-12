@@ -1,12 +1,9 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-Tests for generated client code
+"""Tests for generated client code"""
 
-"""
-
-import mock
+from unittest import mock
 
 from juju.client import client
 

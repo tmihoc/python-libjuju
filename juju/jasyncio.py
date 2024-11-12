@@ -10,37 +10,19 @@
 # this layer.
 
 import asyncio
-import signal
 import functools
-import websockets
 import logging
+import signal
+
+import websockets
 
 ROOT_LOGGER = logging.getLogger()
 
 from asyncio import (
-    Event,
-    TimeoutError,
-    Queue,
-    ensure_future,
-    gather,
-    sleep,
-    wait_for,
-    create_subprocess_exec,
-    subprocess,
-    wait,
-    FIRST_COMPLETED,
-    Lock,
-    as_completed,
-    new_event_loop,
-    get_event_loop_policy,
     CancelledError,
-    get_running_loop,
     create_task,
-    ALL_COMPLETED,
-    all_tasks,
-    current_task,
-    shield,
-)  # noqa
+    wait,
+)
 
 
 def create_task_with_handler(coro, task_name, logger=ROOT_LOGGER):
@@ -79,10 +61,8 @@ def create_task_with_handler(coro, task_name, logger=ROOT_LOGGER):
     return task
 
 
-class SingletonEventLoop(object):
-    """
-    Single instance containing an event loop to be reused.
-    """
+class SingletonEventLoop:
+    """Single instance containing an event loop to be reused."""
 
     loop = None
 
@@ -95,13 +75,11 @@ class SingletonEventLoop(object):
 
 
 def run(*steps):
-    """
-    Helper to run one or more async functions synchronously, with graceful
+    """Helper to run one or more async functions synchronously, with graceful
     handling of SIGINT / Ctrl-C.
 
     Returns the return value of the last function.
     """
-
     if not steps:
         return
 

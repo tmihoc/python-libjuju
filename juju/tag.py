@@ -8,7 +8,7 @@
 
 def _prefix(prefix, s):
     if s and not s.startswith(prefix):
-        return "{}{}".format(prefix, s)
+        return f"{prefix}{s}"
     return s
 
 
@@ -27,7 +27,7 @@ def controller(controller_uuid):
 
 
 def credential(cloud, user, credential_name):
-    credential_string = "{}_{}_{}".format(cloud, user, credential_name)
+    credential_string = f"{cloud}_{user}_{credential_name}"
     return _prefix("cloudcred-", credential_string)
 
 

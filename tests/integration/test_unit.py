@@ -4,9 +4,10 @@
 import asyncio
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+
 import pytest
 
-from juju import utils, jasyncio
+from juju import jasyncio, utils
 
 from .. import base
 

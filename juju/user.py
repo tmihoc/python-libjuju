@@ -5,13 +5,13 @@ import logging
 
 import pyrfc3339
 
-from . import tag, errors
+from . import errors, tag
 from .client import client
 
 log = logging.getLogger(__name__)
 
 
-class User(object):
+class User:
     def __init__(self, controller, user_info, secret_key=None):
         self.controller = controller
         self._user_info = user_info

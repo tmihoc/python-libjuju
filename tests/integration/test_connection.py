@@ -8,18 +8,17 @@ import ssl
 from contextlib import closing
 from pathlib import Path
 
+import pytest
+import websockets
+
+from juju import jasyncio
 from juju.client import client
 from juju.client.connection import Connection
 from juju.client.jujudata import FileJujuData
 from juju.controller import Controller
 from juju.utils import run_with_interrupt
-from juju import jasyncio
-
-import pytest
-import websockets
 
 from .. import base
-
 
 logger = logging.getLogger(__name__)
 
@@ -110,14 +109,14 @@ async def test_redirect():
     server = RedirectServer(destination)
     try:
         for status in redirect_statuses:
-            logger.debug("test: starting {}".format(status))
+            logger.debug(f"test: starting {status}")
             server.start(status)
             await run_with_interrupt(server.running.wait(), server.terminated)
             if server.exception:
                 raise server.exception
             assert not server.terminated.is_set()
             logger.debug("test: started")
-            kwargs_copy = dict(kwargs, endpoint="localhost:{}".format(server.port))
+            kwargs_copy = dict(kwargs, endpoint=f"localhost:{server.port}")
             logger.debug("test: connecting")
             conn = await Connection.connect(**kwargs_copy)
             logger.debug("test: connected")
@@ -185,7 +184,7 @@ class RedirectServer:
                 if self._terminate.is_set():
                     break
                 self._start.clear()
-                logger.debug("server: starting {}".format(self.status))
+                logger.debug(f"server: starting {self.status}")
                 try:
                     async with websockets.serve(
                         ws_handler=hello,

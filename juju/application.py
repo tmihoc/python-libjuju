@@ -4,15 +4,15 @@
 import hashlib
 import json
 import logging
-from typing import Dict, List, Optional, Union
 from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 from typing_extensions import deprecated
 
 from . import jasyncio, model, tag, utils
 from .annotationhelper import _get_annotations, _set_annotations
 from .bundle import get_charm_series, is_local_charm
-from .client import client, _definitions
+from .client import _definitions, client
 from .errors import JujuApplicationConfigError, JujuError
 from .origin import Channel
 from .placement import parse as parse_placement
@@ -77,7 +77,7 @@ class Application(model.ModelEntity):
 
     @property
     def _unit_match_pattern(self):
-        return r"^{}.*$".format(self.entity_id)
+        return rf"^{self.entity_id}.*$"
 
     def _facade(self):
         return client.ApplicationFacade.from_connection(self.connection)
@@ -160,9 +160,8 @@ class Application(model.ModelEntity):
         return tag.application(self.name)
 
     async def add_relation(self, local_relation, remote_relation):
-        """
-        .. deprecated:: 2.9.9
-           Use ``relate()`` instead
+        """.. deprecated:: 2.9.9
+        Use ``relate()`` instead
         """
         return await self.relate(local_relation, remote_relation)
 
@@ -175,7 +174,7 @@ class Application(model.ModelEntity):
 
         """
         if ":" not in local_relation:
-            local_relation = "{}:{}".format(self.name, local_relation)
+            local_relation = f"{self.name}:{local_relation}"
 
         return await self.model.relate(local_relation, remote_relation)
 
@@ -193,7 +192,6 @@ class Application(model.ModelEntity):
             If None, a new machine is provisioned.
 
         """
-
         if self.model.info.type_ == "caas":
             log.warning(
                 "adding units to a container-based model not supported, auto-switching to scale"
@@ -219,8 +217,7 @@ class Application(model.ModelEntity):
     add_units = add_unit
 
     async def scale(self, scale=None, scale_change=None):
-        """
-        Set or adjust the scale of this (K8s) application.
+        """Set or adjust the scale of this (K8s) application.
 
         One or the other of scale or scale_change must be provided.
 
@@ -260,7 +257,7 @@ class Application(model.ModelEntity):
 
         """
         if ":" not in local_relation:
-            local_relation = "{}:{}".format(self.name, local_relation)
+            local_relation = f"{self.name}:{local_relation}"
 
         app_facade = self._facade()
 
@@ -291,16 +288,13 @@ class Application(model.ModelEntity):
         :param bool no_wait: Rush through application removal without waiting for each individual step to complete (=false)
         :param bool block: Blocks until the application is removed from the model
         """
-
         if no_wait and not force:
             raise JujuError("--no-wait without --force is not valid")
 
         app_facade = self._facade()
 
         log.debug(
-            "Destroying {} with parameters -- destroy-storage : {} -- force : {} -- no-wait : {}".format(
-                self.name, destroy_storage, force, no_wait
-            )
+            f"Destroying {self.name} with parameters -- destroy-storage : {destroy_storage} -- force : {force} -- no-wait : {no_wait}"
         )
 
         res = await app_facade.DestroyApplication(
@@ -319,7 +313,8 @@ class Application(model.ModelEntity):
 
     def supports_granular_expose_parameters(self):
         """Returns true if the controller supports granular, per-endpoint
-        expose parameters."""
+        expose parameters.
+        """
         return self._facade_version() >= 13
 
     async def expose(self, exposed_endpoints=None):
@@ -475,9 +470,7 @@ class Application(model.ModelEntity):
         """Return the trusted configuration setting for this application."""
         if self.model.info.agent_version < client.Number.from_json("2.4.0"):
             raise NotImplementedError(
-                "trusted is not supported on model version {}".format(
-                    self.model.info.agent_version
-                )
+                f"trusted is not supported on model version {self.model.info.agent_version}"
             )
 
         app_facade = self._facade()
@@ -498,9 +491,7 @@ class Application(model.ModelEntity):
         """
         if self.model.info.agent_version < client.Number.from_json("2.4.0"):
             raise NotImplementedError(
-                "trusted is not supported on model version {}".format(
-                    self.model.info.agent_version
-                )
+                f"trusted is not supported on model version {self.model.info.agent_version}"
             )
 
         # clamp trust to exactly the value juju expects, rather than allowing
@@ -565,7 +556,6 @@ class Application(model.ModelEntity):
 
         :return: str status
         """
-
         client_facade = client.ClientFacade.from_connection(self.connection)
 
         full_status = await client_facade.FullStatus(patterns=None)
@@ -586,9 +576,7 @@ class Application(model.ModelEntity):
         """
         conn, headers, path_prefix = self.connection.https_connection()
 
-        url = "{}/applications/{}/resources/{}".format(
-            path_prefix, self.name, resource_name
-        )
+        url = f"{path_prefix}/applications/{self.name}/resources/{resource_name}"
 
         data = file_obj.read()
 
@@ -601,7 +589,7 @@ class Application(model.ModelEntity):
         if not file_name.startswith("./"):
             file_name = "./" + file_name
 
-        headers["Content-Disposition"] = 'form-data; filename="{}"'.format(file_name)
+        headers["Content-Disposition"] = f'form-data; filename="{file_name}"'
         headers["Accept-Encoding"] = "gzip"
         headers["Bakery-Protocol-Version"] = 3
         headers["Connection"] = "close"
@@ -713,8 +701,7 @@ class Application(model.ModelEntity):
         )
 
     async def reset_config(self, to_default):
-        """
-        Restore application config to default values.
+        """Restore application config to default values.
 
         :param list to_default: A list of config options to be reset to their
         default value.
@@ -816,7 +803,7 @@ class Application(model.ModelEntity):
 
         if parsed_url.schema is None:
             raise JujuError(
-                f"A ch: or cs: schema is required for application refresh, given : {str(parsed_url)}"
+                f"A ch: or cs: schema is required for application refresh, given : {parsed_url!s}"
             )
 
         # Resolve the given charm URLs with an optionally specified preferred channel.
@@ -1045,7 +1032,8 @@ class ExposedEndpoint:
     """ExposedEndpoint stores the list of CIDRs and space names which should be
     allowed access to the port ranges that the application has opened for a
     particular endpoint. Both lists are optional; if empty, the opened port
-    ranges will be reachable from any source IP address."""
+    ranges will be reachable from any source IP address.
+    """
 
     def __init__(self, to_spaces=None, to_cidrs=None):
         if to_spaces is not None and not isinstance(to_spaces, list):
@@ -1093,7 +1081,7 @@ class ExposedEndpoint:
         descr = ""
         if self.to_spaces is not None and len(self.to_spaces) > 0:
             if len(self.to_spaces) == 1:
-                descr = "from space {}".format(self.to_spaces[0])
+                descr = f"from space {self.to_spaces[0]}"
             elif len(self.to_spaces) > 1:
                 descr = "from spaces {}".format(",".join(self.to_spaces))
 
@@ -1102,7 +1090,7 @@ class ExposedEndpoint:
 
         if self.to_cidrs is not None:
             if len(self.to_cidrs) == 1:
-                descr = descr + "from CIDR {}".format(self.to_cidrs[0])
+                descr = descr + f"from CIDR {self.to_cidrs[0]}"
             elif len(self.to_cidrs) > 1:
                 descr = descr + "from CIDRs {}".format(",".join(self.to_cidrs))
 

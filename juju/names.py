@@ -70,13 +70,9 @@ def match_model_application(val, match_type=None):
 
 
 valid_user_name_snippet = "[a-zA-Z0-9][a-zA-Z0-9.+-]*[a-zA-Z0-9]"
-valid_user_snippet = "(?:{}(?:@{})?)".format(
-    valid_user_name_snippet, valid_user_name_snippet
-)
+valid_user_snippet = f"(?:{valid_user_name_snippet}(?:@{valid_user_name_snippet})?)"
 USER = re.compile(
-    "^(?P<name>{})(?:@(?P<domain>{}))?$".format(
-        valid_user_name_snippet, valid_user_name_snippet
-    )
+    f"^(?P<name>{valid_user_name_snippet})(?:@(?P<domain>{valid_user_name_snippet}))?$"
 )
 
 

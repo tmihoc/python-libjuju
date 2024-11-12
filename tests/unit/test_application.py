@@ -1,14 +1,14 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-import unittest
-import mock
 import asyncio
+import unittest
+from unittest import mock
 
-from juju.model import Model
 from juju.application import Application, ExposedEndpoint, _refresh_origin
-from juju.errors import JujuError
 from juju.client import client
+from juju.errors import JujuError
+from juju.model import Model
 from juju.origin import Source
 
 

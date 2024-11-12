@@ -1,15 +1,12 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example doesn't work - it demonstrates features that don't exist yet.
-
-"""
+"""This example doesn't work - it demonstrates features that don't exist yet."""
 
 import logging
 
-from juju.model import Model
 from juju import jasyncio
+from juju.model import Model
 
 
 async def main():

@@ -2,23 +2,24 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import unittest
+
 import pytest
 
-from juju.utils import (
-    series_selector,
-    get_base_from_origin_or_channel,
-    parse_base_arg,
-    DEFAULT_SUPPORTED_LTS,
-    get_series_version,
-    get_version_series,
-    base_channel_to_series,
-    base_channel_from_series,
-    get_os_from_series,
-)
-from juju.errors import JujuError
-from juju.url import URL
 from juju import utils
 from juju.client import client
+from juju.errors import JujuError
+from juju.url import URL
+from juju.utils import (
+    DEFAULT_SUPPORTED_LTS,
+    base_channel_from_series,
+    base_channel_to_series,
+    get_base_from_origin_or_channel,
+    get_os_from_series,
+    get_series_version,
+    get_version_series,
+    parse_base_arg,
+    series_selector,
+)
 
 
 class TestDirResolve(unittest.TestCase):

@@ -1,12 +1,12 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-from juju.controller import Controller
 from juju.client.jujudata import FileJujuData
+from juju.controller import Controller
 from juju.errors import JujuError
 
 
-class Juju(object):
+class Juju:
     def __init__(self, jujudata=None):
         self.jujudata = jujudata or FileJujuData()
 
@@ -22,7 +22,6 @@ class Juju(object):
 
         The returned controller will try and connect to be ready to use.
         """
-
         # check if name is in the controllers.yaml
         controllers = self.jujudata.controllers()
         assert isinstance(controllers, dict)

@@ -12,11 +12,13 @@ import pyrfc3339
 class GoCookieJar(cookiejar.FileCookieJar):
     """A CookieJar implementation that reads and writes cookies
     to the cookiejar format as understood by the Go package
-    github.com/juju/persistent-cookiejar."""
+    github.com/juju/persistent-cookiejar.
+    """
 
     def _really_load(self, f, filename, ignore_discard, ignore_expires):
         """Implement the _really_load method called by FileCookieJar
-        to implement the actual cookie loading"""
+        to implement the actual cookie loading
+        """
         data = json.load(f) or []
         now = time.time()
         for cookie in map(go_to_py_cookie, data):

@@ -65,16 +65,16 @@ def parse_offer_endpoint(endpoint):
         model_group = model_group.split("/")[0]
 
     if (model_group is not None) and (not match_model(model_group)):
-        raise ParseError("model name {}".format(model_group))
+        raise ParseError(f"model name {model_group}")
     if not match_application(application_group):
-        raise ParseError("application name {}".format(application_group))
+        raise ParseError(f"application name {application_group}")
 
     model = model_group
     application = application_group
 
     endpoints = endpoints_group.split(",")
     if len(endpoints) == 0 or len(endpoints_group) == 0:
-        raise ParseError("specify endpoints for {}".format(application))
+        raise ParseError(f"specify endpoints for {application}")
 
     return OfferEndpoints(
         application, endpoints, model=model, qualified_model_name=qualified_model_name
@@ -114,10 +114,10 @@ class OfferURL:
         if self.model != "":
             parts.append(self.model)
         path = "/".join(parts)
-        path = "{}.{}".format(path, self.application)
+        path = f"{path}.{self.application}"
         if self.has_empty_source():
             return path
-        return "{}:{}".format(self.source, path)
+        return f"{self.source}:{path}"
 
 
 def parse_offer_url(url):
@@ -127,9 +127,7 @@ def parse_offer_url(url):
     valid = valid and match_model_application(rest)
     if not valid:
         raise ParseError(
-            "application offer URL has invalid form, must be [<user/]<model>.<appname>: {}".format(
-                url
-            )
+            f"application offer URL has invalid form, must be [<user/]<model>.<appname>: {url}"
         )
 
     offer_source = source
@@ -141,9 +139,7 @@ def parse_offer_url(url):
 
     if valid and (("/" in offer_model) or ("/" in offer_application)):
         raise ParseError(
-            "application offer URL has invalid form, must be [<user/]<model>.<appname>: {}".format(
-                url
-            )
+            f"application offer URL has invalid form, must be [<user/]<model>.<appname>: {url}"
         )
     if not offer_model:
         raise ParseError("application offer URL is missing model")
@@ -151,13 +147,13 @@ def parse_offer_url(url):
         raise ParseError("application offer URL is missing application")
 
     if offer_user and not match_user(offer_user):
-        raise ParseError("user name {} not valid".format(offer_user))
+        raise ParseError(f"user name {offer_user} not valid")
     if offer_model and not match_model(offer_model):
-        raise ParseError("model name {} not valid".format(offer_model))
+        raise ParseError(f"model name {offer_model} not valid")
 
     app_name = offer_application.split(":")[0]
     if app_name and not match_application(app_name):
-        raise ParseError("application name {} not valid".format(app_name))
+        raise ParseError(f"application name {app_name} not valid")
 
     return OfferURL(
         source=offer_source,
@@ -201,20 +197,20 @@ def parse_local_endpoint(url):
 
     if ":" in url:
         if url[0] == ":" or url[-1] == ":":
-            raise ParseError("endpoint {} not valid".format(url))
+            raise ParseError(f"endpoint {url} not valid")
 
         parts = url.split(":")
         if len(parts) != 2:
-            raise ParseError("endpoint {} not valid".format(url))
+            raise ParseError(f"endpoint {url} not valid")
 
         application_name = parts[0]
 
         if not match_relation(parts[1]):
-            raise ParseError("endpoint {} not valid".format(url))
+            raise ParseError(f"endpoint {url} not valid")
 
         relation = parts[1]
 
     if not match_application(application_name):
-        raise ParseError("endpoint {} not valid".format(application_name))
+        raise ParseError(f"endpoint {application_name} not valid")
 
     return LocalEndpoint(application=application_name, relation=relation)

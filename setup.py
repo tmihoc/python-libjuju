@@ -10,7 +10,7 @@ from juju.version import CLIENT_VERSION
 here = Path(__file__).absolute().parent
 readme = here / "docs" / "readme.rst"
 changelog = here / "docs" / "changelog.rst"
-long_description = "{}\n\n{}".format(readme.read_text(), changelog.read_text())
+long_description = f"{readme.read_text()}\n\n{changelog.read_text()}"
 long_description_content_type = "text/x-rst"
 
 setup(
@@ -41,13 +41,17 @@ setup(
     url="https://github.com/juju/python-libjuju",
     license="Apache 2",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
     entry_points={
         "console_scripts": [],

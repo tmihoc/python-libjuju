@@ -1,35 +1,33 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-import logging
+import base64
 import io
+import logging
 import os
 import zipfile
-import requests
-import base64
 from contextlib import closing
 from pathlib import Path
 from typing import Dict, Optional
 
+import requests
 import yaml
-
 from toposort import toposort_flatten
 
+from . import jasyncio, utils
 from .client import client
 from .constraints import parse as parse_constraints
 from .constraints import parse_storage_constraint
 from .errors import JujuError
-from . import utils, jasyncio
 from .origin import Channel, Source
-from .url import Schema, URL
+from .url import URL, Schema
 from .utils import get_base_from_origin_or_channel
 
 log = logging.getLogger(__name__)
 
 
 class BundleHandler:
-    """
-    Handle bundles by using the API to translate bundle YAML into a plan of
+    """Handle bundles by using the API to translate bundle YAML into a plan of
     steps and then dispatching each of those using the API.
     """
 
@@ -97,7 +95,7 @@ class BundleHandler:
                 raise JujuError(
                     "Bundle cannot be deployed without trusting applications with your cloud credentials.\n"
                     "Please repeat the deploy command with the --trust argument if you consent to trust the following application\n"
-                    " - {}\n".format(app_name)
+                    f" - {app_name}\n"
                 )
         return bundle
 
@@ -142,8 +140,8 @@ class BundleHandler:
                 series = utils.base_channel_to_series(base.channel)
             if not series:
                 raise JujuError(
-                    "Couldn't determine series for charm at {}. "
-                    "Add a 'series' key to the bundle.".format(charm_dir)
+                    f"Couldn't determine series for charm at {charm_dir}. "
+                    "Add a 'series' key to the bundle."
                 )
             # Keep track of what we need to update. We keep a list of apps
             # that need to be updated, and a corresponding list of args
@@ -181,7 +179,7 @@ class BundleHandler:
         return bundle
 
     def _resolve_include_file_config(self, bundle_dir):
-        """if any of the applications (including the ones in the overlays)
+        """If any of the applications (including the ones in the overlays)
         have "config: include-file:..." or "config:
         include-base64:...", then we have to resolve and inline them
         into the bundle here because they're all files with local
@@ -301,7 +299,7 @@ class BundleHandler:
             for overlay_yaml_path in overlays:
                 try:
                     overlay_contents = Path(overlay_yaml_path).read_text()
-                except (OSError, IOError) as e:
+                except OSError as e:
                     raise JujuError(
                         "unable to open overlay %s \n %s" % (overlay_yaml_path, e)
                     )
@@ -337,9 +335,7 @@ class BundleHandler:
     async def _download_bundle(self, charm_url, origin):
         if self.charms_facade is None:
             raise JujuError(
-                "unable to download bundle for {} using the new charms facade. Upgrade controller to proceed.".format(
-                    charm_url
-                )
+                f"unable to download bundle for {charm_url} using the new charms facade. Upgrade controller to proceed."
             )
 
         id = origin.id_ if origin.id_ else ""
@@ -364,11 +360,11 @@ class BundleHandler:
             entities=[{"charm-url": str(charm_url), "charm-origin": charm_origin}]
         )
         if len(resp.results) != 1:
-            raise JujuError("expected one result, received {}".format(resp.results))
+            raise JujuError(f"expected one result, received {resp.results}")
 
         result = resp.results[0]
         if not result.url:
-            raise JujuError("no url found for bundle {}".format(charm_url.name))
+            raise JujuError(f"no url found for bundle {charm_url.name}")
 
         bundle_resp = requests.get(result.url)
         bundle_resp.raise_for_status()
@@ -455,9 +451,9 @@ class BundleHandler:
         for step in changes.sorted():
             change_cls = self.change_types.get(step.method)
             if change_cls is None:
-                raise NotImplementedError("unknown change type: {}".format(step.method))
+                raise NotImplementedError(f"unknown change type: {step.method}")
             change = change_cls(step.id_, step.requires, step.args)
-            log.info("Applying change: {}".format(change))
+            log.info(f"Applying change: {change}")
             self.references[step.id_] = await change.run(self)
 
     @property
@@ -474,7 +470,7 @@ class BundleHandler:
         application = self.resolve(parts[0])
         if len(parts) == 1:
             return application
-        return "{}:{}".format(application, parts[1])
+        return f"{application}:{parts[1]}"
 
     def resolve(self, reference):
         if reference and reference.startswith("$"):
@@ -516,7 +512,6 @@ async def get_charm_series(metadata, model):
     Returns None if no series can be determined.
 
     """
-
     _series = metadata.get("series")
     series = _series[0] if _series else None
 
@@ -619,7 +614,7 @@ class AddApplicationChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "deploy"
 
     async def run(self, context):
@@ -644,9 +639,7 @@ class AddApplicationChange(ChangeInfo):
         if context.trusted:
             if context.model.info.agent_version < client.Number.from_json("2.4.0"):
                 raise NotImplementedError(
-                    "trusted is not supported on model version {}".format(
-                        context.model.info.agent_version
-                    )
+                    f"trusted is not supported on model version {context.model.info.agent_version}"
                 )
             options["trust"] = "true"
 
@@ -671,9 +664,7 @@ class AddApplicationChange(ChangeInfo):
         )
         if origin is None:
             raise JujuError(
-                "expected origin to be valid for application {} and charm {} with channel {}".format(
-                    self.application, str(url), str(channel)
-                )
+                f"expected origin to be valid for application {self.application} and charm {url!s} with channel {channel!s}"
             )
 
         if not self.series:
@@ -711,23 +702,14 @@ class AddApplicationChange(ChangeInfo):
     def __str__(self):
         series = ""
         if self.series is not None and self.series != "":
-            series = " on {}".format(self.series)
+            series = f" on {self.series}"
         units_info = ""
         if self.num_units is not None:
             plural = ""
             if self.num_units > 1:
                 plural = "s"
-            units_info = " with {num_units} unit{plural}".format(
-                num_units=self.num_units, plural=plural
-            )
-        return (
-            "deploy application {application}{units_info}{series} using {charm}".format(
-                application=self.application,
-                units_info=units_info,
-                series=series,
-                charm=self.charm,
-            )
-        )
+            units_info = f" with {self.num_units} unit{plural}"
+        return f"deploy application {self.application}{units_info}{series} using {self.charm}"
 
 
 class AddCharmChange(ChangeInfo):
@@ -758,7 +740,7 @@ class AddCharmChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "addCharm"
 
     async def run(self, context):
@@ -768,7 +750,6 @@ class AddCharmChange(ChangeInfo):
         :param context: is used for any methods or properties required to
             perform a change.
         """
-
         # We don't add local charms because they've already been added
         # by self._handle_local_charms
         if is_local_charm(str(self.charm)):
@@ -796,7 +777,7 @@ class AddCharmChange(ChangeInfo):
             identifier, origin = await context.model._resolve_charm(url, origin)
 
         if identifier is None:
-            raise JujuError("unknown charm {}".format(self.charm))
+            raise JujuError(f"unknown charm {self.charm}")
 
         await context.model._add_charm(str(identifier), origin)
 
@@ -810,12 +791,10 @@ class AddCharmChange(ChangeInfo):
         series = ""
         channel = ""
         if self.series is not None and self.series != "":
-            series = " for series {}".format(self.series)
+            series = f" for series {self.series}"
         if self.channel is not None:
-            channel = " from channel {}".format(self.channel)
-        return "upload charm {charm}{series}{channel}".format(
-            charm=self.charm, series=series, channel=channel
-        )
+            channel = f" from channel {self.channel}"
+        return f"upload charm {self.charm}{series}{channel}"
 
 
 class AddMachineChange(ChangeInfo):
@@ -845,7 +824,7 @@ class AddMachineChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "addMachines"
 
     async def run(self, context):
@@ -895,10 +874,8 @@ class AddMachineChange(ChangeInfo):
     def __str__(self):
         machine = "new machine"
         if self.container_type is not None and self.container_type != "":
-            machine = "{container_type} container on {machine}".format(
-                container_type=self.container_type, machine=machine
-            )
-        return "add {}".format(machine)
+            machine = f"{self.container_type} container on {machine}"
+        return f"add {machine}"
 
 
 class AddRelationChange(ChangeInfo):
@@ -924,7 +901,7 @@ class AddRelationChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "addRelation"
 
     async def run(self, context):
@@ -949,9 +926,7 @@ class AddRelationChange(ChangeInfo):
         return await context.model.relate(ep1, ep2)
 
     def __str__(self):
-        return "add relation {endpoint1} - {endpoint2}".format(
-            endpoint1=self.endpoint1, endpoint2=self.endpoint2
-        )
+        return f"add relation {self.endpoint1} - {self.endpoint2}"
 
 
 class AddUnitChange(ChangeInfo):
@@ -974,7 +949,7 @@ class AddUnitChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "addUnit"
 
     async def run(self, context):
@@ -1006,9 +981,7 @@ class AddUnitChange(ChangeInfo):
         )
 
     def __str__(self):
-        return "add {application} unit to {to}".format(
-            application=self.application, to=self.to
-        )
+        return f"add {self.application} unit to {self.to}"
 
 
 class CreateOfferChange(ChangeInfo):
@@ -1037,7 +1010,7 @@ class CreateOfferChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "createOffer"
 
     async def run(self, context):
@@ -1057,11 +1030,7 @@ class CreateOfferChange(ChangeInfo):
         endpoints = ""
         if self.endpoints is not None:
             endpoints = ":{}".format(",".join(self.endpoints))
-        return "create offer {offer_name} using {application}{endpoints}".format(
-            offer_name=self.offer_name,
-            application=self.application,
-            endpoints=endpoints,
-        )
+        return f"create offer {self.offer_name} using {self.application}{endpoints}"
 
 
 class ConsumeOfferChange(ChangeInfo):
@@ -1082,7 +1051,7 @@ class ConsumeOfferChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "consumeOffer"
 
     async def run(self, context):
@@ -1099,9 +1068,7 @@ class ConsumeOfferChange(ChangeInfo):
         return local_name
 
     def __str__(self):
-        return "consume offer {application_name} at {url}".format(
-            application_name=self.application_name, url=self.url
-        )
+        return f"consume offer {self.application_name} at {self.url}"
 
 
 class ExposeChange(ChangeInfo):
@@ -1129,7 +1096,7 @@ class ExposeChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "expose"
 
     async def run(self, context):
@@ -1146,7 +1113,7 @@ class ExposeChange(ChangeInfo):
         )
 
     def __str__(self):
-        return "expose {application}".format(application=self.application)
+        return f"expose {self.application}"
 
 
 class ScaleChange(ChangeInfo):
@@ -1168,7 +1135,7 @@ class ScaleChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "scale"
 
     async def run(self, context):
@@ -1182,9 +1149,7 @@ class ScaleChange(ChangeInfo):
         return await context.model.applications[application].scale(scale=self.scale)
 
     def __str__(self):
-        return "scale {application} to {scale} units".format(
-            application=self.application, scale=self.scale
-        )
+        return f"scale {self.application} to {self.scale} units"
 
 
 class SetAnnotationsChange(ChangeInfo):
@@ -1208,7 +1173,7 @@ class SetAnnotationsChange(ChangeInfo):
 
     @staticmethod
     def method():
-        """method returns an associated ID for the Juju API call."""
+        """Method returns an associated ID for the Juju API call."""
         return "setAnnotations"
 
     async def run(self, context):
@@ -1226,4 +1191,4 @@ class SetAnnotationsChange(ChangeInfo):
         return await entity.set_annotations(self.annotations)
 
     def __str__(self):
-        return "set annotations for {id}".format(id=self.id)
+        return f"set annotations for {self.id}"

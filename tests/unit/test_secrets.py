@@ -2,9 +2,10 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import os
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
+
 import pytest
 
 from juju.secrets import create_secret_data, read_secret_data

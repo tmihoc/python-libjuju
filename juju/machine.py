@@ -7,11 +7,12 @@ import typing
 
 import pyrfc3339
 
+from juju.utils import block_until, juju_ssh_key_paths
+
 from . import jasyncio, model, tag
 from .annotationhelper import _get_annotations, _set_annotations
 from .client import client
 from .errors import JujuError
-from juju.utils import juju_ssh_key_paths, block_until
 
 log = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ class Machine(model.ModelEntity):
         except ValueError:
             # otherwise we assume it to be a DNS resolvable string
             address = self.dns_name
-        destination = "{}@{}:{}".format(user, address, destination)
+        destination = f"{user}@{address}:{destination}"
         await self._scp(source, destination, scp_opts)
 
     async def scp_from(
@@ -138,7 +139,7 @@ class Machine(model.ModelEntity):
         except ValueError:
             # otherwise we assume it to be a DNS resolvable string
             address = self.dns_name
-        source = "{}@{}:{}".format(user, address, source)
+        source = f"{user}@{address}:{source}"
         await self._scp(source, destination, scp_opts)
 
     async def _scp(self, source, destination, scp_opts):
@@ -188,7 +189,7 @@ class Machine(model.ModelEntity):
         if wait_for_active:
             await block_until(lambda: self.addresses, timeout=timeout)
         address = self.dns_name
-        destination = "{}@{}".format(user, address)
+        destination = f"{user}@{address}"
         _, id_path = juju_ssh_key_paths()
         cmd = [
             "ssh",

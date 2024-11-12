@@ -6,8 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from .. import base
 from juju import jasyncio
+
+from .. import base
 
 
 @base.bootstrapped
@@ -28,7 +29,7 @@ async def test_offer():
         await model.block_until(
             lambda: all(offer.application_name == "ubuntu" for offer in offers.results)
         )
-        await model.remove_offer("admin/{}.ubuntu".format(model.name), force=True)
+        await model.remove_offer(f"admin/{model.name}.ubuntu", force=True)
 
 
 @base.bootstrapped
@@ -52,13 +53,13 @@ async def test_consume():
 
         # farm off a new model to test the consumption
         async with base.CleanModel() as model_2:
-            await model_2.consume("admin/{}.ubuntu".format(model_1.name))
+            await model_2.consume(f"admin/{model_1.name}.ubuntu")
 
             status = await model_2.get_status()
             if "ubuntu" not in status.remote_applications:
                 raise Exception("Expected ubuntu in saas")
 
-        await model_1.remove_offer("admin/{}.ubuntu".format(model_1.name), force=True)
+        await model_1.remove_offer(f"admin/{model_1.name}.ubuntu", force=True)
 
 
 @base.bootstrapped
@@ -82,7 +83,7 @@ async def test_remove_saas():
 
         # farm off a new model to test the consumption
         async with base.CleanModel() as model_2:
-            await model_2.consume("admin/{}.ubuntu".format(model_1.name))
+            await model_2.consume(f"admin/{model_1.name}.ubuntu")
 
             await model_2.remove_saas("ubuntu")
             await jasyncio.sleep(5)
@@ -91,7 +92,7 @@ async def test_remove_saas():
             if "ubuntu" in status.remote_applications:
                 raise Exception("Expected ubuntu not to be in saas")
 
-        await model_1.remove_offer("admin/{}.ubuntu".format(model_1.name), force=True)
+        await model_1.remove_offer(f"admin/{model_1.name}.ubuntu", force=True)
 
 
 @base.bootstrapped
@@ -130,9 +131,7 @@ async def test_relate_with_offer():
                 lambda: all(unit.agent_status == "idle" for unit in application.units)
             )
 
-            await model_2.relate(
-                "hello-juju:db", "admin/{}.postgresql".format(model_1.name)
-            )
+            await model_2.relate("hello-juju:db", f"admin/{model_1.name}.postgresql")
             status = await model_2.get_status()
             if "postgresql" not in status.remote_applications:
                 raise Exception("Expected postgresql in saas")
@@ -144,9 +143,7 @@ async def test_relate_with_offer():
             if "postgresql" in status.remote_applications:
                 raise Exception("Expected mysql not to be in saas")
 
-        await model_1.remove_offer(
-            "admin/{}.postgresql".format(model_1.name), force=True
-        )
+        await model_1.remove_offer(f"admin/{model_1.name}.postgresql", force=True)
 
 
 @base.bootstrapped
@@ -159,9 +156,9 @@ async def test_add_bundle():
 
     file_contents = None
     try:
-        with open(cmr_bundle_path, "r") as file:
+        with open(cmr_bundle_path) as file:
             file_contents = file.read()
-    except IOError:
+    except OSError:
         raise
 
     async with base.CleanModel() as model_1:
@@ -173,7 +170,7 @@ async def test_add_bundle():
                 tmp_path = str(Path(dirpath) / "bundle.yaml")
                 with open(tmp_path, "w") as file:
                     file.write(file_contents.format(model_1.name))
-            except IOError:
+            except OSError:
                 raise
 
             await model_1.deploy(
@@ -197,9 +194,7 @@ async def test_add_bundle():
 
             # farm off a new model to test the consumption
             async with base.CleanModel() as model_2:
-                await model_2.deploy("local:{}".format(tmp_path))
+                await model_2.deploy(f"local:{tmp_path}")
                 await model_2.wait_for_idle(status="active")
 
-            await model_1.remove_offer(
-                "admin/{}.influxdb".format(model_1.name), force=True
-            )
+            await model_1.remove_offer(f"admin/{model_1.name}.influxdb", force=True)

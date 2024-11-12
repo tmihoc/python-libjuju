@@ -4,7 +4,6 @@
 
 from typing import Dict, Sequence
 
-
 # Please keep in alphabetical order
 # in future this will likely be generated automatically (perhaps at runtime)
 client_facade_versions = {

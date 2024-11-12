@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to the current model
 2. Resets it
@@ -14,8 +13,8 @@ This example:
 import asyncio
 import logging
 
-from juju.model import Model, ModelObserver
 from juju import jasyncio
+from juju.model import Model, ModelObserver
 
 
 class MyRemoveObserver(ModelObserver):
@@ -61,28 +60,28 @@ async def main():
         ubuntu_app.on_change(
             asyncio.coroutine(
                 lambda delta, old_app, new_app, model: print(
-                    "App changed: {}".format(new_app.entity_id)
+                    f"App changed: {new_app.entity_id}"
                 )
             )
         )
         ubuntu_app.on_remove(
             asyncio.coroutine(
                 lambda delta, old_app, new_app, model: print(
-                    "App removed: {}".format(old_app.entity_id)
+                    f"App removed: {old_app.entity_id}"
                 )
             )
         )
         ubuntu_app.on_unit_add(
             asyncio.coroutine(
                 lambda delta, old_unit, new_unit, model: print(
-                    "Unit added: {}".format(new_unit.entity_id)
+                    f"Unit added: {new_unit.entity_id}"
                 )
             )
         )
         ubuntu_app.on_unit_remove(
             asyncio.coroutine(
                 lambda delta, old_unit, new_unit, model: print(
-                    "Unit removed: {}".format(old_unit.entity_id)
+                    f"Unit removed: {old_unit.entity_id}"
                 )
             )
         )
@@ -90,7 +89,7 @@ async def main():
         unit_a.on_change(
             asyncio.coroutine(
                 lambda delta, old_unit, new_unit, model: print(
-                    "Unit changed: {}".format(new_unit.entity_id)
+                    f"Unit changed: {new_unit.entity_id}"
                 )
             )
         )
@@ -109,7 +108,7 @@ async def main():
         my_relation.on_remove(
             asyncio.coroutine(
                 lambda delta, old_rel, new_rel, model: print(
-                    "Relation removed: {}".format(old_rel.endpoints)
+                    f"Relation removed: {old_rel.endpoints}"
                 )
             )
         )

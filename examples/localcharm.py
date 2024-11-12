@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example shows how to deploy a local charm. It:
+"""This example shows how to deploy a local charm. It:
 
 1. Connects to current model.
 2. Uploads a local charm (directory on filesystem) to the model.

@@ -6,10 +6,10 @@
 #
 
 import unittest
-import mock
-from juju.model import Model
-from juju.controller import Controller
+from unittest import mock
 
+from juju.controller import Controller
+from juju.model import Model
 from juju.offerendpoints import (
     LocalEndpoint,
     OfferEndpoints,
@@ -145,7 +145,6 @@ class TestConsume(unittest.IsolatedAsyncioTestCase):
         better suited as an integration test however pylibjuju does not allow
         for bootstrapping of extra controllers.
         """
-
         mock_create_consume_args.return_value = None
         mock_connection.return_value = None
 

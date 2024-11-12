@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to the current model
 2. Deploy a bundle and waits until it reports itself active
@@ -10,8 +9,8 @@ This example:
 
 """
 
-from juju.controller import Controller
 from juju import jasyncio
+from juju.controller import Controller
 
 
 async def main():
@@ -27,7 +26,7 @@ async def main():
 
 async def deploy_bundle(controller, url, channel=None):
     models = await controller.list_models()
-    model = await controller.add_model("model{}".format(len(models) + 1))
+    model = await controller.add_model(f"model{len(models) + 1}")
 
     try:
         print("Deploying bundle")

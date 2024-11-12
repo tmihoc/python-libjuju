@@ -8,7 +8,7 @@ from pathlib import Path
 
 import websockets
 
-from . import errors, tag, utils, jasyncio
+from . import errors, jasyncio, tag, utils
 from .client import client, connector
 from .errors import JujuAPIError
 from .offerendpoints import ParseError as OfferParseError
@@ -156,16 +156,14 @@ class Controller:
             pass
 
     async def connect_current(self):
-        """
-        .. deprecated:: 0.7.3
-           Use :meth:`.connect()` instead.
+        """.. deprecated:: 0.7.3
+        Use :meth:`.connect()` instead.
         """
         return await self.connect()
 
     async def connect_controller(self, controller_name):
-        """
-        .. deprecated:: 0.7.3
-           Use :meth:`.connect(controller_name)` instead.
+        """.. deprecated:: 0.7.3
+        Use :meth:`.connect(controller_name)` instead.
         """
         return await self.connect(controller_name)
 
@@ -179,7 +177,8 @@ class Controller:
 
     def connection(self):
         """Return the current Connection object. It raises an exception
-        if the Controller is disconnected"""
+        if the Controller is disconnected
+        """
         return self._connector.connection()
 
     @property
@@ -245,7 +244,7 @@ class Controller:
         if not credential:
             name, credential = self._connector.jujudata.load_credential(cloud, name)
             if credential is None:
-                raise errors.JujuError("Unable to find credential: {}".format(name))
+                raise errors.JujuError(f"Unable to find credential: {name}")
 
         if credential.auth_type == "jsonfile" and "file" in credential.attrs:
             # file creds have to be loaded before being sent to the controller
@@ -527,9 +526,7 @@ class Controller:
                 model_uuid = uuids[model_name]
             except KeyError:
                 raise errors.JujuError(
-                    "{} is not among the models in the controller : {}".format(
-                        model_name, uuids
-                    )
+                    f"{model_name} is not among the models in the controller : {uuids}"
                 )
         entity = client.Entity(tag.model(model_uuid))
         _model_info_results = await facade.ModelInfo(entities=[entity])
@@ -564,9 +561,7 @@ class Controller:
         return await cloud_facade.Clouds()
 
     async def get_cloud(self):
-        """
-        Get the name of the cloud that this controller lives on.
-        """
+        """Get the name of the cloud that this controller lives on."""
         cloud_facade = client.CloudFacade.from_connection(self.connection())
 
         result = await cloud_facade.Clouds()
@@ -574,9 +569,8 @@ class Controller:
         return tag.untag("cloud-", cloud)
 
     async def get_models(self, all=False, username=None):
-        """
-        .. deprecated:: 0.7.0
-           Use :meth:`.list_models` instead.
+        """.. deprecated:: 0.7.0
+        Use :meth:`.list_models` instead.
         """
         return await self.list_models(username, all)
 
@@ -757,15 +751,13 @@ class Controller:
     async def create_offer(
         self, model_uuid, endpoint, offer_name=None, application_name=None
     ):
-        """
-        Offer a deployed application using a series of endpoints for use by
+        """Offer a deployed application using a series of endpoints for use by
         consumers.
 
         @param endpoint: holds the application and endpoint you want to offer
         @param offer_name: override the offer name to help the consumer
         @param application_name: overrides the application name in the endpoint
         """
-
         # If we have both the offer_name and the application_name
         # then we're coming from bundle/overlays, so no need to parse the endpoint
         # Also we accept endpoints without a colon (:) in the overlays
@@ -794,8 +786,7 @@ class Controller:
         return await facade.Offer(offers=[params])
 
     async def list_offers(self, model_name):
-        """
-        Offers list information about applications' endpoints that have been
+        """Offers list information about applications' endpoints that have been
         shared and who is connected.
         """
         params = client.OfferFilter()
@@ -805,8 +796,7 @@ class Controller:
         return await facade.ListApplicationOffers(filters=[params])
 
     async def remove_offer(self, model_uuid, offer, force=False):
-        """
-        Remove offer for an application.
+        """Remove offer for an application.
 
         Offers will also remove relations to those offers, use force to do
         so, without an error.
@@ -832,8 +822,7 @@ class Controller:
         return await facade.DestroyOffers(force=force, offer_urls=[url.string()])
 
     async def get_consume_details(self, endpoint):
-        """
-        get_consume_details returns the details necessary to pass to another
+        """get_consume_details returns the details necessary to pass to another
         model to consume the specified offers represented by the urls.
         """
         facade = client.ApplicationOffersFacade.from_connection(self.connection())
@@ -849,8 +838,7 @@ class Controller:
         return result
 
     async def watch_model_summaries(self, callback, as_admin=False):
-        """
-        Watch the controller for model summary updates.
+        """Watch the controller for model summary updates.
 
         If as_admin is true, a call will be made as the admin to watch
         all models in the controller. If the user isn't a superuser they
@@ -869,7 +857,7 @@ class Controller:
                     watcher.Id = result.watcher_id
                 else:
                     result = await facade.WatchModelSummaries()
-                    log.debug("watcher id: {}".format(result.watcher_id))
+                    log.debug(f"watcher id: {result.watcher_id}")
                     watcher.Id = result.watcher_id
 
                 while True:
@@ -901,8 +889,7 @@ class Controller:
         return stop_event
 
     async def add_secret_backends(self, id, name, backend_type, config):
-        """
-        Add a new secret backend.
+        """Add a new secret backend.
 
         Parameters
         ----------
@@ -918,6 +905,7 @@ class Controller:
         -------
         list
            a list of errors if any
+
         """
         facade = client.SecretBackendsFacade.from_connection(self.connection())
         return await facade.AddSecretBackends([
@@ -931,8 +919,7 @@ class Controller:
         ])
 
     async def list_secret_backends(self, reveal=False):
-        """
-        Return the list of secret backends
+        """Return the list of secret backends
 
         Parameters
         ----------
@@ -943,13 +930,13 @@ class Controller:
         -------
         list
            a list of available secret backends
+
         """
         facade = client.SecretBackendsFacade.from_connection(self.connection())
         return await facade.ListSecretBackends(None, reveal)
 
     async def remove_secret_backends(self, name, force=False):
-        """
-        Remove a secrets backend.
+        """Remove a secrets backend.
 
         Parameters
         ----------
@@ -959,6 +946,7 @@ class Controller:
         Returns
         -------
         error if any
+
         """
         facade = client.SecretBackendsFacade.from_connection(self.connection())
         return await facade.RemoveSecretBackends([{"name": name, "force": force}])
@@ -971,8 +959,7 @@ class Controller:
         name_change=None,
         token_rotate_interval=None,
     ):
-        """
-        Update a backend.
+        """Update a backend.
 
         Parameters
         ----------
@@ -986,6 +973,7 @@ class Controller:
             new name for the backend
         token_rotate_interval : int
             token rotation interval
+
         """
         facade = client.SecretBackendsFacade.from_connection(self.connection())
         return await facade.UpdateSecretBackends([

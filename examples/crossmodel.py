@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to the current model
 2. Deploys a charm and waits until it reports itself active
@@ -62,7 +61,7 @@ async def main():
 
         print("Exporting bundle")
         with tempfile.TemporaryDirectory() as dirpath:
-            await offering_model.export_bundle("{}/bundle.yaml".format(dirpath))
+            await offering_model.export_bundle(f"{dirpath}/bundle.yaml")
 
         print("Remove SAAS")
         await consuming_model.remove_saas("mysql")

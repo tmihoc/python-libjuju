@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This is a very basic example that connects to the currently selected model
+"""This is a very basic example that connects to the currently selected model
 and prints the number of applications deployed to it.
 
 Then attempts to use scp to grab the profile, as a way to show how scp works
@@ -22,7 +21,7 @@ async def main():
     try:
         # connect to the current model with the current user, per the Juju CLI
         await model.connect()
-        print("There are {} applications".format(len(model.applications)))
+        print(f"There are {len(model.applications)} applications")
 
         machine = model.machines["0"]
         # This roughly expands to the following:

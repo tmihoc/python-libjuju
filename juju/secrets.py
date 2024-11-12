@@ -1,15 +1,15 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This module contains utility logic for secrets such as reading secret data from yaml and creating data bag for secrets.
-"""
+"""This module contains utility logic for secrets such as reading secret data from yaml and creating data bag for secrets."""
 
 import base64
 import json
 import re
-import yaml
 from pathlib import Path
+
+import yaml
+
 from . import errors
 
 file_suffix = "#file"
@@ -79,7 +79,7 @@ def read_secret_data(file):
         raise
 
     try:
-        with open(path, "r", encoding="utf-8") as file:
+        with open(path, encoding="utf-8") as file:
             data = file.read()
     except Exception:
         raise
@@ -104,7 +104,6 @@ def encode_values_base64(data):
 
     If a key has the #base64 suffix, then the value is already base64 encoded,otherwise the value is base64 encoded as it is added to the data bag.
     """
-
     out = {}
     content_size = 0
     for k, v in data.items():

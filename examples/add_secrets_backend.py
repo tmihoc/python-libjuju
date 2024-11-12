@@ -1,17 +1,16 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import hvac
+
 from juju import jasyncio
 from juju.model import Model
-
-import hvac
 
 
 async def main():
     """This is a complete example that deploys vault, uses a
     vault client to initialize it, and registers the backend.
     """
-
     m = Model()
     await m.connect()
 

@@ -4,8 +4,7 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 
-"""
-This example:
+"""This example:
 
 1. Connects to the current model
 2. Creates a machine
@@ -35,7 +34,7 @@ async def main():
 
         # At this point we can access the reported hostname via the hostname
         # property of the machine model.
-        print("machine1 hostname: {}".format(machine1.hostname))
+        print(f"machine1 hostname: {machine1.hostname}")
 
         await machine1.destroy(force=True)
     finally:

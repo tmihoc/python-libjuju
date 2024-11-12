@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example shows how to reconnect to a model if you encounter an error
+"""This example shows how to reconnect to a model if you encounter an error
 
 1. Connects to current model.
 2. Attempts to get an application that doesn't exist.
@@ -11,8 +10,8 @@ This example shows how to reconnect to a model if you encounter an error
 """
 
 from juju import jasyncio
-from juju.model import Model
 from juju.errors import JujuEntityNotFoundError
+from juju.model import Model
 
 
 async def main():

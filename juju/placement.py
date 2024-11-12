@@ -15,8 +15,7 @@ MACHINE_SCOPE = "#"
 
 
 def parse(directive):
-    """
-    Given a string in the format `scope:directive`, or simply `scope`
+    """Given a string in the format `scope:directive`, or simply `scope`
     or `directive`, return a Placement object suitable for passing
     back over the websocket API.
 

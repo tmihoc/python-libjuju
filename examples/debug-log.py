@@ -1,10 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example demonstrate how debug-log works
-
-"""
+"""This example demonstrate how debug-log works"""
 
 from juju import jasyncio
 from juju.model import Model

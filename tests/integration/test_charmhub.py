@@ -3,9 +3,10 @@
 
 import pytest
 
-from .. import base
-from juju.errors import JujuError
 from juju import jasyncio
+from juju.errors import JujuError
+
+from .. import base
 
 
 @base.bootstrapped

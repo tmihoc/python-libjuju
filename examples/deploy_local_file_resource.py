@@ -1,8 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""
-This example:
+"""This example:
 
 1. Connects to the current model
 2. Deploy a local charm with a oci-image resource and waits until it reports
@@ -11,9 +10,10 @@ This example:
 
 """
 
+from pathlib import Path
+
 from juju import jasyncio
 from juju.model import Model
-from pathlib import Path
 
 
 async def main():
@@ -26,7 +26,7 @@ async def main():
     try:
         print("Deploying local-charm")
         base_dir = Path(__file__).absolute().parent.parent
-        charm_path = "{}/tests/integration/file-resource-charm".format(base_dir)
+        charm_path = f"{base_dir}/tests/integration/file-resource-charm"
         resources = {"file-res": "test.file"}
         application = await model.deploy(
             charm_path,
