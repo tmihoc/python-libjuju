@@ -397,7 +397,7 @@ class Controller:
 
         """
         uuids = await self.model_uuids()
-        models = [uuids[model] if model in uuids else model for model in models]
+        models = [uuids.get(model) or model for model in models]
 
         model_facade = client.ModelManagerFacade.from_connection(self.connection())
 
@@ -574,7 +574,7 @@ class Controller:
         """
         return await self.list_models(username, all)
 
-    async def model_uuids(self, username=None, all=False):
+    async def model_uuids(self, username=None, all=False):  # noqa: A002
         """Return a mapping of model names to UUIDs the given user can access.
 
         :param str username: Optional username argument, defaults to
@@ -599,7 +599,7 @@ class Controller:
             model_summary.name: model_summary.uuid for model_summary in model_summaries
         }
 
-    async def list_models(self, username=None, all=False):
+    async def list_models(self, username=None, all=False):  # noqa: A002
         """Return list of names of the available models on this controller.
 
         Equivalent to ``sorted((await self.model_uuids()).keys())``
@@ -885,7 +885,7 @@ class Controller:
         jasyncio.ensure_future(_watcher(stop_event))
         return stop_event
 
-    async def add_secret_backends(self, id, name, backend_type, config):
+    async def add_secret_backends(self, id_, name, backend_type, config):
         """Add a new secret backend.
 
         Parameters
@@ -907,7 +907,7 @@ class Controller:
         facade = client.SecretBackendsFacade.from_connection(self.connection())
         return await facade.AddSecretBackends([
             {
-                "id": id,
+                "id": id_,
                 "backend-type": backend_type,
                 "config": config,
                 "name": name,

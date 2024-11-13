@@ -14,31 +14,69 @@ import functools
 import logging
 import signal
 from asyncio import (
+    ALL_COMPLETED as ALL_COMPLETED,
+)
+from asyncio import (
+    FIRST_COMPLETED as FIRST_COMPLETED,
+)
+from asyncio import (
     CancelledError,
     create_task,
     wait,
-    Event as Event, TimeoutError as TimeoutError, Queue as Queue, ensure_future as ensure_future,
-    gather as gather,
-    sleep as sleep,
-    wait_for as wait_for,
+)
+
+# FIXME: integration tests don't use these, but some are used in this repo
+# Use primitives from asyncio within this repo and remove these re-exports
+from asyncio import (
+    Event as Event,
+)
+from asyncio import (
+    Lock as Lock,
+)
+from asyncio import (
+    Queue as Queue,
+)
+from asyncio import (
+    TimeoutError as TimeoutError,  # noqa: A004
+)
+from asyncio import (
+    all_tasks as all_tasks,
+)
+from asyncio import (
+    as_completed as as_completed,
+)
+from asyncio import (
     create_subprocess_exec as create_subprocess_exec,
-    subprocess as subprocess,
-
-     FIRST_COMPLETED as FIRST_COMPLETED,
-     Lock as Lock,
-     as_completed as as_completed,
-     new_event_loop as new_event_loop,
-
+)
+from asyncio import (
+    current_task as current_task,
+)
+from asyncio import (
+    ensure_future as ensure_future,
+)
+from asyncio import (
+    gather as gather,
+)
+from asyncio import (
     get_event_loop_policy as get_event_loop_policy,
-    get_running_loop as
-    get_running_loop,
-    ALL_COMPLETED as
-    ALL_COMPLETED,
-    all_tasks as
-    all_tasks,
-    current_task as
-    current_task,
+)
+from asyncio import (
+    get_running_loop as get_running_loop,
+)
+from asyncio import (
+    new_event_loop as new_event_loop,
+)
+from asyncio import (
     shield as shield,
+)
+from asyncio import (
+    sleep as sleep,
+)
+from asyncio import (
+    subprocess as subprocess,
+)
+from asyncio import (
+    wait_for as wait_for,
 )
 
 import websockets
