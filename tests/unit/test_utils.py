@@ -137,7 +137,7 @@ class TestShouldUpgradeResource(unittest.TestCase):
                 size=0,
             )
         }
-        assert not utils.should_upgrade_resource(res, existing)
+        assert not utils.should_upgrade_resource(res, existing, {})
 
     def test_should_upgrade_resource_no_local_upload(self):
         # fields are trimmed for readability
@@ -176,7 +176,7 @@ class TestShouldUpgradeResource(unittest.TestCase):
                 size=0,
             )
         }
-        assert not utils.should_upgrade_resource(res, existing)
+        assert not utils.should_upgrade_resource(res, existing, {})
 
     def test_should_upgrade_resource_yes_new_revision(self):
         # fields are trimmed for readability
@@ -215,4 +215,4 @@ class TestShouldUpgradeResource(unittest.TestCase):
                 size=0,
             )
         }
-        assert utils.should_upgrade_resource(res, existing)
+        assert utils.should_upgrade_resource(res, existing, {})

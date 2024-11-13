@@ -87,6 +87,8 @@ ignore = [
     "RUF012",
     # FIXME: change the codegen to insert a period at the end of the docstring
     "D415",
+    # FIXME: manually rewrite docstring headlines to git on one line
+    "D400",
 ]
 
 [tool.ruff.lint.per-file-ignores]

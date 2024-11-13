@@ -37,14 +37,13 @@ async def execute_process(*cmd, log=None):
 
 
 def juju_config_dir():
-    """Resolves and returns the path string to the juju configuration
-    folder for the juju CLI tool. Of the following items, returns the
-    first option that works (top to bottom):
+    """Resolves and returns the path string to the juju configuration folder
+    for the juju CLI tool. Of the following items, returns the first option
+    that works (top to bottom):
 
     * $JUJU_DATA
     * $XDG_DATA_HOME/juju
     * ~/.local/share/juju
-
     """
     # Set it to ~/.local/share/juju as default
     config_dir = Path("~/.local/share/juju")
@@ -60,9 +59,8 @@ def juju_config_dir():
 
 
 def juju_ssh_key_paths():
-    """Resolves and returns the path strings for public and private ssh
-    keys for juju CLI.
-
+    """Resolves and returns the path strings for public and private ssh keys
+    for juju CLI.
     """
     config_dir = juju_config_dir()
     public_key_path = os.path.join(config_dir, "ssh", "juju_id_rsa.pub")
@@ -74,7 +72,6 @@ def juju_ssh_key_paths():
 def _read_ssh_key():
     """Inner function for read_ssh_key, suitable for passing to our
     Executor.
-
     """
     public_key_path_str, _ = juju_ssh_key_paths()
     ssh_key_path = Path(public_key_path_str)
@@ -84,16 +81,17 @@ def _read_ssh_key():
 
 
 async def read_ssh_key():
-    """Attempt to read the local juju admin's public ssh key, so that it
-    can be passed on to a model.
-
+    """Attempt to read the local juju admin's public ssh key, so that it can be
+    passed on to a model.
     """
     loop = jasyncio.get_running_loop()
     return await loop.run_in_executor(None, _read_ssh_key)
 
 
 class IdQueue:
-    """Wrapper around asyncio.Queue that maintains a separate queue for each ID."""
+    """Wrapper around asyncio.Queue that maintains a separate queue for each
+    ID.
+    """
 
     def __init__(self, maxsize=0):
         self._queues = defaultdict(partial(jasyncio.Queue, maxsize))
@@ -115,9 +113,9 @@ class IdQueue:
 
 async def block_until(*conditions, timeout=None, wait_period=0.5):
     """Return only after all conditions are true.
+
     If a timeout occurs, it cancels the task and raises
     asyncio.TimeoutError.
-
     """
 
     async def _block():
@@ -131,6 +129,7 @@ async def block_until_with_coroutine(
     condition_coroutine, timeout=None, wait_period=0.5
 ):
     """Return only after the given coroutine returns True.
+
     If a timeout occurs, it cancels the task and raises
     asyncio.TimeoutError.
     """
@@ -201,15 +200,13 @@ class Addrs(univ.SequenceOf):
 class RegistrationInfo(univ.Sequence):
     """ASN.1 representation of:
 
-    type RegistrationInfo struct {
-    User string
+    type RegistrationInfo struct { User string
 
-        Addrs []string
+    Addrs []string
 
-        SecretKey []byte
+    SecretKey []byte
 
-        ControllerName string
-    }
+        ControllerName string }
     """
 
     pass
@@ -219,7 +216,7 @@ def generate_user_controller_access_token(
     username, controller_endpoints, secret_key, controller_name
 ):
     """ " Implement in python what is currently done in GO
-    https://github.com/juju/juju/blob/a5ab92ec9b7f5da3678d9ac603fe52d45af24412/cmd/juju/user/utils.go#L16
+    https://github.com/juju/juju/blob/a5ab92e/cmd/juju/user/utils.go#L16
 
     :param username: name of the user to register
     :param controller_endpoints: juju controller endpoints list in the format <ip>:<port>
@@ -246,11 +243,13 @@ def generate_user_controller_access_token(
 
 
 def get_local_charm_data(path, yaml_file):
-    """Retrieve Metadata of a Charm from its path
+    """Retrieve Metadata of a Charm from its path.
 
-    :patam str path: Path of charm directory or .charm file
-    :patam str yaml_file: name of the yaml file, can be either
-    "metadata.yaml", or "manifest.yaml", or "charmcraft.yaml"
+    :patam str path: Path of charm directory or .charm file :patam str
+    yaml_
+    file:
+    name of the yaml file, can be either    "metadata.yaml", or
+    "manifest.yaml", or "charmcraft.yaml"
 
     :return: Object of charm metadata
     """
@@ -340,8 +339,8 @@ ALL_SERIES_VERSIONS = {**UBUNTU_SERIES, **KUBERNETES_SERIES}
 
 
 def get_series_version(series_name):
-    """get_series_version outputs the version of the OS based on the given series
-    e.g. jammy -> 22.04, kubernetes -> kubernetes
+    """get_series_version outputs the version of the OS based on the given
+    series e.g. jammy -> 22.04, kubernetes -> kubernetes.
 
     :param str series_name: name of the series
     :return str: os version
@@ -352,8 +351,8 @@ def get_series_version(series_name):
 
 
 def get_version_series(version):
-    """get_version_series is the opposite of the get_series_version. It outputs the series based
-    on given OS version
+    """get_version_series is the opposite of the get_series_version. It outputs
+    the series based on given OS version.
 
     :param str version: version of the OS
     return str: name of the series corresponding to the given version
@@ -364,10 +363,11 @@ def get_version_series(version):
 
 
 def get_local_charm_base(series, charm_path, base_class):
-    """Deduce the base [channel/osname] of a local charm based on what we
-    know already
+    """Deduce the base [channel/osname] of a local charm based on what we know
+    already.
 
-    :param str series: This may come from the argument or the metadata.yaml
+    :param str series: This may come from the argument or the
+        metadata.yaml
     :param str charm_path: Path of charm directory/.charm file
     :param class base_class:
     :return: Instance of the baseCls with channel/osname information
@@ -413,7 +413,7 @@ def get_local_charm_base(series, charm_path, base_class):
 
 
 def base_channel_to_series(channel):
-    """Returns the series string using the track inside the base channel
+    """Returns the series string using the track inside the base channel.
 
     :param str channel: is track/risk (e.g. 20.04/stable)
     :return: str series (e.g. focal)
@@ -422,8 +422,8 @@ def base_channel_to_series(channel):
 
 
 def parse_base_arg(base):
-    """Parses a given base into a Client.Base object
-    :param base str : The base to deploy a charm (e.g. ubuntu@22.04)
+    """Parses a given base into a Client.Base object :param base str : The base
+    to deploy a charm (e.g. ubuntu@22.04)
     """
     client.CharmBase()
     if not (isinstance(base, str) and "@" in base):
@@ -464,10 +464,12 @@ def get_base_from_origin_or_channel(origin_or_channel, series=None):
 
 
 def series_for_charm(requested_series, supported_series):
-    """series_for_charm takes a requested series and a list of series supported by a
-    charm and returns the series which is relevant.
-    If the requested series is empty, then the first supported series is used,
-    otherwise the requested series is validated against the supported series.
+    """series_for_charm takes a requested series and a list of series supported
+    by a charm and returns the series which is relevant.
+
+    If the requested series is empty, then the first supported series is
+    used, otherwise the requested series is validated against the
+    supported series.
     """
     if len(supported_series) == 1 and supported_series[0] == "":
         raise JujuError("invalid supported series reported by charm : ['']")
@@ -492,7 +494,8 @@ def user_requested(series_arg, supported_series, force):
     series = series_for_charm(series_arg, supported_series)
     if force:
         series = series_arg
-    # Todo (cderici): validate the series with workload_series to see if juju is supporting that
+    # Todo (cderici): validate the series with workload_series to see if juju is
+    # supporting that
     return series
 
 
@@ -542,15 +545,19 @@ def series_selector(
     return DEFAULT_SUPPORTED_LTS
 
 
-def should_upgrade_resource(available_resource, existing_resources, arg_resources={}):
-    """Called in the context of upgrade_charm. Given a resource R, takes a look at the resources we
-    already have and decides if we need to refresh R.
+def should_upgrade_resource(available_resource, existing_resources, arg_resources):
+    """Determine if the given resource should be upgraded.
 
-    :param dict[str] available_resource: The dict representing the client.Resource coming from the
-    charmhub api. We're considering if we need to refresh this during upgrade_charm.
-    :param dict[str] existing_resources: The dict coming from resources_facade.ListResources
-    representing the resources of the currently deployed charm.
-    :param dict[str] arg_resources: user provided resources to be refreshed
+    Called in the context of upgrade_charm. Given a resource R, takes a look
+    at the resources we already have and decides if we need to refresh R.
+
+    :param dict[str] available_resource: The dict representing the
+    client.Resource coming from the charmhub api. We're considering if
+    we need to refresh this during upgrade_charm. :param dict[str]
+    existing_resources: The dict coming from
+    resources_facade.ListResources representing the resources of the
+    currently deployed charm. :param dict[str] arg_resources: user
+    provided resources to be refreshed
 
     :result bool: The decision to refresh the given resource
     """
@@ -565,7 +572,8 @@ def should_upgrade_resource(available_resource, existing_resources, arg_resource
         # no upgrade, if it's upload
         if existing_resources[res_name].origin == "upload":
             return False
-        # no upgrade, if upstream doesn't have a newer revision of the resource available
+        # no upgrade, if upstream doesn't have a newer revision of the resource
+        # available
         available_rev = available_resource.get(
             "Revision", available_resource.get("revision", -1)
         )
