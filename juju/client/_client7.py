@@ -3465,7 +3465,6 @@ class CloudFacade(Type):
         """Clouds returns the definitions of all clouds supported by the controller
         that the logged in user can see.
 
-
         Returns -> CloudsResult
         """
         # map input types to rpc msg

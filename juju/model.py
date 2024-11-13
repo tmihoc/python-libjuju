@@ -2550,6 +2550,7 @@ class Model:
         action_results = await action_facade.Actions(entities=entity)
         return action_results.results[0]
 
+    # FIXME: this function seems dead, the facade methods don't seem to exist
     async def get_action_status(self, uuid_or_prefix=None, name=None):
         """Get the status of all actions, filtered by ID, ID prefix, or name.
 

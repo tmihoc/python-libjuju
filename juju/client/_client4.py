@@ -51,7 +51,6 @@ class AllModelWatcherFacade(Type):
         """Next will return the current state of everything on the first call
         and subsequent calls will
 
-
         Returns -> AllWatcherNextResults
         """
         # map input types to rpc msg
@@ -1557,7 +1556,6 @@ class SSHClientFacade(Type):
         """ModelCredentialForSSH returns a cloud spec for ssh purpose.
         This facade call is only used for k8s model.
 
-
         Returns -> CloudSpecResult
         """
         # map input types to rpc msg
@@ -1595,7 +1593,6 @@ class SSHClientFacade(Type):
     async def Proxy(self):
         """Proxy returns whether SSH connections should be proxied through the
         controller hosts for the model associated with the API connection.
-
 
         Returns -> SSHProxyResult
         """

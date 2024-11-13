@@ -149,7 +149,7 @@ class TypeRegistry(dict):
 
     def get(self, name):
         # Two way mapping
-        refname = self.schema.referenceName(name)
+        refname = self.schema.reference_name(name)
         if refname not in self:
             result = typing.TypeVar(refname)
             self[refname] = result
@@ -293,9 +293,7 @@ class Args(list):
 
     def _get_arg_str(self, typed=False, joined=", "):
         if self:
-            parts = []
-            for item in self:
-                parts.append(self._format(item[0], item[1], typed))
+            parts = [self._format(item[0], item[1], typed) for item in self]
             if joined:
                 return joined.join(parts)
             return parts
@@ -320,7 +318,7 @@ class Args(list):
             var_name = name_to_py(item[0])
             var_type, var_sub_type, ok = kind_to_py(item[1])
             if ok:
-                parts.append(buildValidation(var_name, var_type, var_sub_type))
+                parts.append(build_validation(var_name, var_type, var_sub_type))
         return "\n".join(parts)
 
     def typed(self):
@@ -333,7 +331,7 @@ class Args(list):
         return self._get_arg_str(True, "\n")
 
 
-def buildValidation(name, instance_type, instance_sub_type, ident=None):
+def build_validation(name, instance_type, instance_sub_type, ident=None):
     INDENT = ident or "    "
     source = f"""{INDENT}if {name} is not None and not isinstance({name}, {instance_sub_type}):
 {INDENT}    raise Exception("Expected {name} to be a {instance_type}, received: {{}}".format(type({name})))
@@ -341,7 +339,7 @@ def buildValidation(name, instance_type, instance_sub_type, ident=None):
     return source
 
 
-def buildTypes(schema, capture):
+def build_types(schema, capture):
     INDENT = "    "
     for kind in sorted(
         (k for k in schema.types if not isinstance(k, str)), key=lambda x: str(x)
@@ -427,7 +425,7 @@ class {}(Type):
                 if ok:
                     source.append(
                         "{}".format(
-                            buildValidation(
+                            build_validation(
                                 arg_name, arg_type, arg_sub_type, ident=INDENT * 2
                             )
                         )
@@ -503,7 +501,7 @@ def ReturnMapping(cls):
     return decorator
 
 
-def makeFunc(cls, name, description, params, result, _async=True):
+def make_func(cls, name, description, params, result, _async=True):
     INDENT = "    "
     args = Args(cls.schema, params)
     assignments = []
@@ -534,8 +532,10 @@ def makeFunc(cls, name, description, params, result, _async=True):
 """
 
     if description != "":
-        description = f"{description}\n\n"
-    doc_string = f"{description}{args.get_doc()}"
+        description = f"{description}\n"
+    if args_doc := args.get_doc():
+        args_doc = f"\n{args_doc}"
+    doc_string = f"{description}{args_doc}"
     fsource = source.format(
         _async="async " if _async else "",
         name=name,
@@ -555,7 +555,7 @@ def makeFunc(cls, name, description, params, result, _async=True):
     return func, fsource
 
 
-def makeRPCFunc(cls):
+def make_rpc_func(cls):
     source = """
 
 async def rpc(self, msg):
@@ -577,15 +577,15 @@ async def rpc(self, msg):
     return func, source
 
 
-def buildMethods(cls, capture):
+def build_methods(cls, capture):
     properties = cls.schema["properties"]
     for methodname in sorted(properties):
-        method, source = _buildMethod(cls, methodname)
+        method, source = _build_method(cls, methodname)
         setattr(cls, methodname, method)
         capture[f"{cls.__name__}Facade"].write(source, depth=1)
 
 
-def _buildMethod(cls, name):
+def _build_method(cls, name):
     params = None
     result = None
     method = cls.schema["properties"][name]
@@ -603,18 +603,18 @@ def _buildMethod(cls, name):
                 result = cls.schema.types.get(spec["$ref"])
             else:
                 result = SCHEMA_TO_PYTHON[spec["type"]]
-    return makeFunc(cls, name, description, params, result)
+    return make_func(cls, name, description, params, result)
 
 
-def buildWatcherRPCMethods(cls, capture):
+def build_watcher_methods(cls, capture):
     properties = cls.schema["properties"]
     if "Next" in properties and "Stop" in properties:
-        method, source = makeRPCFunc(cls)
+        method, source = make_rpc_func(cls)
         cls.rpc = method
         capture[f"{cls.__name__}Facade"].write(source, depth=1)
 
 
-def buildFacade(schema):
+def build_facade(schema):
     cls = type(
         schema.name,
         (Type,),
@@ -749,12 +749,12 @@ class Schema(dict):
         self.registry = KindRegistry()
         self.types = TypeRegistry(self)
 
-    def referenceName(self, ref):
+    def reference_name(self, ref):
         if ref.startswith("#/definitions/"):
             ref = ref.rsplit("/", 1)[-1]
         return ref
 
-    def buildDefinitions(self):
+    def build_definitions(self):
         # here we are building the types out
         # anything in definitions is a type
         # but these may contain references themselves
@@ -771,11 +771,11 @@ class Schema(dict):
                 continue
             definitions[d] = data
         for d, definition in definitions.items():
-            node = self.buildObject(definition, d)
+            node = self.build_object(definition, d)
             self.registry.register(d, self.version, node)
             self.types.getRefType(d)
 
-    def buildObject(self, node, name=None):
+    def build_object(self, node, name=None):
         # we don't need to build types recursively here
         # they are all in definitions already
         # we only want to include the type reference
@@ -794,9 +794,9 @@ class Schema(dict):
                 else:
                     kind = prop["type"]
                     if kind == "array":
-                        add((p, self.buildArray(prop)))
+                        add((p, self.build_array(prop)))
                     elif kind == "object":
-                        struct.extend(self.buildObject(prop, p))
+                        struct.extend(self.build_object(prop, p))
                     else:
                         add((p, self.types.objType(prop)))
         if pprops:
@@ -810,7 +810,7 @@ class Schema(dict):
                 return struct
             ppkind = pprop["type"]
             if ppkind == "array":
-                add((name, Mapping[str, self.buildArray(pprop)]))
+                add((name, Mapping[str, self.build_array(pprop)]))
             else:
                 add((name, Mapping[str, SCHEMA_TO_PYTHON[ppkind]]))
 
@@ -819,7 +819,7 @@ class Schema(dict):
 
         return struct
 
-    def buildArray(self, obj):
+    def build_array(self, obj):
         # return a sequence from an array in the schema
         if "$ref" in obj:
             return Sequence[self.types.refType(obj)]
@@ -827,7 +827,7 @@ class Schema(dict):
             kind = obj.get("type")
             if kind and kind == "array":
                 items = obj["items"]
-                return self.buildArray(items)
+                return self.build_array(items)
             else:
                 return Sequence[self.types.objType(obj)]
 
@@ -854,7 +854,7 @@ def write_facades(captures, options):
             f.write(HEADER)
             f.write("from juju.client.facade import Type, ReturnMapping\n")
             f.write("from juju.client._definitions import *\n\n")
-            for key in sorted([k for k in captures[version].keys() if "Facade" in k]):
+            for key in sorted([k for k in captures[version] if "Facade" in k]):
                 print(captures[version][key], file=f)
 
     # Return the last (most recent) version for use in other routines.
@@ -871,7 +871,7 @@ def write_definitions(captures, options):
     with open(f"{options.output_dir}/_definitions.py", "w") as f:
         f.write(HEADER)
         f.write("from juju.client.facade import Type, ReturnMapping\n\n")
-        for key in sorted([k for k in captures.keys() if "Facade" not in k]):
+        for key in sorted([k for k in captures if "Facade" not in k]):
             print(captures[key], file=f)
 
 
@@ -896,7 +896,7 @@ def write_client(captures, options):
 
         f.write(LOOKUP_FACADE)
         f.write(TYPE_FACTORY)
-        for key in sorted([k for k in factories.keys() if "Facade" in k]):
+        for key in sorted([k for k in factories if "Facade" in k]):
             print(factories[key], file=f)
 
 
@@ -908,13 +908,13 @@ def generate_definitions(schemas):
 
     for juju_version in sorted(schemas.keys()):
         for schema in schemas[juju_version]:
-            schema.buildDefinitions()
+            schema.build_definitions()
 
     # ensure we write the latest ones first, so that earlier revisions
     # get dropped.
     for juju_version in sorted(schemas.keys(), reverse=True):
         for schema in schemas[juju_version]:
-            buildTypes(schema, definitions)
+            build_types(schema, definitions)
 
     return definitions
 
@@ -927,7 +927,7 @@ def generate_facades(
     # Build the Facade classes
     for juju_version in sorted(schemas.keys(), key=packaging.version.parse):
         for schema in schemas[juju_version]:
-            cls, source = buildFacade(schema)
+            cls, source = build_facade(schema)
             cls_name = f"{schema.name}Facade"
 
             captures[schema.version].clear(cls_name)
@@ -936,9 +936,9 @@ def generate_facades(
             # Make the actual class
             captures[schema.version][cls_name].write(source)
             # Build the methods for each Facade class.
-            buildMethods(cls, captures[schema.version])
+            build_methods(cls, captures[schema.version])
             # Build the override RPC method if the Facade is a watcher.
-            buildWatcherRPCMethods(cls, captures[schema.version])
+            build_watcher_methods(cls, captures[schema.version])
             # Mark this Facade class as being done for this version --
             # helps mitigate some excessive looping.
             CLASSES[schema.name] = cls

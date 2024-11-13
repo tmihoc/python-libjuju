@@ -257,7 +257,6 @@ class AdminFacade(Type):
         In Juju it always returns an error because the Juju controller
         does not multiplex controllers.
 
-
         Returns -> RedirectInfoResult
         """
         # map input types to rpc msg
@@ -313,7 +312,6 @@ class AllWatcherFacade(Type):
     async def Next(self):
         """Next will return the current state of everything on the first call
         and subsequent calls will
-
 
         Returns -> AllWatcherNextResults
         """
@@ -682,7 +680,6 @@ class ModelConfigFacade(Type):
     async def ModelGet(self):
         """ModelGet implements the server-side part of the
         model-config CLI command.
-
 
         Returns -> ModelConfigResults
         """

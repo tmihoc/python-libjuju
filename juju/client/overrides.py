@@ -61,8 +61,9 @@ class Delta(Type):
 class ResourcesFacade(Type):
     """Patch parts of ResourcesFacade to make it work."""
 
+    # FIXME: a facade method from codegen can be used instead
     @ReturnMapping(_client.AddPendingResourcesResult)
-    async def AddPendingResources(
+    async def AddPendingResources(  # noqa: N802
         self, application_tag="", charm_url="", charm_origin=None, resources=None
     ):
         """Fix the calling signature of AddPendingResources.
@@ -126,8 +127,9 @@ class ActionFacade(Type):
             for prefix, tags in matches.items():
                 self.matches[prefix] = [_definitions.Entity.from_json(r) for r in tags]
 
+    # FIXME: This seems internal, can be renamed
     @ReturnMapping(_FindTagsResults)
-    async def FindActionTagsByPrefix(self, prefixes):
+    async def FindActionTagsByPrefix(self, prefixes):  # noqa: N802
         """Prefixes : typing.Sequence[str]
         Returns -> typing.Sequence[~Entity]
         """
@@ -142,7 +144,7 @@ class ActionFacade(Type):
 
 
 class Number(_definitions.Number):
-    """This type represents a semver string.
+    """Represent a semver string.
 
     Because it is not standard JSON, the typical from_json parsing fails and
     the parsing must be handled specially.
@@ -236,7 +238,7 @@ class Number(_definitions.Number):
 
 
 class Binary(_definitions.Binary):
-    """This type represents a semver string with additional series and arch info.
+    """Represent a semver string with additional series and arch info.
 
     Because it is not standard JSON, the typical from_json parsing fails and
     the parsing must be handled specially.

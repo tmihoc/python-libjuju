@@ -843,7 +843,6 @@ class ControllerFacade(Type):
         """AllModels allows controller administrators to get the list of all the
         models in the controller.
 
-
         Returns -> UserModelList
         """
         # map input types to rpc msg
@@ -940,7 +939,6 @@ class ControllerFacade(Type):
         NOTE: the implementation intentionally does not check for SuperuserAccess
         as the Version is known even to users with login access.
 
-
         Returns -> ControllerVersionResults
         """
         # map input types to rpc msg
@@ -956,7 +954,6 @@ class ControllerFacade(Type):
     async def DashboardConnectionInfo(self):
         """DashboardConnectionInfo returns the connection information for a client to
         connect to the Juju Dashboard including any proxying information.
-
 
         Returns -> DashboardConnectionInfo
         """
@@ -1074,7 +1071,6 @@ class ControllerFacade(Type):
         order to connect directly with the host model's provider and destroy it
         directly.
 
-
         Returns -> HostedModelConfigsResults
         """
         # map input types to rpc msg
@@ -1094,7 +1090,6 @@ class ControllerFacade(Type):
 
         NOTE: the implementation intentionally does not check for SuperuserAccess
         as the URL is known even to users with login access.
-
 
         Returns -> StringResult
         """
@@ -1133,7 +1128,6 @@ class ControllerFacade(Type):
         which have a block in place.  The resulting slice is sorted by model
         name, then owner. Callers must be controller administrators to retrieve the
         list.
-
 
         Returns -> ModelBlockInfoList
         """
@@ -1229,7 +1223,6 @@ class ControllerFacade(Type):
         This method is superuser access only, and watches all models in the
         controller.
 
-
         Returns -> SummaryWatcherID
         """
         # map input types to rpc msg
@@ -1249,7 +1242,6 @@ class ControllerFacade(Type):
         """WatchAllModels starts watching events for all models in the
         controller. The returned AllWatcherId should be used with Next on the
         AllModelWatcher endpoint to receive deltas.
-
 
         Returns -> AllWatcherId
         """
@@ -1290,7 +1282,6 @@ class ControllerFacade(Type):
     async def WatchModelSummaries(self):
         """WatchModelSummaries starts watching the summary updates from the cache.
         Only models that the user has access to are returned.
-
 
         Returns -> SummaryWatcherID
         """

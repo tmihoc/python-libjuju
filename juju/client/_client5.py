@@ -912,7 +912,6 @@ class SubnetsFacade(Type):
         zone is unusable, unavailable, or deprecated the Available
         field will be false.
 
-
         Returns -> ZoneResults
         """
         # map input types to rpc msg

@@ -127,7 +127,7 @@ class FileJujuData(JujuData):
                 if default_credential:
                     name = creds_data["default-credential"]
                 elif len(creds_data) == 1:
-                    name = list(creds_data)[0]
+                    name = next(iter(creds_data))
                 else:
                     return None, None
             cred_data = creds_data[name]
