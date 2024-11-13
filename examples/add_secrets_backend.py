@@ -59,17 +59,17 @@ async def main():
     print(response["results"])
 
     # List the secrets backend
-    list = await c.list_secret_backends()
+    result = await c.list_secret_backends()
     print("Output from list secret backends")
-    print(list["results"])
+    print(result["results"])
 
     # Remove it
     await c.remove_secret_backends("examplevault")
 
     # # Finally after removing
-    list = await c.list_secret_backends()
+    result = await c.list_secret_backends()
     print("Output from list secret backends after removal")
-    print(list["results"])
+    print(result["results"])
 
     await m.disconnect()
 

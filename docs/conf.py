@@ -27,7 +27,7 @@ here = Path(__file__).absolute().parent
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath(".."))
 
-from juju.version import CLIENT_VERSION
+from juju.version import CLIENT_VERSION  # noqa: E402
 
 version = CLIENT_VERSION
 
@@ -66,7 +66,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "juju"
-copyright = "2016, Canonical Ltd."
+copyright = "2016, Canonical Ltd."  # noqa: A001
 author = "Canonical"
 
 # The version info for the project you're documenting, acts as replacement for

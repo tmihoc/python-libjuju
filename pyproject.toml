@@ -149,6 +149,11 @@ ignore = [
     "F821",
 ]
 
+"examples/*" = [
+    # Docstring format
+    "D404",
+]
+
 "tests/*" = [
     # assert False to fail
     "B011",

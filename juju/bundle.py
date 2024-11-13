@@ -322,7 +322,7 @@ class BundleHandler:
 
         _yaml_data = [yaml.dump(self.bundle)]
         for overlay in self.overlays:
-            _yaml_data.append(yaml.dump(overlay).replace("null", ""))
+            _yaml_data.append(yaml.dump(overlay).replace("null", ""))  # noqa: PERF401
         yaml_data = "---\n".join(_yaml_data)
 
         self.plan = await self.bundle_facade.GetChangesMapArgs(
@@ -338,13 +338,13 @@ class BundleHandler:
                 f"unable to download bundle for {charm_url} using the new charms facade. Upgrade controller to proceed."
             )
 
-        id = origin.id_ if origin.id_ else ""
-        hash = origin.hash_ if origin.hash_ else ""
+        id_ = origin.id_ if origin.id_ else ""
+        hash_ = origin.hash_ if origin.hash_ else ""
         charm_origin = {
             "source": origin.source,
             "type": origin.type_,
-            "id": id,
-            "hash": hash,
+            "id": id_,
+            "hash": hash_,
             "revision": origin.revision,
             "risk": origin.risk,
             "track": origin.track,
@@ -366,7 +366,7 @@ class BundleHandler:
         if not result.url:
             raise JujuError(f"no url found for bundle {charm_url.name}")
 
-        bundle_resp = requests.get(result.url)
+        bundle_resp = requests.get(result.url)  # noqa: S113
         bundle_resp.raise_for_status()
 
         with closing(bundle_resp), zipfile.ZipFile(

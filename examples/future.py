@@ -35,7 +35,9 @@ async def main():
         "nrpe",
     )
 
-    result, ok = await model.block_until(lambda: model.matches(goal_state), timeout=600)
+    _result, _ok = await model.block_until(
+        lambda: model.matches(goal_state), timeout=600
+    )
 
 
 if __name__ == "__main__":

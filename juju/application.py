@@ -139,9 +139,7 @@ class Application(model.ModelEntity):
         """
         status = self.safe_data["status"]["current"]
         if status == "unset":
-            known_statuses = []
-            for unit in self.units:
-                known_statuses.append(unit.workload_status)
+            known_statuses = [unit.workload_status for unit in self.units]
             # If the self.get_status() is called (i.e. the status
             # is received by FullStatus from the API) then add
             # that into this computation as it might be more up
@@ -452,11 +450,11 @@ class Application(model.ModelEntity):
 
         log.debug("Getting series for %s", self.name)
 
-        appGetResults = await app_facade.Get(application=self.name)
+        results = await app_facade.Get(application=self.name)
         if self._facade_version() >= 15:
-            base_channel = appGetResults.base.channel
+            base_channel = results.base.channel
             return utils.base_channel_to_series(base_channel)
-        return appGetResults.series
+        return results.series
 
     async def get_config(self):
         """Return the configuration settings dict for this application."""
@@ -484,7 +482,7 @@ class Application(model.ModelEntity):
         app_config = config.application_config
         return app_config["trust"]["value"] is True
 
-    async def set_trusted(self, trust):
+    async def set_trusted(self, trust: bool):
         """Set the trusted configuration of the application.
 
         :param bool trust: Trust the application or not
@@ -498,7 +496,7 @@ class Application(model.ModelEntity):
         # anything in the config.
         app_facade = self._facade()
 
-        config = {"trust": json.dumps(True if trust is True else False)}
+        config = {"trust": json.dumps(trust)}
         log.debug("Setting config for %s: %s", self.name, config)
 
         # Unfortunately we have to do this in a lazy fashion, attempting to use
@@ -812,7 +810,7 @@ class Application(model.ModelEntity):
             resolve=[
                 client.ResolveCharmWithChannel(
                     charm_origin=origin,
-                    switch_charm=True if switch else False,  # rpc expects boolean type
+                    switch_charm=bool(switch),
                     reference=charm_url,
                 )
             ]
@@ -862,12 +860,13 @@ class Application(model.ModelEntity):
         charm_resources = await charmhub.list_resources(charm_name)
 
         # Compute the difference btw resources needed and the existing resources
-        resources_to_update = []
-        for resource in charm_resources:
+        resources_to_update = [
+            resource
+            for resource in charm_resources
             if utils.should_upgrade_resource(
                 resource, existing_resources, arg_resources
-            ):
-                resources_to_update.append(resource)
+            )
+        ]
 
         # Update the resources
         if resources_to_update:
@@ -897,8 +896,8 @@ class Application(model.ModelEntity):
             )
             pending_ids = response.pending_ids
             resource_ids = {
-                resource.get("Name", resource.get("name")): id
-                for resource, id in zip(resources_to_update, pending_ids)
+                resource.get("Name", resource.get("name")): id_
+                for resource, id_ in zip(resources_to_update, pending_ids)
             }
         else:
             resource_ids = None

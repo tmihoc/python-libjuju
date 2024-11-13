@@ -20,15 +20,15 @@ class CharmHub:
         return model_conf["charmhub-url"]
 
     async def request_charmhub_with_retry(self, url, retries):
-        for attempt in range(retries):
-            _response = requests.get(url)
+        for _ in range(retries):
+            _response = requests.get(url)  # noqa: S113
             if _response.status_code == 200:
                 return _response
             await jasyncio.sleep(5)
         raise JujuError(f"Got {_response.status_code} from {url}")
 
     async def get_charm_id(self, charm_name):
-        conn, headers, path_prefix = self.model.connection().https_connection()
+        _conn, _headers, _path_prefix = self.model.connection().https_connection()
 
         charmhub_url = await self._charmhub_url()
         url = f"{charmhub_url.value}/v2/charms/info/{charm_name}"
@@ -37,7 +37,7 @@ class CharmHub:
         return response["id"], response["name"]
 
     async def is_subordinate(self, charm_name):
-        conn, headers, path_prefix = self.model.connection().https_connection()
+        _conn, _headers, _path_prefix = self.model.connection().https_connection()
 
         charmhub_url = await self._charmhub_url()
         url = f"{charmhub_url.value}/v2/charms/info/{charm_name}?fields=default-release.revision.subordinate"
@@ -50,7 +50,7 @@ class CharmHub:
     #  api call without needing the CharmHub facade
 
     async def list_resources(self, charm_name):
-        conn, headers, path_prefix = self.model.connection().https_connection()
+        _conn, _headers, __path_prefix = self.model.connection().https_connection()
 
         charmhub_url = await self._charmhub_url()
         url = f"{charmhub_url.value}/v2/charms/info/{charm_name}?fields=default-release.resources"

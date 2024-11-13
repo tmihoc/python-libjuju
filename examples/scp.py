@@ -26,7 +26,7 @@ async def main():
         machine = model.machines["0"]
         # This roughly expands to the following:
         # scp -i ~/.local/share/juju/ssh/juju_id_rsa -o StrictHostKeyChecking=no -q -B ubuntu@10.132.183.88:/home/ubuntu/.profile /tmp/profile
-        await machine.scp_from("/home/ubuntu/.profile", "/tmp/profile")
+        await machine.scp_from("/home/ubuntu/.profile", "/tmp/profile")  # noqa: S108
     finally:
         if model.is_connected():
             print("Disconnecting from model")

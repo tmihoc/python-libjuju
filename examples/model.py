@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
@@ -17,11 +19,11 @@ from juju.model import Model
 async def main():
     model = Model()
 
-    retryCount = 3
-    for i in range(0, retryCount):
+    retries = 3
+    for _ in range(0, retries):
         await model.connect_current()
         try:
-            model.applications["foo"].relations
+            print(model.applications["foo"].relations)
         except JujuEntityNotFoundError as e:
             print(e.entity_name)
         finally:

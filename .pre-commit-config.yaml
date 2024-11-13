@@ -11,12 +11,15 @@ repos:
       - id: check-symlinks
       - id: check-json
       - id: check-yaml
+        # Overlays are deliberately multi-doc
+        exclude: "^tests/integration/bundle/test-overlays/.*multi.*yaml$"
       - id: check-toml
       - id: mixed-line-ending
       - id: end-of-file-fixer
         exclude: "^juju/client/schemas-juju.*json$"
       - id: trailing-whitespace
       - id: detect-private-key
+        exclude: "^tests/.*$"
   # Run the Ruff linter.
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.3

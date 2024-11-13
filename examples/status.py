@@ -28,7 +28,7 @@ async def main():
     await jasyncio.sleep(10)
     # Print the status to observe the evolution
     # during a minute
-    for i in range(12):
+    for _ in range(12):
         try:
             # By setting raw to True, the returned
             # entry contains a FullStatus object with

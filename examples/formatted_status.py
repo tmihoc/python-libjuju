@@ -31,10 +31,10 @@ async def main():
     )
 
     await jasyncio.sleep(10)
-    tmp = tempfile.NamedTemporaryFile(delete=False)
+    tmp = tempfile.NamedTemporaryFile(delete=False)  # noqa: SIM115
     LOG.info("status dumped to %s", tmp.name)
     with open(tmp.name, "w") as f:
-        for i in range(10):
+        for _ in range(10):
             # Uncomment this line to get the full status
             # using the standard output.
             # await formatted_status(model, target=sys.stdout)

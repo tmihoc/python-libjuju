@@ -58,12 +58,12 @@ class AutoMemberSummary(Directive):
             lines.append(row(link))
             lines.append(divider)
             for line in summary:
-                lines.append(row(line))
+                lines.append(row(line))  # noqa: PERF401
             if methods:
                 lines.append(row(""))
                 lines.append(row("Methods:"))
                 lines.append(row(""))
-                for i, method in enumerate(methods):
+                for _, method in enumerate(methods):
                     lines.append(row(method))
         lines.append(divider)
         content = "\n".join(lines)

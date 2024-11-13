@@ -13,7 +13,7 @@ from juju import jasyncio
 from juju.model import Model
 
 
-async def on_model_change(delta, old, new, model):
+async def on_model_change(delta, old, new, model):  # noqa: RUF029
     print(delta.entity, delta.type, delta.data)
     print(old)
     print(new)
