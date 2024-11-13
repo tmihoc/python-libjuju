@@ -24,7 +24,7 @@ class JujuAPIError(JujuError):
         self.error_code = result.get("error-code")
         self.response = result["response"]
         self.request_id = result["request-id"]
-        self.error_info = result["error-info"] if "error-info" in result else None
+        self.error_info = result.get("error-info")
         super().__init__(self.message)
 
 

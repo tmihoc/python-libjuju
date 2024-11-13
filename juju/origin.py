@@ -126,7 +126,7 @@ class Channel:
         _ch = [self.risk]
         tr = utils.get_series_version(series)
         if tr:
-            _ch = [tr] + _ch
+            _ch = [tr, *_ch]
         return "/".join(_ch)
 
 

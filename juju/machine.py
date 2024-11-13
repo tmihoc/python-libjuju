@@ -274,12 +274,14 @@ class Machine(model.ModelEntity):
 
         May return None if no suitable address is found.
         """
-        ordered_addresses = []
         ordered_scopes = ["public", "local-cloud", "local-fan"]
-        for scope in ordered_scopes:
-            for address in self.addresses:
-                if scope == address["scope"]:
-                    ordered_addresses.append(address)
+        ordered_addresses = [
+            address
+            for scope in ordered_scopes
+            for address in self.addresses
+            if scope == address["scope"]
+        ]
+
         for address in ordered_addresses:
             scope = address["scope"]
             for check_scope in ordered_scopes:

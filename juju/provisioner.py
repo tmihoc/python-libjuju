@@ -1,5 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+from __future__ import annotations
 
 import os
 import re
@@ -22,10 +23,10 @@ arches = [
 ]
 
 
-def normalize_arch(rawArch):
+def normalize_arch(raw_arch):
     """Normalize the architecture string."""
     for arch in arches:
-        if arch[0].match(rawArch):
+        if arch[0].match(raw_arch):
             return arch[1]
 
 
@@ -70,7 +71,7 @@ class SSHProvisioner:
         self.user = user
         self.private_key_path = private_key_path
 
-    def _get_ssh_client(self, host, user, key):
+    def _get_ssh_client(self, host: str, user: str, key: str) -> paramiko.SSHClient:
         """Return a connected Paramiko ssh object.
 
         :param str host: The host to connect to.
@@ -82,7 +83,8 @@ class SSHProvisioner:
             connection failed
         """
         ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        # Ruff warns about insecure policy of automatically accepting unknown keys
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # noqa: S507
 
         pkey = None
 
@@ -116,7 +118,9 @@ class SSHProvisioner:
 
         return ssh
 
-    def _run_command(self, ssh, cmd, pty=True):
+    def _run_command(
+        self, ssh: paramiko.SSHClient, cmd: str | list[str], pty: bool = True
+    ) -> tuple[str, str]:
         """Run a command remotely via SSH.
 
         :param object ssh: The SSHClient
@@ -130,11 +134,12 @@ class SSHProvisioner:
         if isinstance(cmd, str):
             cmd = shlex.split(cmd)
 
-        if type(cmd) is not list:
-            cmd = [cmd]
+        if isinstance(cmd, str):
+            cmds = cmd
+        else:
+            cmds = " ".join(cmd)
 
-        cmds = " ".join(cmd)
-        stdin, stdout, stderr = ssh.exec_command(cmds, get_pty=pty)
+        _stdin, stdout, stderr = ssh.exec_command(cmds, get_pty=pty)
         retcode = stdout.channel.recv_exit_status()
 
         if retcode > 0:
@@ -160,7 +165,7 @@ class SSHProvisioner:
                 self.user,
                 self.private_key_path,
             )
-            stdout, stderr = self._run_command(ssh, "sudo -n true", pty=False)
+            _stdout, _stderr = self._run_command(ssh, "sudo -n true", pty=False)
         except paramiko.ssh_exception.AuthenticationException as e:
             raise e
         finally:
@@ -209,7 +214,7 @@ class SSHProvisioner:
             "mem": "",
         }
 
-        stdout, stderr = self._run_command(
+        stdout, _stderr = self._run_command(
             ssh,
             ["sudo", "/bin/bash -c " + shlex.quote(DETECTION_SCRIPT)],
             pty=True,
@@ -219,10 +224,10 @@ class SSHProvisioner:
         info["series"] = lines[0].strip()
         info["arch"] = normalize_arch(lines[1].strip())
 
-        memKb = re.split(r"\s+", lines[2])[1]
+        mem_kb = re.split(r"\s+", lines[2])[1]
 
-        # Convert megabytes -> kilobytes
-        info["mem"] = round(int(memKb) / 1024)
+        # Convert to MB
+        info["mem"] = int(mem_kb) // 1024
 
         # Detect available CPUs
         recorded = {}
@@ -257,10 +262,7 @@ class SSHProvisioner:
                 hw = self._detect_hardware_and_os(ssh)
                 params.series = hw["series"]
                 params.instance_id = f"manual:{self.host}"
-                params.nonce = "manual:{}:{}".format(
-                    self.host,
-                    str(uuid.uuid4()),  # a nop for Juju w/manual machines
-                )
+                params.nonce = f"manual:{self.host}:{uuid.uuid4()}"
                 params.hardware_characteristics = {
                     "arch": hw["arch"],
                     "mem": int(hw["mem"]),

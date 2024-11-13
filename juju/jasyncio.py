@@ -13,16 +13,37 @@ import asyncio
 import functools
 import logging
 import signal
-
-import websockets
-
-ROOT_LOGGER = logging.getLogger()
-
 from asyncio import (
     CancelledError,
     create_task,
     wait,
+    Event as Event, TimeoutError as TimeoutError, Queue as Queue, ensure_future as ensure_future,
+    gather as gather,
+    sleep as sleep,
+    wait_for as wait_for,
+    create_subprocess_exec as create_subprocess_exec,
+    subprocess as subprocess,
+
+     FIRST_COMPLETED as FIRST_COMPLETED,
+     Lock as Lock,
+     as_completed as as_completed,
+     new_event_loop as new_event_loop,
+
+    get_event_loop_policy as get_event_loop_policy,
+    get_running_loop as
+    get_running_loop,
+    ALL_COMPLETED as
+    ALL_COMPLETED,
+    all_tasks as
+    all_tasks,
+    current_task as
+    current_task,
+    shield as shield,
 )
+
+import websockets
+
+ROOT_LOGGER = logging.getLogger()
 
 
 def create_task_with_handler(coro, task_name, logger=ROOT_LOGGER):
@@ -68,7 +89,7 @@ class SingletonEventLoop:
 
     def __new__(cls):
         if not hasattr(cls, "instance"):
-            cls.instance = super(SingletonEventLoop, cls).__new__(cls)
+            cls.instance = super().__new__(cls)
             cls.instance.loop = asyncio.new_event_loop()
 
         return cls.instance

@@ -565,10 +565,10 @@ class Controller:
         cloud_facade = client.CloudFacade.from_connection(self.connection())
 
         result = await cloud_facade.Clouds()
-        cloud = list(result.clouds.keys())[0]  # only lives on one cloud
+        cloud = next(iter(result.clouds))
         return tag.untag("cloud-", cloud)
 
-    async def get_models(self, all=False, username=None):
+    async def get_models(self, all=False, username=None):  # noqa: A002
         """.. deprecated:: 0.7.0
         Use :meth:`.list_models` instead.
         """
@@ -630,10 +630,7 @@ class Controller:
         :returns Model: Connected Model instance.
         """
         uuids = await self.model_uuids()
-        if model in uuids:
-            uuid = uuids[model]
-        else:
-            uuid = model
+        uuid = uuids.get(model) or model
 
         from juju.model import Model
 

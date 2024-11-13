@@ -105,13 +105,21 @@ ignore = [
     # FIXME: manually rewrite docstring headlines to git on one line
     "D400",
     "D401",
+    # Some arguments are not documented
+    "D417",
     # FIXME: run `uvx docformatter` to reformat docstrings
     # Manual fixes are needed for string literals and f-strings
     "E501",
     # FIXME: there are some mixedCase members
     "N815",
+    # Existing exception classes are part of the API, cannot rename now
+    "N818",
     # try-except in a loop; hardly an issue in async functions
     "PERF203",
+    # assert
+    "S101",
+    # subprocess module
+    "S404",
     # FIXME: validate that we use yaml safely
     "S506",
     # FIXME: try/except: pass is OK

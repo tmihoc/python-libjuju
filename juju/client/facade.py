@@ -713,6 +713,12 @@ class Type:
     def to_json(self):
         return json.dumps(self.serialize(), cls=TypeEncoder, sort_keys=True)
 
+    def __contains__(self, key):
+        return key in self._toPy
+
+    def get(self, key, default=None):
+        return self[key] if key in self else default
+
     # treat subscript gets as JSON representation
     def __getitem__(self, key):
         attr = self._toPy[key]

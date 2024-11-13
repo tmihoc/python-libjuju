@@ -1,5 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+from __future__ import annotations
 
 import base64
 import collections
@@ -87,23 +88,16 @@ class _Observer:
         called) for a this delta.
 
         """
-        if (
-            self.entity_id
-            and delta.get_id()
-            and not re.match(self.entity_id, str(delta.get_id()))
-        ):
-            return False
-
-        if self.entity_type and self.entity_type != delta.entity:
-            return False
-
-        if self.action and self.action != delta.type:
-            return False
-
-        if self.predicate and not self.predicate(delta):
-            return False
-
-        return True
+        return not (
+            (
+                self.entity_id
+                and delta.get_id()
+                and not re.match(self.entity_id, str(delta.get_id()))
+            )
+            or (self.entity_type and self.entity_type != delta.entity)
+            or (self.action and self.action != delta.type)
+            or (self.predicate and not self.predicate(delta))
+        )
 
 
 class ModelObserver:
@@ -788,7 +782,7 @@ class Model:
         # If _all_watcher is done before the _watch_received, then we should see
         # (and raise) an exception coming from the _all_watcher
         # Otherwise (i.e. _watch_received is set), then we're good to go
-        done, pending = await jasyncio.wait(
+        done, _pending = await jasyncio.wait(
             [waiter, self._watcher_task], return_when=jasyncio.FIRST_COMPLETED
         )
         if self._watcher_task in done:
@@ -844,7 +838,8 @@ class Model:
         if charm_dir.suffix == ".charm":
             fn = charm_dir
         else:
-            fn = tempfile.NamedTemporaryFile().name
+            # FIXME this is probably a bug, the file is never removed
+            fn = tempfile.NamedTemporaryFile().name  # noqa: SIM115
             CharmArchiveGenerator(str(charm_dir)).make_archive(fn)
         with open(str(fn), "rb") as fh:
             func = partial(self.add_local_charm, fh, series, os.stat(str(fn)).st_size)
@@ -1406,7 +1401,9 @@ class Model:
         """
         return await _set_annotations(self.tag, annotations, self.connection())
 
-    async def add_machine(self, spec=None, constraints=None, disks=None, series=None):
+    async def add_machine(
+        self, spec: str | None = None, constraints=None, disks=None, series=None
+    ):
         """Start a new, empty machine and optionally a container, or add a
         container to a machine.
 
@@ -1472,13 +1469,13 @@ class Model:
                 placement, target, private_key_path = spec.split(":")
                 user, host = target.split("@")
 
-                sshProvisioner = provisioner.SSHProvisioner(
+                prov = provisioner.SSHProvisioner(
                     host=host,
                     user=user,
                     private_key_path=private_key_path,
                 )
 
-                params = sshProvisioner.provision_machine()
+                params = prov.provision_machine()
             else:
                 placement = parse_placement(spec)
                 if placement:
@@ -1503,15 +1500,14 @@ class Model:
             raise ValueError("Error adding machine: %s" % error.message)
         machine_id = results.machines[0].machine
 
-        if spec:
-            if spec.startswith("ssh:"):
-                # Need to run this after AddMachines has been called,
-                # as we need the machine_id
-                await sshProvisioner.install_agent(
-                    self.connection(),
-                    params.nonce,
-                    machine_id,
-                )
+        if spec and spec.startswith("ssh:"):
+            # Need to run this after AddMachines has been called,
+            # as we need the machine_id
+            await prov.install_agent(
+                self.connection(),
+                params.nonce,
+                machine_id,
+            )
 
         log.debug("Added new machine %s", machine_id)
         return await self._wait_for_new("machine", machine_id)
@@ -2057,16 +2053,17 @@ class Model:
         charm_facade = client.CharmsFacade.from_connection(self.connection())
         res = await charm_facade.CharmInfo(entity_url)
 
-        resources = []
-        for resource in res.meta.resources.values():
-            resources.append({
+        resources = [
+            {
                 "description": resource.description,
                 "name": resource.name,
                 "path": resource.path,
                 "type_": resource.type_,
                 "origin": "store",
                 "revision": -1,
-            })
+            }
+            for resource in res.meta.resources.values()
+        ]
 
         if overrides:
             names = {r["name"] for r in resources}
@@ -2393,7 +2390,7 @@ class Model:
         # set.
         if result.constraints:
             constraint_types = [
-                a for a in dir(result.constraints) if a in client.Value._toSchema.keys()
+                a for a in dir(result.constraints) if a in client.Value._toSchema
             ]
             for constraint in constraint_types:
                 value = getattr(result.constraints, constraint)
@@ -2454,7 +2451,7 @@ class Model:
         """
         key_facade = client.KeyManagerFacade.from_connection(self.connection())
         key = base64.b64decode(bytes(key.strip().split()[1].encode("ascii")))
-        key = hashlib.md5(key).hexdigest()
+        key = hashlib.md5(key).hexdigest()  # noqa: S324
         key = ":".join(a + b for a, b in zip(key[::2], key[1::2]))
         await key_facade.DeleteKeys(ssh_keys=[key], user=user)
 
@@ -2780,8 +2777,8 @@ class Model:
         if client.SecretsFacade.best_facade_version(self.connection()) < 2:
             raise JujuNotSupportedError("user secrets")
 
-        secretsFacade = client.SecretsFacade.from_connection(self.connection())
-        results = await secretsFacade.CreateSecrets([
+        secrets_facade = client.SecretsFacade.from_connection(self.connection())
+        results = await secrets_facade.CreateSecrets([
             {
                 "content": {"data": data},
                 "description": info,
@@ -2815,8 +2812,8 @@ class Model:
 
         if client.SecretsFacade.best_facade_version(self.connection()) < 2:
             raise JujuNotSupportedError("user secrets")
-        secretsFacade = client.SecretsFacade.from_connection(self.connection())
-        results = await secretsFacade.UpdateSecrets([
+        secrets_facade = client.SecretsFacade.from_connection(self.connection())
+        results = await secrets_facade.UpdateSecrets([
             {
                 "content": {"data": data},
                 "description": info,
@@ -2830,7 +2827,7 @@ class Model:
         if result_error.error is not None:
             raise JujuAPIError(result_error.error)
 
-    async def list_secrets(self, filter=None, show_secrets=False):
+    async def list_secrets(self, filter=None, show_secrets=False):  # noqa: A002
         """Returns the list of available secrets."""
         facade = client.SecretsFacade.from_connection(self.connection())
         results = await facade.ListSecrets(
@@ -2853,8 +2850,8 @@ class Model:
         if revision >= 0:
             remove_secret_arg["revisions"] = [revision]
 
-        secretsFacade = client.SecretsFacade.from_connection(self.connection())
-        results = await secretsFacade.RemoveSecrets([remove_secret_arg])
+        secrets_facade = client.SecretsFacade.from_connection(self.connection())
+        results = await secrets_facade.RemoveSecrets([remove_secret_arg])
         if len(results.results) != 1:
             raise JujuAPIError(f"expected 1 result, got {len(results.results)}")
         result_error = results.results[0]
@@ -2870,9 +2867,9 @@ class Model:
         """
         if client.SecretsFacade.best_facade_version(self.connection()) < 2:
             raise JujuNotSupportedError("user secrets")
-        secretsFacade = client.SecretsFacade.from_connection(self.connection())
-        results = await secretsFacade.GrantSecret(
-            applications=[application] + list(applications), label=secret_name
+        secrets_facade = client.SecretsFacade.from_connection(self.connection())
+        results = await secrets_facade.GrantSecret(
+            applications=[application, *applications], label=secret_name
         )
         if len(results.results) != 1:
             raise JujuAPIError(f"expected 1 result, got {len(results.results)}")
@@ -2891,9 +2888,9 @@ class Model:
         """
         if client.SecretsFacade.best_facade_version(self.connection()) < 2:
             raise JujuNotSupportedError("user secrets")
-        secretsFacade = client.SecretsFacade.from_connection(self.connection())
-        results = await secretsFacade.RevokeSecret(
-            applications=[application] + list(applications), label=secret_name
+        secrets_facade = client.SecretsFacade.from_connection(self.connection())
+        results = await secrets_facade.RevokeSecret(
+            applications=[application, *applications], label=secret_name
         )
         if len(results.results) != 1:
             raise JujuAPIError(f"expected 1 result, got {len(results.results)}")
@@ -2972,7 +2969,9 @@ class Model:
         """
         if wait_for_active:
             warnings.warn(
-                "wait_for_active is deprecated; use status", DeprecationWarning
+                "wait_for_active is deprecated; use status",
+                DeprecationWarning,
+                stacklevel=1,
             )
             status = "active"
 
@@ -3138,29 +3137,25 @@ def _create_consume_args(offer, macaroon, controller_info):
     @param controller_info: takes a controller information and serialises it into
     a valid type.
     """
-    endpoints = []
-    for ep in offer.endpoints:
-        endpoints.append(
-            client.RemoteEndpoint(
-                interface=ep.interface, limit=ep.limit, name=ep.name, role=ep.role
-            )
+    endpoints = [
+        client.RemoteEndpoint(
+            interface=ep.interface, limit=ep.limit, name=ep.name, role=ep.role
         )
-    users = []
-    for u in offer.users:
-        users.append(
-            client.OfferUserDetails(
-                access=u.access, display_name=u.display_name, user=u.user
-            )
+        for ep in offer.endpoints
+    ]
+    users = [
+        client.OfferUserDetails(
+            access=u.access, display_name=u.display_name, user=u.user
         )
+        for u in offer.users
+    ]
     external_controller = client.ExternalControllerInfo(
         addrs=controller_info.addrs,
         ca_cert=controller_info.ca_cert,
         controller_alias=controller_info.controller_alias,
         controller_tag=controller_info.controller_tag,
     )
-    caveats = []
-    for c in macaroon.unknown_fields["caveats"]:
-        caveats.append(Caveat(cid=c["cid"]))
+    caveats = [Caveat(cid=c["cid"]) for c in macaroon.unknown_fields["caveats"]]
     macaroon = Macaroon(
         signature=macaroon.unknown_fields["signature"],
         caveats=caveats,
