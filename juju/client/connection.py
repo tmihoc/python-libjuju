@@ -23,6 +23,7 @@ from juju.version import CLIENT_VERSION
 
 from .facade_versions import client_facade_versions, known_unsupported_facades
 
+LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
 log = logging.getLogger("juju.client.connection")
 
 
@@ -240,7 +241,7 @@ class Connection:
             if isinstance(endpoint, str)
             else [(e, cacert) for e in endpoint]
         )
-        lastError = None
+        last_error = None
         for _ep in _endpoints:
             try:
                 if self.is_debug_log_connection:
@@ -251,14 +252,14 @@ class Connection:
                     await self._connect_with_redirect([_ep])
                 return self
             except ssl.SSLError as e:
-                lastError = e
+                last_error = e
                 continue
             except OSError as e:
                 logging.debug(f"Cannot access endpoint {_ep}: {e.strerror}")
-                lastError = e
+                last_error = e
                 continue
-        if lastError is not None:
-            raise lastError
+        if last_error is not None:
+            raise last_error
         raise Exception("Unable to connect to websocket")
 
     @property
@@ -407,7 +408,6 @@ class Connection:
             and (included_entities == [] or entity in included_entities)
         )
 
-        LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
         log_level = self.debug_log_params["level"]
 
         if log_level != "" and log_level not in LEVELS:
@@ -595,10 +595,11 @@ class Connection:
             # Perhaps JujuError should return all the results including
             # errors, or perhaps a keyword parameter to the rpc method
             # could be added to trigger this behaviour.
-            err_results = []
-            for res in result["response"]["results"] or []:
-                if res.get("error", {}).get("message"):
-                    err_results.append(res["error"]["message"])
+            err_results = [
+                res["error"]["message"]
+                for res in (result["response"]["results"] or [])
+                if res.get("error", {}).get("message")
+            ]
             if err_results:
                 raise errors.JujuError(err_results)
 
@@ -781,14 +782,14 @@ class Connection:
             # It's possible that we may get several discharge-required errors,
             # corresponding to different levels of authentication, so retry
             # a few times.
-            for i in range(0, 2):
+            for _ in range(0, 2):
                 result = (await self.login())["response"]
-                macaroonJSON = result.get("discharge-required")
-                if macaroonJSON is None:
+                macaroon_json = result.get("discharge-required")
+                if macaroon_json is None:
                     self.info = result
                     success = True
                     return result
-                macaroon = bakery.Macaroon.from_dict(macaroonJSON)
+                macaroon = bakery.Macaroon.from_dict(macaroon_json)
                 self.bakery_client.handle_error(
                     httpbakery.Error(
                         code=httpbakery.ERR_DISCHARGE_REQUIRED,

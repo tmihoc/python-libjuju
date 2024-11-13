@@ -22,10 +22,10 @@ class CodeWriter(StringIO):
             prefix = self.INDENT * depth
             msg = indent(msg, prefix)
 
-        return super(CodeWriter, self).write(msg)
+        return super().write(msg)
 
     def __str__(self):
-        return super(CodeWriter, self).getvalue()
+        return super().getvalue()
 
 
 class Capture(defaultdict):
@@ -35,7 +35,7 @@ class Capture(defaultdict):
     """
 
     def __init__(self, default_factory=CodeWriter, *args, **kwargs):
-        super(Capture, self).__init__(default_factory, *args, **kwargs)
+        super().__init__(default_factory, *args, **kwargs)
 
     def clear(self, name):
         """Reset one of the keys in this class, if it exists.

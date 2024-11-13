@@ -131,7 +131,24 @@ ignore = [
     "UP031",
 ]
 
+
 [tool.ruff.lint.per-file-ignores]
+"juju/client/_*.py" = [
+    # Copyright
+    "CPY001",
+    # Codegen limitation: empty structs have empty docstrings.
+    "D419",
+    # CamelCase
+    "N802",
+    # star imports
+    "F403",
+    "F405",
+    # FIXME: undefined FacadeVersions...
+    # Is the class from _client.py intended?
+    # How does login even work?
+    "F821",
+]
+
 "tests/*" = [
     # assert False to fail
     "B011",

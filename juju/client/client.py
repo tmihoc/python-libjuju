@@ -32,4 +32,4 @@ for o in overrides.__patches__:
             if not a.startswith("_"):
                 setattr(c_type, a, getattr(o_type, a))
 
-from ._client import *  # noqa, isort:skip
+from ._client import *  # noqa: F403,E402, isort:skip
