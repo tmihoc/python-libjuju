@@ -83,12 +83,44 @@ select = [
     "D",
 ]
 ignore = [
+    # juju.secrets is a part of public API, can't rename or remove it now
+    "A005",
     # FIXME: change the codegen to remove the schema from auto-generate classes
     "RUF012",
     # FIXME: change the codegen to insert a period at the end of the docstring
     "D415",
+    # FIXME: quite a few mutable default arguments should be refactored
+    "B006",
+    # FIXME: raise from
+    "B904",
+    # FIXME: a bunch of missing docstrings
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D105",
+    "D107",
+    # FIXME: a bunch of docstrings without headlines
+    "D205",
     # FIXME: manually rewrite docstring headlines to git on one line
     "D400",
+    "D401",
+    # FIXME: run `uvx docformatter` to reformat docstrings
+    # Manual fixes are needed for string literals and f-strings
+    "E501",
+    # FIXME: there are some mixedCase members
+    "N815",
+    # try-except in a loop; hardly an issue in async functions
+    "PERF203",
+    # FIXME: validate that we use yaml safely
+    "S506",
+    # FIXME: try/except: pass is OK
+    # Note: swallowing CancelledError is most likely a bug
+    "SIM105",
+    # FIXME: refactor if-else
+    "SIM108",
+    # % format is just fine
+    "UP031",
 ]
 
 [tool.ruff.lint.per-file-ignores]

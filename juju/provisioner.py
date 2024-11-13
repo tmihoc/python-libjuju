@@ -317,11 +317,10 @@ class SSHProvisioner:
         :raises: :class:`paramiko.ssh_exception.AuthenticationException`
             if the upload fails
         """
-        _, tmpFile = tempfile.mkstemp()
-        with open(tmpFile, "w") as f:
-            f.write(script)
+        with tempfile.NamedTemporaryFile("w") as tmp_file:
+            tmp_file.write(script)
+            tmp_file.flush()
 
-        try:
             # get ssh client
             ssh = self._get_ssh_client(
                 self.host,
@@ -329,21 +328,15 @@ class SSHProvisioner:
                 self.private_key_path,
             )
 
-            # copy the local copy of the script to the remote machine
-            sftp = paramiko.SFTPClient.from_transport(ssh.get_transport())
-            sftp.put(
-                tmpFile,
-                tmpFile,
-            )
+            try:
+                # copy the local copy of the script to the remote machine
+                sftp = paramiko.SFTPClient.from_transport(ssh.get_transport())
+                sftp.put(tmp_file.name, tmp_file.name)
 
-            # run the provisioning script
-            stdout, stderr = self._run_command(
-                ssh,
-                f"sudo /bin/bash {tmpFile}",
-            )
-
-        except paramiko.ssh_exception.AuthenticationException as e:
-            raise e
-        finally:
-            os.remove(tmpFile)
-            ssh.close()
+                # run the provisioning script
+                _stdout, _stderr = self._run_command(
+                    ssh,
+                    f"sudo /bin/bash {tmp_file.name}",
+                )
+            finally:
+                ssh.close()

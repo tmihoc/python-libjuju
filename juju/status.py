@@ -2,6 +2,7 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 
 import logging
+import warnings
 
 from .client import client
 
@@ -53,6 +54,11 @@ async def formatted_status(model, target=None, raw=False, filters=None):
     :param str filters: Optional list of applications, units, or machines
         to include, which can use wildcards ('*').
     """
+    warnings.warn(
+        "juju.status.formatted_status is deprecated, the implementation is likely broken",
+        DeprecationWarning,
+        stacklevel=1,
+    )
     client_facade = client.ClientFacade.from_connection(model.connection())
     result_status = await client_facade.FullStatus(patterns=filters)
 
@@ -138,10 +144,10 @@ def _print_status_units(result_status):
 
     limits = "{:<15} {:<15} {:<20} {:<10} {:<15} {:<10} {:<30}"
     summary = ""
-    for app_name, app in apps.items():
+    for app in apps.values():
         units = app.units
         if units is None or len(units) == 0:
-            next
+            continue
 
         for name, unit in units.items():
             addr = unit.public_address

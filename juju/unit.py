@@ -121,10 +121,10 @@ class Unit(model.ModelEntity):
             return addr
 
         app_facade = client.ApplicationFacade.from_connection(self.connection)
-        defResult = await app_facade.UnitsInfo(entities=[client.Entity(self.tag)])
-        if defResult is not None and len(defResult.results) > 1:
+        def_result = await app_facade.UnitsInfo(entities=[client.Entity(self.tag)])
+        if def_result is not None and len(def_result.results) > 1:
             raise JujuAPIError("expected one result")
-        return defResult.results[0].result.get("public-address", None)
+        return def_result.results[0].result.get("public-address", None)
 
     async def resolved(self, retry=False):
         """Mark unit errors resolved.
@@ -411,7 +411,7 @@ class Unit(model.ModelEntity):
             if not is_subordinate:
                 continue
 
-            for key, unit in app_data.units.items():
+            for unit in app_data.units.values():
                 if unit.subordinates and unit.subordinates.get(self.name):
                     is_leader = unit.subordinates[self.name].leader
                     return is_leader if is_leader else False

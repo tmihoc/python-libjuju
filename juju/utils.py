@@ -96,15 +96,15 @@ class IdQueue:
     def __init__(self, maxsize=0):
         self._queues = defaultdict(partial(jasyncio.Queue, maxsize))
 
-    async def get(self, id):
-        value = await self._queues[id].get()
-        del self._queues[id]
+    async def get(self, id_):
+        value = await self._queues[id_].get()
+        del self._queues[id_]
         if isinstance(value, Exception):
             raise value
         return value
 
-    async def put(self, id, value):
-        await self._queues[id].put(value)
+    async def put(self, id_, value):
+        await self._queues[id_].put(value)
 
     async def put_all(self, value):
         for queue in self._queues.values():
@@ -176,7 +176,7 @@ async def run_with_interrupt(task, *events, log=None):
     task = jasyncio.create_task_with_handler(task, "tmp", log)
     event_tasks = [jasyncio.ensure_future(event.wait()) for event in events]
     done, pending = await jasyncio.wait(
-        [task] + event_tasks, return_when=jasyncio.FIRST_COMPLETED
+        [task, *event_tasks], return_when=jasyncio.FIRST_COMPLETED
     )
     for f in pending:
         f.cancel()  # cancel unfinished tasks
@@ -194,6 +194,8 @@ async def run_with_interrupt(task, *events, log=None):
 
 
 class Addrs(univ.SequenceOf):
+    """Internal."""
+
     componentType = char.PrintableString()
 
 
@@ -215,7 +217,8 @@ class RegistrationInfo(univ.Sequence):
 def generate_user_controller_access_token(
     username, controller_endpoints, secret_key, controller_name
 ):
-    """ " Implement in python what is currently done in GO
+    """Implement in python what is currently done in GO.
+
     https://github.com/juju/juju/blob/a5ab92e/cmd/juju/user/utils.go#L16
 
     :param username: name of the user to register
@@ -502,7 +505,9 @@ def user_requested(series_arg, supported_series, force):
 def series_selector(
     series_arg="", charm_url=None, model_config=None, supported_series=[], force=False
 ):
-    """series_selector corresponds to the CharmSeries() in
+    """Select series to deploy on.
+
+    series_selector corresponds to the CharmSeries() in
     https://github.com/juju/juju/blob/develop/core/charm/series_selector.go
 
     determines what series to use with a charm.

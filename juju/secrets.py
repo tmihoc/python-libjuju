@@ -1,7 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-"""This module contains utility logic for secrets such as reading secret data from yaml and creating data bag for secrets."""
+"""A utility module for secrets such as reading secret data from yaml and creating data bag for secrets."""
 
 import base64
 import json
