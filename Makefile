@@ -18,6 +18,7 @@ clean:
 client:
 	tox -r --notest -e lint,py3
 	$(PY) -m juju.client.facade -s "juju/client/schemas*" -o juju/client/
+	pre-commit run --files $(shell echo juju/client/_[cd]*.py)
 
 .PHONY: run-unit-tests
 run-unit-tests: .tox lint
