@@ -135,7 +135,7 @@ class KindRegistry(dict):
             return versions[version]
         return versions[max(versions)]
 
-    def getObj(self, name, version=None):
+    def get_obj(self, name, version=None):
         result = self.lookup(name, version)
         if result:
             obj = result["object"]
@@ -157,10 +157,10 @@ class TypeRegistry(dict):
 
         return self[refname]
 
-    def getRefType(self, ref):
+    def get_ref_type(self, ref):
         return self.get(ref)
 
-    def objType(self, obj):
+    def obj_type(self, obj):
         kind = obj.get("type")
         if not kind:
             raise ValueError("%s has no type" % obj)
@@ -169,8 +169,8 @@ class TypeRegistry(dict):
             raise ValueError("%s has type %s" % (obj, kind))
         return result
 
-    def refType(self, obj):
-        return self.getRefType(obj["$ref"])
+    def ref_type(self, obj):
+        return self.get_ref_type(obj["$ref"])
 
 
 CLASSES = {}
@@ -178,9 +178,8 @@ factories = codegen.Capture()
 
 
 def booler(v):
-    if isinstance(v, str):
-        if v == "false":
-            return False
+    if v == "false":
+        return False
     return bool(v)
 
 
@@ -247,7 +246,7 @@ class Args(list):
         self.schema = schema
         self.defs = defs
         if defs:
-            rtypes = schema.registry.getObj(schema.types[defs])
+            rtypes = schema.registry.get_obj(schema.types[defs])
             if len(rtypes) == 1:
                 if not self.do_explode(rtypes[0][1]):
                     for name, rtype in rtypes:
@@ -273,15 +272,15 @@ class Args(list):
         self.extend(Args(self.schema, kind))
         return True
 
-    def PyToSchemaMapping(self):
+    def py_to_schema_mapping(self):
         m = {}
-        for n, rt in self:
+        for n, _ in self:
             m[name_to_py(n)] = n
         return m
 
-    def SchemaToPyMapping(self):
+    def schema_to_py_mapping(self):
         m = {}
-        for n, tr in self:
+        for n, _ in self:
             m[n] = name_to_py(n)
         return m
 
@@ -332,15 +331,15 @@ class Args(list):
 
 
 def build_validation(name, instance_type, instance_sub_type, ident=None):
-    INDENT = ident or "    "
-    source = f"""{INDENT}if {name} is not None and not isinstance({name}, {instance_sub_type}):
-{INDENT}    raise Exception("Expected {name} to be a {instance_type}, received: {{}}".format(type({name})))
+    indent = ident or "    "
+    source = f"""{indent}if {name} is not None and not isinstance({name}, {instance_sub_type}):
+{indent}    raise Exception("Expected {name} to be a {instance_type}, received: {{}}".format(type({name})))
 """
     return source
 
 
 def build_types(schema, capture):
-    INDENT = "    "
+    indent = "    "
     for kind in sorted(
         (k for k in schema.types if not isinstance(k, str)), key=lambda x: str(x)
     ):
@@ -368,16 +367,16 @@ class {}(Type):
         '''""".format(
                 name,
                 # pprint these to get stable ordering across regens
-                pprint.pformat(args.PyToSchemaMapping(), width=999),
-                pprint.pformat(args.SchemaToPyMapping(), width=999),
+                pprint.pformat(args.py_to_schema_mapping(), width=999),
+                pprint.pformat(args.schema_to_py_mapping(), width=999),
                 ", " if args else "",
                 args.as_kwargs(),
-                textwrap.indent(args.get_doc(), INDENT * 2),
+                textwrap.indent(args.get_doc(), indent * 2),
             )
         ]
 
         if not args:
-            source.append(f"{INDENT * 2}self.unknown_fields = unknown_fields")
+            source.append(f"{indent * 2}self.unknown_fields = unknown_fields")
         else:
             # do the validation first, before setting the variables
             for arg in args:
@@ -385,10 +384,10 @@ class {}(Type):
                 arg_type = arg[1]
                 arg_type_name = strcast(arg_type)
                 if arg_type in basic_types or arg_type is typing.Any:
-                    source.append(f"{INDENT * 2}{arg_name}_ = {arg_name}")
+                    source.append(f"{indent * 2}{arg_name}_ = {arg_name}")
                 elif type(arg_type) is typing.TypeVar:
                     source.append(
-                        f"{INDENT * 2}{arg_name}_ = {arg_type_name}.from_json({arg_name}) if {arg_name} else None"
+                        f"{indent * 2}{arg_name}_ = {arg_type_name}.from_json({arg_name}) if {arg_name} else None"
                     )
                 elif typing_inspect.is_generic_type(arg_type) and issubclass(
                     typing_inspect.get_origin(arg_type), Sequence
@@ -397,10 +396,10 @@ class {}(Type):
                     value_type = parameters[0] if len(parameters) else None
                     if type(value_type) is typing.TypeVar:
                         source.append(
-                            f"{INDENT * 2}{arg_name}_ = [{strcast(value_type)}.from_json(o) for o in {arg_name} or []]"
+                            f"{indent * 2}{arg_name}_ = [{strcast(value_type)}.from_json(o) for o in {arg_name} or []]"
                         )
                     else:
-                        source.append(f"{INDENT * 2}{arg_name}_ = {arg_name}")
+                        source.append(f"{indent * 2}{arg_name}_ = {arg_name}")
                 elif typing_inspect.is_generic_type(arg_type) and issubclass(
                     typing_inspect.get_origin(arg_type), Mapping
                 ):
@@ -408,16 +407,16 @@ class {}(Type):
                     value_type = parameters[0] if len(parameters) else None
                     if type(value_type) is typing.TypeVar:
                         source.append(
-                            f"{INDENT * 2}{arg_name}_ = {{k: {strcast(value_type)}.from_json(v) "
+                            f"{indent * 2}{arg_name}_ = {{k: {strcast(value_type)}.from_json(v) "
                             f"for k, v in ({arg_name} or dict()).items()}}"
                         )
                     else:
-                        source.append(f"{INDENT * 2}{arg_name}_ = {arg_name}")
+                        source.append(f"{indent * 2}{arg_name}_ = {arg_name}")
                 else:
-                    source.append(f"{INDENT * 2}{arg_name}_ = {arg_name}")
+                    source.append(f"{indent * 2}{arg_name}_ = {arg_name}")
             if len(args) > 0:
                 source.append(
-                    f"\n{INDENT * 2}# Validate arguments against known Juju API types."
+                    f"\n{indent * 2}# Validate arguments against known Juju API types."
                 )
             for arg in args:
                 arg_name = f"{name_to_py(arg[0])}_"
@@ -426,17 +425,17 @@ class {}(Type):
                     source.append(
                         "{}".format(
                             build_validation(
-                                arg_name, arg_type, arg_sub_type, ident=INDENT * 2
+                                arg_name, arg_type, arg_sub_type, ident=indent * 2
                             )
                         )
                     )
 
             for arg in args:
                 arg_name = name_to_py(arg[0])
-                source.append(f"{INDENT * 2}self.{arg_name} = {arg_name}_")
+                source.append(f"{indent * 2}self.{arg_name} = {arg_name}_")
             # Ensure that we take the kwargs (unknown_fields) and put it on the
             # Results/Params so we can inspect it.
-            source.append(f"{INDENT * 2}self.unknown_fields = unknown_fields")
+            source.append(f"{indent * 2}self.unknown_fields = unknown_fields")
 
         source = "\n".join(source)
         capture.clear(name)
@@ -446,7 +445,7 @@ class {}(Type):
             print(source)
         co = compile(source, __name__, "exec")
         ns = _getns(schema)
-        exec(co, ns)
+        exec(co, ns)  # noqa: S102
         cls = ns[name]
         CLASSES[name] = cls
 
@@ -464,7 +463,7 @@ def retspec(schema, defs):
     return strcast(defs, False)
 
 
-def ReturnMapping(cls):
+def ReturnMapping(cls):  # noqa: N802
     # Annotate the method with a return Type
     # so the value can be cast
     def decorator(f):
@@ -502,12 +501,13 @@ def ReturnMapping(cls):
 
 
 def make_func(cls, name, description, params, result, _async=True):
-    INDENT = "    "
+    indent = "    "
     args = Args(cls.schema, params)
-    assignments = []
-    toschema = args.PyToSchemaMapping()
-    for arg in args._get_arg_str(False, False):
-        assignments.append(f"{INDENT}_params['{toschema[arg]}'] = {arg}")
+    toschema = args.py_to_schema_mapping()
+    assignments = [
+        f"{indent}_params['{toschema[arg]}'] = {arg}"
+        for arg in args._get_arg_str(False, False)
+    ]
     assignments = "\n".join(assignments)
     res = retspec(cls.schema, result)
     source = """
@@ -544,13 +544,13 @@ def make_func(cls, name, description, params, result, _async=True):
         res=res,
         validation=args.as_validation(),
         rettype=result.__name__ if result else None,
-        docstring=textwrap.indent(doc_string, INDENT),
+        docstring=textwrap.indent(doc_string, indent),
         cls=cls,
         assignments=assignments,
         _await="await " if _async else "",
     )
     ns = _getns(cls.schema)
-    exec(fsource, ns)
+    exec(fsource, ns)  # noqa: S102
     func = ns[name]
     return func, fsource
 
@@ -572,7 +572,7 @@ async def rpc(self, msg):
 
 """
     ns = _getns(cls.schema)
-    exec(source, ns)
+    exec(source, ns)  # noqa: S102
     func = ns["rpc"]
     return func, source
 
@@ -671,7 +671,7 @@ class Type:
                     # this is a simple entry
                     result_dict[expr] = ""
             elif isinstance(expr, dict):
-                for _, v in expr.items():
+                for v in expr.values():
                     _parse_nested_list_entry(v, result_dict)
             elif isinstance(expr, list):
                 for v in expr:
@@ -715,9 +715,6 @@ class Type:
 
     def __contains__(self, key):
         return key in self._toPy
-
-    def get(self, key, default=None):
-        return self[key] if key in self else default
 
     # treat subscript gets as JSON representation
     def __getitem__(self, key):
@@ -773,7 +770,7 @@ class Schema(dict):
         for d, definition in definitions.items():
             node = self.build_object(definition, d)
             self.registry.register(d, self.version, node)
-            self.types.getRefType(d)
+            self.types.get_ref_type(d)
 
     def build_object(self, node, name=None):
         # we don't need to build types recursively here
@@ -790,7 +787,7 @@ class Schema(dict):
             for p in sorted(props):
                 prop = props[p]
                 if "$ref" in prop:
-                    add((p, self.types.refType(prop)))
+                    add((p, self.types.ref_type(prop)))
                 else:
                     kind = prop["type"]
                     if kind == "array":
@@ -798,7 +795,7 @@ class Schema(dict):
                     elif kind == "object":
                         struct.extend(self.build_object(prop, p))
                     else:
-                        add((p, self.types.objType(prop)))
+                        add((p, self.types.obj_type(prop)))
         if pprops:
             if ".*" not in pprops:
                 raise ValueError(
@@ -806,7 +803,7 @@ class Schema(dict):
                 )
             pprop = pprops[".*"]
             if "$ref" in pprop:
-                add((name, Mapping[str, self.types.refType(pprop)]))
+                add((name, Mapping[str, self.types.ref_type(pprop)]))
                 return struct
             ppkind = pprop["type"]
             if ppkind == "array":
@@ -822,21 +819,21 @@ class Schema(dict):
     def build_array(self, obj):
         # return a sequence from an array in the schema
         if "$ref" in obj:
-            return Sequence[self.types.refType(obj)]
+            return Sequence[self.types.ref_type(obj)]
         else:
             kind = obj.get("type")
             if kind and kind == "array":
                 items = obj["items"]
                 return self.build_array(items)
             else:
-                return Sequence[self.types.objType(obj)]
+                return Sequence[self.types.obj_type(obj)]
 
 
 def _getns(schema):
     ns = {"Type": Type, "typing": typing, "ReturnMapping": ReturnMapping}
     # Copy our types into the globals of the method
     for facade in schema.registry:
-        ns[facade] = schema.registry.getObj(facade)
+        ns[facade] = schema.registry.get_obj(facade)
     return ns
 
 
