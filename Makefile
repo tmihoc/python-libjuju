@@ -16,26 +16,20 @@ clean:
 
 .PHONY: client
 client:
-	tox -r --notest -e lint,py3
+	tox -r --notest -e py3
 	$(PY) -m juju.client.facade -s "juju/client/schemas*" -o juju/client/
 	pre-commit run --files $(shell echo juju/client/_[cd]*.py)
 
 .PHONY: run-unit-tests
-run-unit-tests: .tox lint
+run-unit-tests: .tox
 	tox -e py3
 
 .PHONY: run-integration-tests
-run-integration-tests: .tox lint
+run-integration-tests: .tox
 	tox -e integration
 
 .PHONY: run-all-tests
 test: run-unit-tests run-integration-tests
-
-.PHONY: lint
-lint:
-	@./scripts/copyright.sh
-	@echo "==> Running flake8 linter"
-	tox -e lint
 
 .PHONY: docs
 docs:

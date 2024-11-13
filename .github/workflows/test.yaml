@@ -7,28 +7,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Linter
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python:
-          - "3.9"
-          - "3.10"
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Install dependencies
-        run: pip install tox
-      - name: Run linter
-        run: |
-          tox -e lint
-          ./scripts/copyright.sh
-
   build-test:
     name: Build test
     runs-on: ubuntu-latest
@@ -67,7 +45,6 @@ jobs:
         run: tox -e validate
 
   unit-tests:
-    needs: lint
     name: Unit tests
     runs-on: ubuntu-latest
     strategy:
@@ -161,7 +138,7 @@ jobs:
 
   integration-quarantine:
     name: Quarantined Integration Tests
-    needs: [lint, unit-tests]
+    needs: [unit-tests]
     timeout-minutes: 150
     runs-on: ubuntu-latest
     strategy:
