@@ -14,6 +14,7 @@ repos:
       - id: check-toml
       - id: mixed-line-ending
       - id: end-of-file-fixer
+        exclude: "^juju/client/schemas-juju.*json$"
       - id: trailing-whitespace
       - id: detect-private-key
   # Run the Ruff linter.
