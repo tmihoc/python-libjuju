@@ -57,7 +57,7 @@ async def formatted_status(model, target=None, raw=False, filters=None):
     warnings.warn(
         "juju.status.formatted_status is deprecated, the implementation is likely broken",
         DeprecationWarning,
-        stacklevel=1,
+        stacklevel=2,
     )
     client_facade = client.ClientFacade.from_connection(model.connection())
     result_status = await client_facade.FullStatus(patterns=filters)
