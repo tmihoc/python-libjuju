@@ -38,20 +38,20 @@ docs:
 .PHONY: build-test
 build-test:
 	rm -rf venv
+	uvx --from build pyproject-build
 	python3 -m venv venv
 	. venv/bin/activate
-	python3 setup.py sdist
-	pip install ./dist/juju-${VERSION}.tar.gz
+	pip install dist/juju-${VERSION}.tar.gz
 	python3 -c "from juju.controller import Controller"
-	rm ./dist/juju-${VERSION}.tar.gz
+	rm dist/juju-${VERSION}.tar.gz dist/juju-${VERSION}-*.whl
 
 .PHONY: release
 release:
 	git fetch --tags
-	rm dist/*.tar.gz || true
-	$(PY) setup.py sdist
-	$(BIN)/twine check dist/*
-	$(BIN)/twine upload --repository juju dist/*
+	rm dist/*.tar.gz dist/*.whl || true
+	uvx --from build pyproject-build
+	uvx twine check dist/*
+	uvx twine upload --repository juju dist/*
 	git tag ${VERSION}
 	git push --tags
 
