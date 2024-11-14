@@ -3,6 +3,11 @@ repos:
     rev: v4.5.0
     hooks:
       - id: check-added-large-files
+        exclude: |
+          (?x)  # Verbose mode
+          ^juju/client/schemas-juju-.*[.]json$  |
+          ^tests/.*[.]charm$  |
+          ^examples/.*[.]charm$
       - id: check-ast
       - id: check-case-conflict
       - id: check-executables-have-shebangs
@@ -11,16 +16,16 @@ repos:
       - id: check-symlinks
       - id: check-json
       - id: check-yaml
-        # Overlays are deliberately multi-doc
+        # Overlays deliberately comprise multiple YAML documents per file
         exclude: "^tests/integration/bundle/test-overlays/.*multi.*yaml$"
       - id: check-toml
       - id: mixed-line-ending
       - id: end-of-file-fixer
-        exclude: "^juju/client/schemas-juju.*json$"
+        exclude: "^juju/client/schemas-juju-.*[.]json$"
       - id: trailing-whitespace
       - id: detect-private-key
         exclude: "^tests/.*$"
-  # Run the Ruff linter.
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.3
     hooks:
@@ -28,13 +33,14 @@ repos:
         args: [ --preview, --fix ]
       - id: ruff-format
         args: [ --preview ]
-  # Spellcheck the code.
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
     - id: codespell
       additional_dependencies:
         - tomli
-      exclude: "^juju/client/schemas-juju.*json$"
+      exclude: "^juju/client/schemas-juju-.*[.]json$"
+
 ci:
   autofix_prs: false
