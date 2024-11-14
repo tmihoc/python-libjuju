@@ -2972,7 +2972,7 @@ class Model:
             warnings.warn(
                 "wait_for_active is deprecated; use status",
                 DeprecationWarning,
-                stacklevel=1,
+                stacklevel=2,
             )
             status = "active"
 
