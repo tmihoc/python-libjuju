@@ -40,6 +40,7 @@ The process is very simple.
 - Check with `git remote -v`, origin should point to your fork, upstream should point to ours.
 - If your changes are going to be on top of a specific branch (e.g., `2.9`), then fetch and switch to that.
 - `git switch -c your-branch-name`
+- Make sure that you have run `pre-commit install`
 - Make your changes, create your commits.
 - `git push -u origin your-branch-name`
 
