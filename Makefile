@@ -41,9 +41,9 @@ build-test:
 	uvx --from build pyproject-build
 	python3 -m venv venv
 	. venv/bin/activate
-	pip install dist/juju-${VERSION}.tar.gz
+	pip install dist/juju-${VERSION}-py3-none-any.whl
 	python3 -c "from juju.controller import Controller"
-	rm dist/juju-${VERSION}.tar.gz dist/juju-${VERSION}-*.whl
+	rm dist/*.tar.gz dist/*.whl
 
 .PHONY: release
 release:
