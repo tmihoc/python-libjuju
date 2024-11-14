@@ -1,11 +1,11 @@
 [project]
 name = "juju"
+version = "3.5.2.1"  # Stop-gap until dynamic versioning is done; must be in sync with juju/version.py:CLIENT_VERSION
 description = "Python library for Juju"
 readme = "docs/readme.rst"
-license = "Apache-2.0"
+license = { file = "LICENSE" }
 maintainers = [{name = "Juju Ecosystem Engineering", email = "juju@lists.ubuntu.com"}]
 requires-python = ">=3.8"
-homepage = "https://github.com/juju/python-libjuju"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -21,20 +21,20 @@ classifiers = [
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
 ]
-
-[project.dependencies]
-macaroonbakery = ">=1.1,<2.0"
-pyRFC3339 = ">=1.0,<2.0"
-pyyaml = ">=5.1.2"
-websockets = ">=8.1,<14.0"
-paramiko = ">=2.4.0"
-pyasn1 = ">=0.4.4"
-toposort = ">=1.5,<2"
-typing_inspect = ">=0.6.0"
-kubernetes = ">=12.0.1,<31.0.0"
-hvac = "*"
-packaging = "*"
-typing-extensions = ">=4.5.0"
+dependencies = [
+    "macaroonbakery>=1.1,<2.0",
+    "pyRFC3339>=1.0,<2.0",
+    "pyyaml>=5.1.2",
+    "websockets>=8.1,<14.0",
+    "paramiko>=2.4.0",
+    "pyasn1>=0.4.4",
+    "toposort>=1.5,<2",
+    "typing_inspect>=0.6.0",
+    "kubernetes>=12.0.1,<31.0.0",
+    "hvac",
+    "packaging",
+    "typing-extensions>=4.5.0"
+]
 
 [project.urls]
 "Homepage" = "https://juju.is/docs/sdk"
