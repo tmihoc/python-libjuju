@@ -29,6 +29,12 @@ Check to see what [types of contributions](/contributing/types-of-contributions.
 -->
 
 
+## Tooling
+
+- `uv`, https://docs.astral.sh/uv/
+- `pre-commit`, https://pre-commit.com/
+- Python 3.8 ~ 3.13, https://www.python.org/downloads/
+
 ## Pull Request
 
 Thanks for considering to contribute code to our project! We accept and welcome all kinds of PRs! :tada:
