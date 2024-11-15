@@ -38,7 +38,7 @@ docs:
 .PHONY: build-test
 build-test:
 	rm -rf venv
-	uvx --from build pyproject-build
+	uv build
 	python3 -m venv venv
 	. venv/bin/activate
 	pip install dist/juju-${VERSION}-py3-none-any.whl
@@ -49,7 +49,7 @@ build-test:
 release:
 	git fetch --tags
 	rm dist/*.tar.gz dist/*.whl || true
-	uvx --from build pyproject-build
+	uv build
 	uvx twine check dist/*
 	uvx twine upload --repository juju dist/*
 	git tag ${VERSION}
