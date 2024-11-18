@@ -16,13 +16,14 @@ import macaroonbakery.bakery as bakery
 import macaroonbakery.httpbakery as httpbakery
 import websockets
 from dateutil.parser import parse
-from typing_extensions import Self
+from typing_extensions import Self, overload
 
 from juju import errors, jasyncio, tag, utils
 from juju.client import client
 from juju.utils import IdQueue
 from juju.version import CLIENT_VERSION
 
+from .facade import _JSON, _RICH_JSON, TypeEncoder
 from .facade_versions import client_facade_versions, known_unsupported_facades
 
 LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
@@ -536,7 +537,19 @@ class Connection:
             log.debug("ping failed because of closed connection")
             pass
 
-    async def rpc(self, msg: dict, encoder=None) -> dict:
+    @overload
+    async def rpc(
+        self, msg: dict[str, _JSON], encoder: None = None
+    ) -> dict[str, _JSON]: ...
+
+    @overload
+    async def rpc(
+        self, msg: dict[str, _RICH_JSON], encoder: TypeEncoder
+    ) -> dict[str, _JSON]: ...
+
+    async def rpc(
+        self, msg: dict[str, Any], encoder: json.JSONEncoder | None = None
+    ) -> dict[str, Any]:
         """Make an RPC to the API. The message is encoded as JSON
         using the given encoder if any.
         :param msg: Parameters for the call (will be encoded as JSON).
