@@ -23,7 +23,7 @@ from typing_extensions import TypeAlias
 from . import codegen
 
 # Plain JSON, what is received from Juju
-_JSON_LEAF: TypeAlias = None | bool | int | float | str
+_JSON_LEAF: TypeAlias = "None | bool | int | float | str"
 _JSON: TypeAlias = "_JSON_LEAF|list[_JSON]|dict[str, _JSON]"
 
 # Type-enriched JSON, what can be sent to Juju

@@ -26,7 +26,7 @@ from juju.version import CLIENT_VERSION
 from .facade import _JSON, _RICH_JSON, TypeEncoder
 from .facade_versions import client_facade_versions, known_unsupported_facades
 
-SPECIFIED_FACADES: TypeAlias = dict[str, dict[Literal["versions"], Sequence[int]]]
+SPECIFIED_FACADES: TypeAlias = "dict[str, dict[Literal['versions'], Sequence[int]]]"
 _WebSocket: TypeAlias = "websockets.legacy.client.WebSocketClientProtocol"
 
 LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
