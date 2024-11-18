@@ -261,7 +261,13 @@ class ModelEntity:
 
     entity_id: str
 
-    def __init__(self, entity_id: str, model: Model, history_index=-1, connected=True):
+    def __init__(
+        self,
+        entity_id: str,
+        model: Model,
+        history_index: int = -1,
+        connected: bool = True,
+    ):
         """Initialize a new entity
 
         :param entity_id str: The unique id of the object in the model
