@@ -27,6 +27,7 @@ from .facade import _JSON, _RICH_JSON, TypeEncoder
 from .facade_versions import client_facade_versions, known_unsupported_facades
 
 SPECIFIED_FACADES: TypeAlias = dict[str, dict[Literal["versions"], Sequence[int]]]
+_WebSocket: TypeAlias = "websockets.legacy.client.WebSocketClientProtocol"
 
 LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
 log = logging.getLogger("juju.client.connection")
@@ -125,6 +126,7 @@ class Connection:
     _retry_backoff: float
     uuid: str | None
     messages: IdQueue
+    _ws: _WebSocket | None
 
     @classmethod
     async def connect(
@@ -303,7 +305,7 @@ class Connection:
             context.check_hostname = False
         return context
 
-    async def _open(self, endpoint, cacert):
+    async def _open(self, endpoint, cacert) -> tuple[_WebSocket, str, str, str]:
         if self.is_debug_log_connection:
             assert self.uuid
             url = f"wss://user-{self.username}:{self.password}@{endpoint}/model/{self.uuid}/log"
@@ -726,7 +728,9 @@ class Connection:
         if len(endpoints) == 0:
             raise errors.JujuConnectionError("no endpoints to connect to")
 
-        async def _try_endpoint(endpoint, cacert, delay):
+        async def _try_endpoint(
+            endpoint, cacert, delay
+        ) -> tuple[_WebSocket, str, str, str]:
             if delay:
                 await jasyncio.sleep(delay)
             return await self._open(endpoint, cacert)
@@ -738,6 +742,8 @@ class Connection:
             jasyncio.ensure_future(_try_endpoint(endpoint, cacert, 0.1 * i))
             for i, (endpoint, cacert) in enumerate(endpoints)
         ]
+        result: tuple[_WebSocket, str, str, str] | None = None
+
         for attempt in range(self._retries + 1):
             for task in jasyncio.as_completed(tasks):
                 try:
@@ -760,12 +766,11 @@ class Connection:
             # only executed if inner loop's else did not continue
             # (i.e., inner loop did break due to successful connection)
             break
-        else:
-            # impossible, work around https://github.com/microsoft/pyright/issues/8791
-            assert False  # noqa: B011
 
         for task in tasks:
             task.cancel()
+
+        assert result  # loop raises or sets the result
 
         self._ws = result[0]
         self.addr = result[1]
