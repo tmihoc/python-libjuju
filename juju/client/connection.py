@@ -16,7 +16,7 @@ import macaroonbakery.bakery as bakery
 import macaroonbakery.httpbakery as httpbakery
 import websockets
 from dateutil.parser import parse
-from typing_extensions import Self, overload
+from typing_extensions import Self, TypeAlias, overload
 
 from juju import errors, jasyncio, tag, utils
 from juju.client import client
@@ -25,6 +25,8 @@ from juju.version import CLIENT_VERSION
 
 from .facade import _JSON, _RICH_JSON, TypeEncoder
 from .facade_versions import client_facade_versions, known_unsupported_facades
+
+SPECIFIED_FACADES: TypeAlias = dict[str, dict[Literal["versions"], Sequence[int]]]
 
 LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
 log = logging.getLogger("juju.client.connection")
@@ -136,8 +138,7 @@ class Connection:
         max_frame_size: int | None = None,
         retries=3,
         retry_backoff=10,
-        specified_facades: dict[str, dict[Literal["versions"], Sequence[int]]]
-        | None = None,
+        specified_facades: SPECIFIED_FACADES | None = None,
         proxy=None,
         debug_log_conn=None,
         debug_log_params={},
