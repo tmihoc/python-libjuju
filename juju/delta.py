@@ -14,113 +14,123 @@ def get_entity_class(entity_type):
 
 class EntityDelta(client.Delta):
     def get_id(self):
-        return self.data['id']
+        return self.data["id"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         return None
 
 
 class ActionDelta(EntityDelta):
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .action import Action
+
         return Action
 
 
 class ApplicationDelta(EntityDelta):
     def get_id(self):
-        return self.data['name']
+        return self.data["name"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .application import Application
+
         return Application
 
 
 class AnnotationDelta(EntityDelta):
     def get_id(self):
-        return self.data['tag']
+        return self.data["tag"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .annotation import Annotation
+
         return Annotation
 
 
 class ModelDelta(EntityDelta):
     def get_id(self):
-        return self.data['model-uuid']
+        return self.data["model-uuid"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .model import ModelInfo
+
         return ModelInfo
 
 
 class MachineDelta(EntityDelta):
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .machine import Machine
+
         return Machine
 
 
 class UnitDelta(EntityDelta):
     def get_id(self):
-        return self.data['name']
+        return self.data["name"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .unit import Unit
+
         return Unit
 
 
 class RelationDelta(EntityDelta):
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .relation import Relation
+
         return Relation
 
 
 class RemoteApplicationDelta(EntityDelta):
     def get_id(self):
-        return self.data['name']
+        return self.data["name"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .remoteapplication import RemoteApplication
+
         return RemoteApplication
 
 
 class CharmDelta(EntityDelta):
     def get_id(self):
-        return self.data['charm-url']
+        return self.data["charm-url"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .charm import Charm
+
         return Charm
 
 
 class ApplicationOfferDelta(EntityDelta):
     def get_id(self):
-        return self.data['application-name']
+        return self.data["application-name"]
 
     @classmethod
-    def get_entity_class(self):
+    def get_entity_class(cls):
         from .remoteapplication import ApplicationOffer
+
         return ApplicationOffer
 
 
 _delta_types = {
-    'action': ActionDelta,
-    'annotation': AnnotationDelta,
-    'application': ApplicationDelta,
-    'applicationOffer': ApplicationOfferDelta,
-    'charm': CharmDelta,
-    'machine': MachineDelta,
-    'model': ModelDelta,
-    'relation': RelationDelta,
-    'remoteApplication': RemoteApplicationDelta,
-    'unit': UnitDelta,
+    "action": ActionDelta,
+    "annotation": AnnotationDelta,
+    "application": ApplicationDelta,
+    "applicationOffer": ApplicationOfferDelta,
+    "charm": CharmDelta,
+    "machine": MachineDelta,
+    "model": ModelDelta,
+    "relation": RelationDelta,
+    "remoteApplication": RemoteApplicationDelta,
+    "unit": UnitDelta,
 }

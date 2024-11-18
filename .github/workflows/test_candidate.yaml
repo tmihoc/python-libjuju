@@ -42,7 +42,7 @@ jobs:
             else
               echo "Candidate $candidate has to be tested"
               next_test="$candidate"
-            fi 
+            fi
           fi
           echo "next-test=$next_test" >> $GITHUB_ENV
           echo "$next_test" > ~/juju-last-candidate-version
