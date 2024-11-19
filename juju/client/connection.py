@@ -23,10 +23,10 @@ from juju.client import client
 from juju.utils import IdQueue
 from juju.version import CLIENT_VERSION
 
-from .facade import _JSON, _RICH_JSON, TypeEncoder
+from .facade import TypeEncoder, _Json, _RichJson
 from .facade_versions import client_facade_versions, known_unsupported_facades
 
-SPECIFIED_FACADES: TypeAlias = "dict[str, dict[Literal['versions'], Sequence[int]]]"
+SpecifiedFacades: TypeAlias = "dict[str, dict[Literal['versions'], Sequence[int]]]"
 _WebSocket: TypeAlias = "websockets.legacy.client.WebSocketClientProtocol"
 
 LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
@@ -140,7 +140,7 @@ class Connection:
         max_frame_size: int | None = None,
         retries=3,
         retry_backoff=10,
-        specified_facades: SPECIFIED_FACADES | None = None,
+        specified_facades: SpecifiedFacades | None = None,
         proxy=None,
         debug_log_conn=None,
         debug_log_params={},
@@ -542,17 +542,17 @@ class Connection:
 
     @overload
     async def rpc(
-        self, msg: dict[str, _JSON], encoder: None = None
-    ) -> dict[str, _JSON]: ...
+        self, msg: dict[str, _Json], encoder: None = None
+    ) -> dict[str, _Json]: ...
 
     @overload
     async def rpc(
-        self, msg: dict[str, _RICH_JSON], encoder: TypeEncoder
-    ) -> dict[str, _JSON]: ...
+        self, msg: dict[str, _RichJson], encoder: TypeEncoder
+    ) -> dict[str, _Json]: ...
 
     async def rpc(
         self, msg: dict[str, Any], encoder: json.JSONEncoder | None = None
-    ) -> dict[str, Any]:
+    ) -> dict[str, _Json]:
         """Make an RPC to the API. The message is encoded as JSON
         using the given encoder if any.
         :param msg: Parameters for the call (will be encoded as JSON).

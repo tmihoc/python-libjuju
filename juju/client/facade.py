@@ -23,12 +23,12 @@ from typing_extensions import TypeAlias
 from . import codegen
 
 # Plain JSON, what is received from Juju
-_JSON_LEAF: TypeAlias = "None | bool | int | float | str"
-_JSON: TypeAlias = "_JSON_LEAF|list[_JSON]|dict[str, _JSON]"
+_JsonLeaf: TypeAlias = "None | bool | int | float | str"
+_Json: TypeAlias = "_JsonLeaf|list[_Json]|dict[str, _Json]"
 
 # Type-enriched JSON, what can be sent to Juju
-_RICH_LEAF: TypeAlias = "_JSON_LEAF|Type"
-_RICH_JSON: TypeAlias = "_RICH_LEAF|list[_RICH_JSON]|dict[str, _RICH_JSON]"
+_RichLeaf: TypeAlias = "_JsonLeaf|Type"
+_RichJson: TypeAlias = "_RichLeaf|list[_RichJson]|dict[str, _RichJson]"
 
 _marker = object()
 
@@ -644,7 +644,7 @@ class {name}Facade(Type):
 
 
 class TypeEncoder(json.JSONEncoder):
-    def default(self, obj: _RICH_JSON) -> _JSON:
+    def default(self, obj: _RichJson) -> _Json:
         if isinstance(obj, Type):
             return obj.serialize()
         return json.JSONEncoder.default(self, obj)
@@ -663,7 +663,7 @@ class Type:
 
         return self.__dict__ == other.__dict__
 
-    async def rpc(self, msg: dict[str, _RICH_JSON]) -> _JSON:
+    async def rpc(self, msg: dict[str, _RichJson]) -> _Json:
         result = await self.connection.rpc(msg, encoder=TypeEncoder)
         return result
 
@@ -714,7 +714,7 @@ class Type:
             return cls(**d)
         return None
 
-    def serialize(self) -> dict[str, _JSON]:
+    def serialize(self) -> dict[str, _Json]:
         d = {}
         for attr, tgt in self._toSchema.items():
             d[tgt] = getattr(self, attr)

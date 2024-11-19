@@ -211,8 +211,8 @@ ignore = [
 
 [tool.pyright]
 # These are tentative
-# include = ["**/*.py"]
-pythonVersion = "3.10"
+include = ["**/*.py"]
+pythonVersion = "3.8"
 typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
 reportGeneralTypeIssues = true
