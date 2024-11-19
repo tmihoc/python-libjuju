@@ -211,7 +211,8 @@ ignore = [
 
 [tool.pyright]
 # These are tentative
-# include = ["**/*.py"]
-pythonVersion = "3.8" # check no python > 3.8 features are used
-pythonPlatform = "All"
+include = ["**/*.py"]
+pythonVersion = "3.8"
 typeCheckingMode = "strict"
+useLibraryCodeForTypes = true
+reportGeneralTypeIssues = true

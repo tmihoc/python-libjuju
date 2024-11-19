@@ -1,5 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+from __future__ import annotations
 
 import base64
 import json
@@ -9,35 +10,27 @@ import urllib.request
 import warnings
 import weakref
 from http.client import HTTPSConnection
-from typing import Dict, Literal, Optional, Sequence
+from typing import Any, Literal, Sequence
 
 import macaroonbakery.bakery as bakery
 import macaroonbakery.httpbakery as httpbakery
 import websockets
 from dateutil.parser import parse
+from typing_extensions import Self, TypeAlias, overload
 
 from juju import errors, jasyncio, tag, utils
 from juju.client import client
 from juju.utils import IdQueue
 from juju.version import CLIENT_VERSION
 
+from .facade import TypeEncoder, _Json, _RichJson
 from .facade_versions import client_facade_versions, known_unsupported_facades
+
+SpecifiedFacades: TypeAlias = "dict[str, dict[Literal['versions'], Sequence[int]]]"
+_WebSocket: TypeAlias = "websockets.legacy.client.WebSocketClientProtocol"
 
 LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
 log = logging.getLogger("juju.client.connection")
-
-
-def facade_versions(name, versions):
-    """facade_versions returns a new object that correctly returns a object in
-    format expected by the connection facades inspection.
-    :param name: name of the facade
-    :param versions: versions to support by the facade
-    """
-    if name.endswith("Facade"):
-        name = name[: -len("Facade")]
-    return {
-        name: {"versions": versions},
-    }
 
 
 class Monitor:
@@ -59,7 +52,7 @@ class Monitor:
     DISCONNECTING = "disconnecting"
     DISCONNECTED = "disconnected"
 
-    def __init__(self, connection):
+    def __init__(self, connection: Connection):
         self.connection = weakref.ref(connection)
         self.reconnecting = jasyncio.Lock()
         self.close_called = jasyncio.Event()
@@ -117,28 +110,41 @@ class Connection:
 
     MAX_FRAME_SIZE = 2**22
     "Maximum size for a single frame.  Defaults to 4MB."
-    facades: Dict[str, int]
-    _specified_facades: Dict[str, Sequence[int]]
+    facades: dict[str, int]
+    _specified_facades: dict[str, Sequence[int]]
+    bakery_client: Any
+    usertag: str | None
+    password: str | None
+    name: str
+    __request_id__: int
+    endpoints: list[tuple[str, str]] | None  # Set by juju/controller.py
+    is_debug_log_connection: bool
+    monitor: Monitor
+    proxy: Any  # Need to find types for this library
+    max_frame_size: int
+    _retries: int
+    _retry_backoff: float
+    uuid: str | None
+    messages: IdQueue
+    _ws: _WebSocket | None
 
     @classmethod
     async def connect(
         cls,
         endpoint=None,
-        uuid=None,
-        username=None,
-        password=None,
+        uuid: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
         cacert=None,
         bakery_client=None,
-        max_frame_size=None,
+        max_frame_size: int | None = None,
         retries=3,
         retry_backoff=10,
-        specified_facades: Optional[
-            Dict[str, Dict[Literal["versions"], Sequence[int]]]
-        ] = None,
+        specified_facades: SpecifiedFacades | None = None,
         proxy=None,
         debug_log_conn=None,
         debug_log_params={},
-    ):
+    ) -> Self:
         """Connect to the websocket.
 
         If uuid is None, the connection will be to the controller. Otherwise it
@@ -270,7 +276,7 @@ class Connection:
         return self._ws
 
     @property
-    def username(self):
+    def username(self) -> str | None:
         if not self.usertag:
             return None
         return self.usertag[len("user-") :]
@@ -299,7 +305,7 @@ class Connection:
             context.check_hostname = False
         return context
 
-    async def _open(self, endpoint, cacert):
+    async def _open(self, endpoint, cacert) -> tuple[_WebSocket, str, str, str]:
         if self.is_debug_log_connection:
             assert self.uuid
             url = f"wss://user-{self.username}:{self.password}@{endpoint}/model/{self.uuid}/log"
@@ -372,7 +378,7 @@ class Connection:
         if self.proxy is not None:
             self.proxy.close()
 
-    async def _recv(self, request_id):
+    async def _recv(self, request_id: int) -> dict[str, Any]:
         if not self.is_open:
             raise websockets.exceptions.ConnectionClosed(
                 websockets.frames.Close(
@@ -534,7 +540,19 @@ class Connection:
             log.debug("ping failed because of closed connection")
             pass
 
-    async def rpc(self, msg, encoder=None):
+    @overload
+    async def rpc(
+        self, msg: dict[str, _Json], encoder: None = None
+    ) -> dict[str, _Json]: ...
+
+    @overload
+    async def rpc(
+        self, msg: dict[str, _RichJson], encoder: TypeEncoder
+    ) -> dict[str, _Json]: ...
+
+    async def rpc(
+        self, msg: dict[str, Any], encoder: json.JSONEncoder | None = None
+    ) -> dict[str, _Json]:
         """Make an RPC to the API. The message is encoded as JSON
         using the given encoder if any.
         :param msg: Parameters for the call (will be encoded as JSON).
@@ -710,7 +728,9 @@ class Connection:
         if len(endpoints) == 0:
             raise errors.JujuConnectionError("no endpoints to connect to")
 
-        async def _try_endpoint(endpoint, cacert, delay):
+        async def _try_endpoint(
+            endpoint, cacert, delay
+        ) -> tuple[_WebSocket, str, str, str]:
             if delay:
                 await jasyncio.sleep(delay)
             return await self._open(endpoint, cacert)
@@ -722,6 +742,8 @@ class Connection:
             jasyncio.ensure_future(_try_endpoint(endpoint, cacert, 0.1 * i))
             for i, (endpoint, cacert) in enumerate(endpoints)
         ]
+        result: tuple[_WebSocket, str, str, str] | None = None
+
         for attempt in range(self._retries + 1):
             for task in jasyncio.as_completed(tasks):
                 try:
@@ -744,8 +766,12 @@ class Connection:
             # only executed if inner loop's else did not continue
             # (i.e., inner loop did break due to successful connection)
             break
+
         for task in tasks:
             task.cancel()
+
+        assert result  # loop raises or sets the result
+
         self._ws = result[0]
         self.addr = result[1]
         self.endpoint = result[2]

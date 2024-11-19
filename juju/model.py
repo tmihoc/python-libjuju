@@ -19,6 +19,7 @@ from concurrent.futures import CancelledError
 from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
+from typing import Any
 
 import websockets
 import yaml
@@ -28,6 +29,7 @@ from .annotationhelper import _get_annotations, _set_annotations
 from .bundle import BundleHandler, get_charm_series, is_local_charm
 from .charmhub import CharmHub
 from .client import client, connector
+from .client.connection import Connection
 from .client.overrides import Caveat, Macaroon
 from .constraints import parse as parse_constraints
 from .controller import ConnectedController, Controller
@@ -257,7 +259,15 @@ class ModelState:
 class ModelEntity:
     """An object in the Model tree"""
 
-    def __init__(self, entity_id, model, history_index=-1, connected=True):
+    entity_id: str
+
+    def __init__(
+        self,
+        entity_id: str,
+        model: Model,
+        history_index: int = -1,
+        connected: bool = True,
+    ):
         """Initialize a new entity
 
         :param entity_id str: The unique id of the object in the model
@@ -279,7 +289,7 @@ class ModelEntity:
     def __repr__(self):
         return f'<{type(self).__name__} entity_id="{self.entity_id}">'
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         """Fetch object attributes from the underlying data dict held in the
         model.
 
@@ -615,7 +625,7 @@ class Model:
         """Reports whether the Model is currently connected."""
         return self._connector.is_connected()
 
-    def connection(self):
+    def connection(self) -> Connection:
         """Return the current Connection object. It raises an exception
         if the Model is disconnected
         """
@@ -2913,7 +2923,7 @@ class Model:
 
     async def wait_for_idle(
         self,
-        apps=None,
+        apps: list[str] | None = None,
         raise_on_error=True,
         raise_on_blocked=False,
         wait_for_active=False,
@@ -2923,7 +2933,7 @@ class Model:
         status=None,
         wait_for_at_least_units=None,
         wait_for_exact_units=None,
-    ):
+    ) -> None:
         """Wait for applications in the model to settle into an idle state.
 
         :param List[str] apps: Optional list of specific app names to wait on.
@@ -3227,16 +3237,16 @@ class CharmArchiveGenerator:
         zf.close()
         return path
 
-    def _check_type(self, path):
+    def _check_type(self, path: str) -> str:
         """Check the path"""
-        s = os.stat(str(path))
+        s = os.stat(path)
         if stat.S_ISDIR(s.st_mode) or stat.S_ISREG(s.st_mode):
             return path
         raise ValueError(
             "Invalid Charm at %s %s" % (path, "Invalid file type for a charm")
         )
 
-    def _check_link(self, path):
+    def _check_link(self, path: str) -> None:
         link_path = os.readlink(path)
         if link_path[0] == "/":
             raise ValueError(
@@ -3249,7 +3259,9 @@ class CharmArchiveGenerator:
                 "Invalid charm at %s %s" % (path, "Only internal symlinks are allowed")
             )
 
-    def _write_symlink(self, zf, link_target, link_path):
+    def _write_symlink(
+        self, zf: zipfile.ZipFile, link_target: str, link_path: str
+    ) -> None:
         """Package symlinks with appropriate zipfile metadata."""
         info = zipfile.ZipInfo()
         info.filename = link_path
@@ -3259,11 +3271,8 @@ class CharmArchiveGenerator:
         info.external_attr = 2716663808
         zf.writestr(info, link_target)
 
-    def _ignore(self, path):
-        if path == "build" or path.startswith("build/"):
-            return True
-        if path.startswith("."):
-            return True
+    def _ignore(self, path: str) -> bool:
+        return path == "build" or path.startswith("build/") or path.startswith(".")
 
 
 class ModelInfo(ModelEntity):

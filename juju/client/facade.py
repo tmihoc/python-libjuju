@@ -1,5 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+from __future__ import annotations
 
 import argparse
 import builtins
@@ -13,12 +14,21 @@ import typing
 from collections import defaultdict
 from glob import glob
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 import packaging.version
 import typing_inspect
+from typing_extensions import TypeAlias
 
 from . import codegen
+
+# Plain JSON, what is received from Juju
+_JsonLeaf: TypeAlias = "None | bool | int | float | str"
+_Json: TypeAlias = "_JsonLeaf|list[_Json]|dict[str, _Json]"
+
+# Type-enriched JSON, what can be sent to Juju
+_RichLeaf: TypeAlias = "_JsonLeaf|Type"
+_RichJson: TypeAlias = "_RichLeaf|list[_RichJson]|dict[str, _RichJson]"
 
 _marker = object()
 
@@ -634,7 +644,7 @@ class {name}Facade(Type):
 
 
 class TypeEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: _RichJson) -> _Json:
         if isinstance(obj, Type):
             return obj.serialize()
         return json.JSONEncoder.default(self, obj)
@@ -653,7 +663,7 @@ class Type:
 
         return self.__dict__ == other.__dict__
 
-    async def rpc(self, msg):
+    async def rpc(self, msg: dict[str, _RichJson]) -> _Json:
         result = await self.connection.rpc(msg, encoder=TypeEncoder)
         return result
 
@@ -704,13 +714,13 @@ class Type:
             return cls(**d)
         return None
 
-    def serialize(self):
+    def serialize(self) -> dict[str, _Json]:
         d = {}
         for attr, tgt in self._toSchema.items():
             d[tgt] = getattr(self, attr)
         return d
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.serialize(), cls=TypeEncoder, sort_keys=True)
 
     def __contains__(self, key):
@@ -917,8 +927,8 @@ def generate_definitions(schemas):
 
 
 def generate_facades(
-    schemas: Dict[str, List[Schema]],
-) -> Dict[str, Dict[int, codegen.Capture]]:
+    schemas: dict[str, list[Schema]],
+) -> dict[str, dict[int, codegen.Capture]]:
     captures = defaultdict(codegen.Capture)
 
     # Build the Facade classes
