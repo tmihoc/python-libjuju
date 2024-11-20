@@ -19,7 +19,7 @@ from concurrent.futures import CancelledError
 from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, Literal, Mapping, overload
 
 import websockets
 import yaml
@@ -57,6 +57,13 @@ from .secrets import create_secret_data, read_secret_data
 from .tag import application as application_tag
 from .url import URL, Schema
 from .version import DEFAULT_ARCHITECTURE
+
+if TYPE_CHECKING:
+    from .application import Application
+    from .machine import Machine
+    from .relation import Relation
+    from .remoteapplication import ApplicationOffer, RemoteApplication
+    from .unit import Unit
 
 log = logging.getLogger(__name__)
 
@@ -134,7 +141,35 @@ class ModelState:
         self.model = model
         self.state = dict()
 
-    def _live_entity_map(self, entity_type):
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["application"]
+    ) -> dict[str, Application]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["applicationOffer"]
+    ) -> dict[str, ApplicationOffer]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["machine"]
+    ) -> dict[str, Machine]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["relation"]
+    ) -> dict[str, Relation]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["remoteApplication"]
+    ) -> dict[str, RemoteApplication]: ...
+
+    @overload
+    def _live_entity_map(self, entity_type: Literal["unit"]) -> dict[str, Unit]: ...
+
+    def _live_entity_map(self, entity_type: str) -> Mapping[str, ModelEntity]:
         """Return an id:Entity map of all the living entities of
         type ``entity_type``.
 
@@ -146,7 +181,7 @@ class ModelState:
         }
 
     @property
-    def applications(self):
+    def applications(self) -> dict[str, Application]:
         """Return a map of application-name:Application for all applications
         currently in the model.
 
@@ -154,7 +189,7 @@ class ModelState:
         return self._live_entity_map("application")
 
     @property
-    def remote_applications(self):
+    def remote_applications(self) -> dict[str, RemoteApplication]:
         """Return a map of application-name:Application for all remote
         applications currently in the model.
 
@@ -162,14 +197,14 @@ class ModelState:
         return self._live_entity_map("remoteApplication")
 
     @property
-    def application_offers(self):
+    def application_offers(self) -> dict[str, ApplicationOffer]:
         """Return a map of application-name:Application for all applications
         offers currently in the model.
         """
         return self._live_entity_map("applicationOffer")
 
     @property
-    def machines(self):
+    def machines(self) -> dict[str, Machine]:
         """Return a map of machine-id:Machine for all machines currently in
         the model.
 
@@ -177,7 +212,7 @@ class ModelState:
         return self._live_entity_map("machine")
 
     @property
-    def units(self):
+    def units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all units currently in
         the model.
 
@@ -185,12 +220,12 @@ class ModelState:
         return self._live_entity_map("unit")
 
     @property
-    def subordinate_units(self):
+    def subordinate_units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all subordinate units"""
         return {u_name: u for u_name, u in self.units.items() if u.is_subordinate}
 
     @property
-    def relations(self):
+    def relations(self) -> dict[str, Relation]:
         """Return a map of relation-id:Relation for all relations currently in
         the model.
 
@@ -1110,7 +1145,7 @@ class Model:
         return tag.model(self.uuid)
 
     @property
-    def applications(self):
+    def applications(self) -> dict[str, Application]:
         """Return a map of application-name:Application for all applications
         currently in the model.
 
@@ -1118,7 +1153,7 @@ class Model:
         return self.state.applications
 
     @property
-    def remote_applications(self):
+    def remote_applications(self) -> dict[str, RemoteApplication]:
         """Return a map of application-name:Application for all remote
         applications currently in the model.
 
@@ -1126,14 +1161,14 @@ class Model:
         return self.state.remote_applications
 
     @property
-    def application_offers(self):
+    def application_offers(self) -> dict[str, ApplicationOffer]:
         """Return a map of application-name:Application for all applications
         offers currently in the model.
         """
         return self.state.application_offers
 
     @property
-    def machines(self):
+    def machines(self) -> dict[str, Machine]:
         """Return a map of machine-id:Machine for all machines currently in
         the model.
 
@@ -1141,7 +1176,7 @@ class Model:
         return self.state.machines
 
     @property
-    def units(self):
+    def units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all units currently in
         the model.
 
@@ -1149,7 +1184,7 @@ class Model:
         return self.state.units
 
     @property
-    def subordinate_units(self):
+    def subordinate_units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all subordiante units currently in
         the model.
 
@@ -1157,7 +1192,7 @@ class Model:
         return self.state.subordinate_units
 
     @property
-    def relations(self):
+    def relations(self) -> list[Relation]:
         """Return a list of all Relations currently in the model."""
         return list(self.state.relations.values())
 

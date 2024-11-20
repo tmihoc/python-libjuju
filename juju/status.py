@@ -1,5 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+from __future__ import annotations
 
 import logging
 import warnings
@@ -8,26 +9,26 @@ from .client import client
 
 log = logging.getLogger(__name__)
 
-""" derive_status is used to determine the application status from a set of unit
-status values.
 
-:param statues: list of known unit workload statues
+def derive_status(statuses: list[str]):
+    """Derive status from a set.
 
-"""
+    derive_status is used to determine the application status from a set of unit
+    status values.
 
-
-def derive_status(statues):
+    :param statuses: list of known unit workload statuses
+    """
     current = "unknown"
-    for status in statues:
-        if status in severities and severities[status] > severities[current]:
+    for status in statuses:
+        if status in severity_map and severity_map[status] > severity_map[current]:
             current = status
     return current
 
 
-""" severities holds status values with a severity measure.
+""" severity_map holds status values with a severity measure.
 Status values with higher severity are used in preference to others.
 """
-severities = {
+severity_map = {
     "error": 100,
     "blocked": 90,
     "waiting": 80,

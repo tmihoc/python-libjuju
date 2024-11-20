@@ -1,5 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+from __future__ import annotations
 
 from enum import Enum
 from urllib.parse import urlparse
@@ -8,6 +9,8 @@ from .errors import JujuError
 
 
 class Schema(Enum):
+    """Charm URL schema kinds."""
+
     LOCAL = "local"
     CHARM_STORE = "cs"
     CHARM_HUB = "ch"
@@ -20,18 +23,23 @@ class Schema(Enum):
 
 
 class URL:
+    """Private URL class for this library internals only."""
+
+    name: str
+
     def __init__(
         self,
         schema,
         user=None,
-        name=None,
+        name: str | None = None,
         revision=None,
         series=None,
         architecture=None,
     ):
         self.schema = schema
         self.user = user
-        self.name = name
+        # the parse method will set the correct value later
+        self.name = name  # type: ignore
         self.series = series
 
         # 0 can be a valid revision, hence the more verbose check.
@@ -41,7 +49,7 @@ class URL:
         self.architecture = architecture
 
     @staticmethod
-    def parse(s, default_store=Schema.CHARM_HUB):
+    def parse(s: str, default_store=Schema.CHARM_HUB) -> URL:
         """Parse parses the provided charm URL string into its respective
         structure.
 
@@ -103,7 +111,7 @@ class URL:
         return f"{self.schema!s}:{self.path()}"
 
 
-def parse_v1_url(schema, u, s):
+def parse_v1_url(schema, u, s) -> URL:
     c = URL(schema)
 
     parts = u.path.split("/")
@@ -135,7 +143,7 @@ def parse_v1_url(schema, u, s):
     return c
 
 
-def parse_v2_url(u, s, default_store):
+def parse_v2_url(u, s, default_store) -> URL:
     if not u.scheme:
         c = URL(default_store)
     elif Schema.CHARM_HUB.matches(u.scheme):
