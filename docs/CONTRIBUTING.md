@@ -17,7 +17,7 @@ Discussions are very welcome in our Juju community, join our [public Mattermost 
 
 ## Repository Settings
 
-- Commit titles have to follow https://www.conventionalcommits.org/.
+- Commit titles must follow [conventional commit format](https://www.conventionalcommits.org/), see [types and scopes](https://github.com/juju/juju/blob/main/doc/conventional-commits.md).
 - Commits have to be signed, see [GitHub advice](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits); you can [use your SSH key](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#ssh-commit-signature-verification).
 - For Warthogs, CLA is assumed when commits are authored with your `@canonical.com` email.
 - For others, please sign the CLA at https://launchpad.net/ and read [further details](https://ubuntu.com/legal/contributors/faq) here.
