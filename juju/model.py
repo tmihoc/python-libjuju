@@ -924,10 +924,7 @@ class Model:
            instead.
 
         """
-        connection = self.connection()
-        assert connection
-
-        conn, headers, path_prefix = connection.https_connection()
+        conn, headers, path_prefix = self.connection().https_connection()
         path = "%s/charms?series=%s" % (path_prefix, series)
         headers["Content-Type"] = "application/zip"
         if size:
@@ -1320,14 +1317,14 @@ class Model:
                         del allwatcher.Id
                         continue
                     except websockets.ConnectionClosed:
-                        connection = self.connection()
-                        assert connection
-                        monitor = connection.monitor
-                        if monitor.status == monitor.ERROR:
+                        if self.connection().monitor.status == connection.Monitor.ERROR:
                             # closed unexpectedly, try to reopen
                             log.warning("Watcher: connection closed, reopening")
-                            await connection.reconnect()
-                            if monitor.status != monitor.CONNECTED:
+                            await self.connection().reconnect()
+                            if (
+                                self.connection().monitor.status
+                                != connection.Monitor.CONNECTED
+                            ):
                                 # reconnect failed; abort and shutdown
                                 log.error(
                                     "Watcher: automatic reconnect "
