@@ -23,7 +23,7 @@ setup(
         "macaroonbakery>=1.1,<2.0",
         "pyRFC3339>=1.0,<2.0",
         "pyyaml>=5.1.2",
-        "websockets>=8.1,<14.0",
+        "websockets>=13.0.1,<14.0",
         "paramiko>=2.4.0",
         "pyasn1>=0.4.4",
         "toposort>=1.5,<2",
@@ -32,7 +32,16 @@ setup(
         "hvac",
         "packaging",
         "typing-extensions>=4.5.0",
+        'backports.strenum>=1.3.1; python_version < "3.11"',
     ],
+    extras_require={
+        "dev": [
+            "typing-inspect",
+            "pytest",
+            "pytest-asyncio",
+            "Twine",
+        ]
+    },
     include_package_data=True,
     maintainer="Juju Ecosystem Engineering",
     maintainer_email="juju@lists.ubuntu.com",

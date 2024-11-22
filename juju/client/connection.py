@@ -27,7 +27,7 @@ from .facade import TypeEncoder, _Json, _RichJson
 from .facade_versions import client_facade_versions, known_unsupported_facades
 
 SpecifiedFacades: TypeAlias = "dict[str, dict[Literal['versions'], Sequence[int]]]"
-_WebSocket: TypeAlias = "websockets.legacy.client.WebSocketClientProtocol"
+_WebSocket: TypeAlias = websockets.WebSocketClientProtocol
 
 LEVELS = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR"]
 log = logging.getLogger("juju.client.connection")
@@ -291,7 +291,7 @@ class Connection:
     def is_open(self):
         return self.monitor.status == Monitor.CONNECTED
 
-    def _get_ssl(self, cert=None):
+    def _get_ssl(self, cert: str | None = None) -> ssl.SSLContext:
         context = ssl.create_default_context(
             purpose=ssl.Purpose.SERVER_AUTH, cadata=cert
         )
@@ -305,7 +305,9 @@ class Connection:
             context.check_hostname = False
         return context
 
-    async def _open(self, endpoint, cacert) -> tuple[_WebSocket, str, str, str]:
+    async def _open(
+        self, endpoint: str, cacert: str
+    ) -> tuple[_WebSocket, str, str, str]:
         if self.is_debug_log_connection:
             assert self.uuid
             url = f"wss://user-{self.username}:{self.password}@{endpoint}/model/{self.uuid}/log"
@@ -323,10 +325,6 @@ class Connection:
             sock = self.proxy.socket()
             server_hostname = "juju-app"
 
-        def _exit_tasks():
-            for task in jasyncio.all_tasks():
-                task.cancel()
-
         return (
             (
                 await websockets.connect(
@@ -342,7 +340,7 @@ class Connection:
             cacert,
         )
 
-    async def close(self, to_reconnect=False):
+    async def close(self, to_reconnect: bool = False):
         if not self._ws:
             return
         self.monitor.close_called.set()
@@ -380,11 +378,7 @@ class Connection:
 
     async def _recv(self, request_id: int) -> dict[str, Any]:
         if not self.is_open:
-            raise websockets.exceptions.ConnectionClosed(
-                websockets.frames.Close(
-                    websockets.frames.CloseCode.NORMAL_CLOSURE, "websocket closed"
-                )
-            )
+            raise websockets.exceptions.ConnectionClosedOK(None, None)
         try:
             return await self.messages.get(request_id)
         except GeneratorExit:
@@ -626,7 +620,7 @@ class Connection:
 
         return result
 
-    def _http_headers(self):
+    def _http_headers(self) -> dict[str, str]:
         """Return dictionary of http headers necessary for making an http
         connection to the endpoint of this Connection.
 
@@ -640,7 +634,7 @@ class Connection:
         token = base64.b64encode(creds.encode())
         return {"Authorization": f"Basic {token.decode()}"}
 
-    def https_connection(self):
+    def https_connection(self) -> tuple[HTTPSConnection, dict[str, str], str]:
         """Return an https connection to this Connection's endpoint.
 
         Returns a 3-tuple containing::

@@ -19,17 +19,17 @@ from concurrent.futures import CancelledError
 from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, Literal, Mapping, overload
 
 import websockets
 import yaml
+from typing_extensions import deprecated
 
 from . import jasyncio, provisioner, tag, utils
 from .annotationhelper import _get_annotations, _set_annotations
 from .bundle import BundleHandler, get_charm_series, is_local_charm
 from .charmhub import CharmHub
-from .client import client, connector
-from .client.connection import Connection
+from .client import client, connection, connector
 from .client.overrides import Caveat, Macaroon
 from .constraints import parse as parse_constraints
 from .controller import ConnectedController, Controller
@@ -57,6 +57,14 @@ from .secrets import create_secret_data, read_secret_data
 from .tag import application as application_tag
 from .url import URL, Schema
 from .version import DEFAULT_ARCHITECTURE
+
+if TYPE_CHECKING:
+    from .application import Application
+    from .client._definitions import FullStatus
+    from .machine import Machine
+    from .relation import Relation
+    from .remoteapplication import ApplicationOffer, RemoteApplication
+    from .unit import Unit
 
 log = logging.getLogger(__name__)
 
@@ -134,7 +142,35 @@ class ModelState:
         self.model = model
         self.state = dict()
 
-    def _live_entity_map(self, entity_type):
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["application"]
+    ) -> dict[str, Application]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["applicationOffer"]
+    ) -> dict[str, ApplicationOffer]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["machine"]
+    ) -> dict[str, Machine]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["relation"]
+    ) -> dict[str, Relation]: ...
+
+    @overload
+    def _live_entity_map(
+        self, entity_type: Literal["remoteApplication"]
+    ) -> dict[str, RemoteApplication]: ...
+
+    @overload
+    def _live_entity_map(self, entity_type: Literal["unit"]) -> dict[str, Unit]: ...
+
+    def _live_entity_map(self, entity_type: str) -> Mapping[str, ModelEntity]:
         """Return an id:Entity map of all the living entities of
         type ``entity_type``.
 
@@ -146,7 +182,7 @@ class ModelState:
         }
 
     @property
-    def applications(self):
+    def applications(self) -> dict[str, Application]:
         """Return a map of application-name:Application for all applications
         currently in the model.
 
@@ -154,7 +190,7 @@ class ModelState:
         return self._live_entity_map("application")
 
     @property
-    def remote_applications(self):
+    def remote_applications(self) -> dict[str, RemoteApplication]:
         """Return a map of application-name:Application for all remote
         applications currently in the model.
 
@@ -162,14 +198,14 @@ class ModelState:
         return self._live_entity_map("remoteApplication")
 
     @property
-    def application_offers(self):
+    def application_offers(self) -> dict[str, ApplicationOffer]:
         """Return a map of application-name:Application for all applications
         offers currently in the model.
         """
         return self._live_entity_map("applicationOffer")
 
     @property
-    def machines(self):
+    def machines(self) -> dict[str, Machine]:
         """Return a map of machine-id:Machine for all machines currently in
         the model.
 
@@ -177,7 +213,7 @@ class ModelState:
         return self._live_entity_map("machine")
 
     @property
-    def units(self):
+    def units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all units currently in
         the model.
 
@@ -185,12 +221,12 @@ class ModelState:
         return self._live_entity_map("unit")
 
     @property
-    def subordinate_units(self):
+    def subordinate_units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all subordinate units"""
         return {u_name: u for u_name, u in self.units.items() if u.is_subordinate}
 
     @property
-    def relations(self):
+    def relations(self) -> dict[str, Relation]:
         """Return a map of relation-id:Relation for all relations currently in
         the model.
 
@@ -232,7 +268,9 @@ class ModelState:
         entity = self.get_entity(delta.entity, delta.get_id())
         return entity.previous(), entity
 
-    def get_entity(self, entity_type, entity_id, history_index=-1, connected=True):
+    def get_entity(
+        self, entity_type, entity_id, history_index=-1, connected=True
+    ) -> ModelEntity | None:
         """Return an object instance for the given entity_type and id.
 
         By default the object state matches the most recent state from
@@ -260,6 +298,11 @@ class ModelEntity:
     """An object in the Model tree"""
 
     entity_id: str
+    model: Model
+    _history_index: int
+    connected: bool
+    connection: connection.Connection
+    _status: str
 
     def __init__(
         self,
@@ -581,6 +624,9 @@ class CharmhubDeployType:
 class Model:
     """The main API for interacting with a Juju model."""
 
+    connector: connector.Connector
+    state: ModelState
+
     def __init__(
         self,
         max_frame_size=None,
@@ -625,7 +671,7 @@ class Model:
         """Reports whether the Model is currently connected."""
         return self._connector.is_connected()
 
-    def connection(self) -> Connection:
+    def connection(self) -> connection.Connection:
         """Return the current Connection object. It raises an exception
         if the Model is disconnected
         """
@@ -756,13 +802,14 @@ class Model:
         """
         return await self.connect()
 
+    @deprecated("Model.connect_to() is deprecated and will be removed soon")
     async def connect_to(self, connection):
         conn_params = connection.connect_params()
         await self._connect_direct(**conn_params)
 
     async def _connect_direct(self, **kwargs):
-        if self.info:
-            uuid = self.info.uuid
+        if self._info:
+            uuid = self._info.uuid
         elif "uuid" in kwargs:
             uuid = kwargs["uuid"]
         else:
@@ -1110,7 +1157,7 @@ class Model:
         return tag.model(self.uuid)
 
     @property
-    def applications(self):
+    def applications(self) -> dict[str, Application]:
         """Return a map of application-name:Application for all applications
         currently in the model.
 
@@ -1118,7 +1165,7 @@ class Model:
         return self.state.applications
 
     @property
-    def remote_applications(self):
+    def remote_applications(self) -> dict[str, RemoteApplication]:
         """Return a map of application-name:Application for all remote
         applications currently in the model.
 
@@ -1126,14 +1173,14 @@ class Model:
         return self.state.remote_applications
 
     @property
-    def application_offers(self):
+    def application_offers(self) -> dict[str, ApplicationOffer]:
         """Return a map of application-name:Application for all applications
         offers currently in the model.
         """
         return self.state.application_offers
 
     @property
-    def machines(self):
+    def machines(self) -> dict[str, Machine]:
         """Return a map of machine-id:Machine for all machines currently in
         the model.
 
@@ -1141,7 +1188,7 @@ class Model:
         return self.state.machines
 
     @property
-    def units(self):
+    def units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all units currently in
         the model.
 
@@ -1149,7 +1196,7 @@ class Model:
         return self.state.units
 
     @property
-    def subordinate_units(self):
+    def subordinate_units(self) -> dict[str, Unit]:
         """Return a map of unit-id:Unit for all subordiante units currently in
         the model.
 
@@ -1157,7 +1204,7 @@ class Model:
         return self.state.subordinate_units
 
     @property
-    def relations(self):
+    def relations(self) -> list[Relation]:
         """Return a list of all Relations currently in the model."""
         return list(self.state.relations.values())
 
@@ -1177,11 +1224,15 @@ class Model:
         return self._info.name
 
     @property
-    def info(self):
+    def info(self) -> ModelInfo:
         """Return the cached client.ModelInfo object for this Model.
 
-        If Model.get_info() has not been called, this will return None.
+        If Model.get_info() has not been called, this will raise an error.
         """
+        if not self.is_connected():
+            raise JujuModelError("Model is not connected")
+
+        assert self._info is not None
         return self._info
 
     @property
@@ -1271,12 +1322,14 @@ class Model:
                         del allwatcher.Id
                         continue
                     except websockets.ConnectionClosed:
-                        monitor = self.connection().monitor
-                        if monitor.status == monitor.ERROR:
+                        if self.connection().monitor.status == connection.Monitor.ERROR:
                             # closed unexpectedly, try to reopen
                             log.warning("Watcher: connection closed, reopening")
                             await self.connection().reconnect()
-                            if monitor.status != monitor.CONNECTED:
+                            if (
+                                self.connection().monitor.status
+                                != connection.Monitor.CONNECTED
+                            ):
                                 # reconnect failed; abort and shutdown
                                 log.error(
                                     "Watcher: automatic reconnect "
@@ -2589,7 +2642,7 @@ class Model:
             results[tag.untag("action-", a.action.tag)] = a.status
         return results
 
-    async def get_status(self, filters=None, utc=False):
+    async def get_status(self, filters=None, utc=False) -> FullStatus:
         """Return the status of the model.
 
         :param str filters: Optional list of applications, units, or machines
@@ -2924,15 +2977,15 @@ class Model:
     async def wait_for_idle(
         self,
         apps: list[str] | None = None,
-        raise_on_error=True,
-        raise_on_blocked=False,
-        wait_for_active=False,
-        timeout=10 * 60,
-        idle_period=15,
-        check_freq=0.5,
-        status=None,
-        wait_for_at_least_units=None,
-        wait_for_exact_units=None,
+        raise_on_error: bool = True,
+        raise_on_blocked: bool = False,
+        wait_for_active: bool = False,
+        timeout: float | None = 10 * 60,
+        idle_period: float = 15,
+        check_freq: float = 0.5,
+        status: str | None = None,
+        wait_for_at_least_units: int | None = None,
+        wait_for_exact_units: int | None = None,
     ) -> None:
         """Wait for applications in the model to settle into an idle state.
 
@@ -3000,12 +3053,12 @@ class Model:
             raise JujuError(f"Expected a List[str] for apps, given {apps}")
 
         apps = apps or self.applications
-        idle_times = {}
-        units_ready = set()  # The units that are in the desired state
-        last_log_time = None
+        idle_times: dict[str, datetime] = {}
+        units_ready: set[str] = set()  # The units that are in the desired state
+        last_log_time: datetime | None = None
         log_interval = timedelta(seconds=30)
 
-        def _raise_for_status(entities, status):
+        def _raise_for_status(entities: dict[str, list[str]], status: Any):
             if not entities:
                 return
             for entity_name, error_type in (

@@ -50,7 +50,7 @@ class Connector:
         self.model_name = None
         self.jujudata = jujudata or FileJujuData()
 
-    def is_connected(self):
+    def is_connected(self) -> bool:
         """Report whether there is a currently connected controller or not"""
         return self._connection is not None
 
@@ -60,6 +60,7 @@ class Connector:
         """
         if not self.is_connected():
             raise NoConnectionException("not connected")
+        assert self._connection
         return self._connection
 
     async def connect(self, **kwargs):

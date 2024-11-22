@@ -1,41 +1,70 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
+from __future__ import annotations
 
 import logging
+import sys
 import warnings
+
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    from backports.strenum import StrEnum
 
 from .client import client
 
 log = logging.getLogger(__name__)
 
-""" derive_status is used to determine the application status from a set of unit
-status values.
 
-:param statues: list of known unit workload statues
+class StatusStr(StrEnum):
+    """Recognised status values.
 
-"""
+    Please keep this set exact same as the severity map below.
+    """
+
+    error = "error"
+    blocked = "blocked"
+    waiting = "waiting"
+    maintenance = "maintenance"
+    active = "active"
+    terminated = "terminated"
+    unknown = "unknown"
 
 
-def derive_status(statues):
-    current = "unknown"
-    for status in statues:
-        if status in severities and severities[status] > severities[current]:
-            current = status
-    return current
-
-
-""" severities holds status values with a severity measure.
+""" severity_map holds status values with a severity measure.
 Status values with higher severity are used in preference to others.
 """
-severities = {
-    "error": 100,
-    "blocked": 90,
-    "waiting": 80,
-    "maintenance": 70,
-    "active": 60,
-    "terminated": 50,
-    "unknown": 40,
+severity_map: dict[StatusStr, int] = {
+    # FIXME: Juju defines a lot more status values #1204
+    StatusStr.error: 100,
+    StatusStr.blocked: 90,
+    StatusStr.waiting: 80,
+    StatusStr.maintenance: 70,
+    StatusStr.active: 60,
+    StatusStr.terminated: 50,
+    StatusStr.unknown: 40,
 }
+
+
+def derive_status(statuses: list[str | StatusStr]) -> StatusStr:
+    """Derive status from a set.
+
+    derive_status is used to determine the application status from a set of unit
+    status values.
+
+    :param statuses: list of known unit workload statuses
+    """
+    current: StatusStr = StatusStr.unknown
+    for status in statuses:
+        try:
+            status = StatusStr(status)
+        except ValueError:
+            # Unknown Juju status, let's assume it's least important
+            continue
+
+        if severity_map[status] > severity_map[current]:
+            current = status
+    return current
 
 
 async def formatted_status(model, target=None, raw=False, filters=None):
