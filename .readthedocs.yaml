@@ -11,6 +11,8 @@ python:
 build:
   os: ubuntu-24.04
   tools:
+    # Older Shpinx uses imghdr that was removed in Python 3.13
+    # See e.g. https://github.com/python/cpython/issues/104818
     python: "3.12"
 
 sphinx:
