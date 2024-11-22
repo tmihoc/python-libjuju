@@ -10,7 +10,6 @@ import uuid
 from unittest import mock
 
 import paramiko
-import pylxd
 import pytest
 
 from juju import jasyncio, tag, url
@@ -27,6 +26,11 @@ from juju.utils import (
 
 from .. import base
 from ..utils import GB, INTEGRATION_TEST_DIR, MB, OVERLAYS_DIR, SSH_KEY, TESTS_DIR
+
+
+@pytest.fixture
+def pylxd():
+    return pytest.importorskip("pylxd")
 
 
 @base.bootstrapped
@@ -532,7 +536,7 @@ async def test_add_machine():
         assert len(model.machines) == 0
 
 
-async def add_manual_machine_ssh(is_root=False):
+async def add_manual_machine_ssh(pylxd, is_root=False):
     # Verify controller is localhost
     async with base.CleanController() as controller:
         cloud = await controller.get_cloud()
@@ -677,7 +681,7 @@ async def add_manual_machine_ssh(is_root=False):
 
 
 @base.bootstrapped
-async def test_add_manual_machine_ssh():
+async def test_add_manual_machine_ssh(pylxd):
     """Test manual machine provisioning with a non-root user.
 
     Tests manual machine provisioning using a randomized username with
@@ -687,9 +691,9 @@ async def test_add_manual_machine_ssh():
 
 
 @base.bootstrapped
-async def test_add_manual_machine_ssh_root():
+async def test_add_manual_machine_ssh_root(pylxd):
     """Test manual machine provisioning with the root user."""
-    await add_manual_machine_ssh(is_root=True)
+    await add_manual_machine_ssh(pylxd, is_root=True)
 
 
 @base.bootstrapped

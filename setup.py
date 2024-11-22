@@ -32,8 +32,16 @@ setup(
         "hvac",
         "packaging",
         "typing-extensions>=4.5.0",
-        "backports.strenum",
+        'backports.strenum>=1.3.1; python_version < "3.11"',
     ],
+    extras_require={
+        "dev": [
+            "typing-inspect",
+            "pytest",
+            "pytest-asyncio",
+            "Twine",
+        ]
+    },
     include_package_data=True,
     maintainer="Juju Ecosystem Engineering",
     maintainer_email="juju@lists.ubuntu.com",
