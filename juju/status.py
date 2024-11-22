@@ -59,10 +59,10 @@ def derive_status(statuses: list[str | StatusStr]) -> StatusStr:
         try:
             status = StatusStr(status)
         except ValueError:
+            # Unknown Juju status, let's assume it's least important
             continue
-        if (new_level := severity_map.get(status)) and new_level > severity_map[
-            current
-        ]:
+
+        if severity_map[status] > severity_map[current]:
             current = status
     return current
 
