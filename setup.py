@@ -40,7 +40,6 @@ setup(
             "pytest",
             "pytest-asyncio",
             "Twine",
-            "setuptools",  # ?
         ]
     },
     include_package_data=True,

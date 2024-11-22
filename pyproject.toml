@@ -38,12 +38,11 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = [
-        "typing-inspect",
-        "pytest",
-        "pytest-asyncio",
-        "Twine",
-        "setuptools",  # ?
-    ]
+    "typing-inspect",
+    "pytest",
+    "pytest-asyncio",
+    "Twine",
+]
 
 [project.urls]
 "Homepage" = "https://juju.is/docs/sdk"
