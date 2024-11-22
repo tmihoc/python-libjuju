@@ -43,6 +43,11 @@ dev = [
     "pytest-asyncio",
     "Twine",
 ]
+docs = [
+    "sphinx==5.3.0",
+    "sphinxcontrib-asyncio",
+    "sphinx_rtd_theme",
+]
 
 [project.urls]
 "Homepage" = "https://juju.is/docs/sdk"

@@ -6,11 +6,7 @@ python:
       path: .
       extra_requirements:
         - dev
-    - method: pip
-      packages:
-        - sphinx==5.3.0
-        - sphinxcontrib-asyncio
-        - sphinx_rtd_theme
+        - docs
 
 build:
   os: ubuntu-24.04
