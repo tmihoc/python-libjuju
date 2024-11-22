@@ -23,7 +23,10 @@ class Schema(Enum):
 
 
 class URL:
-    """Private URL class for this library internals only."""
+    """Private URL class for this library internals only.
+
+    Should be instantiated by `URL.parse` constructor.
+    """
 
     name: str
 
