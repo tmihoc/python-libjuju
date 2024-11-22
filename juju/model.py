@@ -1227,7 +1227,7 @@ class Model:
     def info(self) -> ModelInfo:
         """Return the cached client.ModelInfo object for this Model.
 
-        If Model.get_info() has not been called, this will return None.
+        If Model.get_info() has not been called, this will raise an error.
         """
         if not self.is_connected():
             raise JujuModelError("Model is not connected")
