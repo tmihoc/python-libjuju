@@ -43,7 +43,6 @@ dev = [
         "pytest-asyncio",
         "Twine",
         "setuptools",  # ?
-        "pylxd",
     ]
 
 [project.urls]

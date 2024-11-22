@@ -41,7 +41,6 @@ setup(
             "pytest-asyncio",
             "Twine",
             "setuptools",  # ?
-            "pylxd",
         ]
     },
     include_package_data=True,
