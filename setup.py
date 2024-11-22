@@ -32,6 +32,7 @@ setup(
         "hvac",
         "packaging",
         "typing-extensions>=4.5.0",
+        "backports.strenum",
     ],
     include_package_data=True,
     maintainer="Juju Ecosystem Engineering",
