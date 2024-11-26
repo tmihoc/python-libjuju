@@ -8,11 +8,7 @@ clean:
 	find . -name __pycache__ -type d -exec rm -r {} +
 	find . -name *.pyc -delete
 	rm -rf .tox
-	rm -rf docs/_build/
-
-.PHONY: .tox
-.tox:
-	tox -r --notest
+	rm -rf build dist docs/_build/
 
 .PHONY: client
 client:
@@ -21,19 +17,19 @@ client:
 	pre-commit run --files $(shell echo juju/client/_[cd]*.py)
 
 .PHONY: run-unit-tests
-run-unit-tests: .tox
-	tox -e py3
+run-unit-tests:
+	uvx tox -e unit
 
 .PHONY: run-integration-tests
-run-integration-tests: .tox
-	tox -e integration
+run-integration-tests:
+	uvx tox -e integration
 
 .PHONY: run-all-tests
 test: run-unit-tests run-integration-tests
 
 .PHONY: docs
 docs:
-	tox -e docs
+	uvx tox -e docs
 
 .PHONY: build-test
 build-test:
