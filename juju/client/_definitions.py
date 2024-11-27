@@ -3132,6 +3132,7 @@ class ApplicationStatus(Type):
         "charm": "charm",
         "charm_channel": "charm-channel",
         "charm_profile": "charm-profile",
+        "charm_rev": "charm-rev",
         "charm_version": "charm-version",
         "endpoint_bindings": "endpoint-bindings",
         "err": "err",
@@ -3154,6 +3155,7 @@ class ApplicationStatus(Type):
         "charm": "charm",
         "charm-channel": "charm_channel",
         "charm-profile": "charm_profile",
+        "charm-rev": "charm_rev",
         "charm-version": "charm_version",
         "endpoint-bindings": "endpoint_bindings",
         "err": "err",
@@ -3178,6 +3180,7 @@ class ApplicationStatus(Type):
         charm=None,
         charm_channel=None,
         charm_profile=None,
+        charm_rev=None,
         charm_version=None,
         endpoint_bindings=None,
         err=None,
@@ -3200,6 +3203,7 @@ class ApplicationStatus(Type):
         charm : str
         charm_channel : str
         charm_profile : str
+        charm_rev : int
         charm_version : str
         endpoint_bindings : typing.Mapping[str, str]
         err : Error
@@ -3221,6 +3225,7 @@ class ApplicationStatus(Type):
         charm_ = charm
         charm_channel_ = charm_channel
         charm_profile_ = charm_profile
+        charm_rev_ = charm_rev
         charm_version_ = charm_version
         endpoint_bindings_ = endpoint_bindings
         err_ = Error.from_json(err) if err else None
@@ -3264,6 +3269,11 @@ class ApplicationStatus(Type):
         if charm_profile_ is not None and not isinstance(charm_profile_, (bytes, str)):
             raise Exception(
                 f"Expected charm_profile_ to be a str, received: {type(charm_profile_)}"
+            )
+
+        if charm_rev_ is not None and not isinstance(charm_rev_, int):
+            raise Exception(
+                f"Expected charm_rev_ to be a int, received: {type(charm_rev_)}"
             )
 
         if charm_version_ is not None and not isinstance(charm_version_, (bytes, str)):
@@ -3346,6 +3356,7 @@ class ApplicationStatus(Type):
         self.charm = charm_
         self.charm_channel = charm_channel_
         self.charm_profile = charm_profile_
+        self.charm_rev = charm_rev_
         self.charm_version = charm_version_
         self.endpoint_bindings = endpoint_bindings_
         self.err = err_
