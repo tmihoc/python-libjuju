@@ -2215,16 +2215,24 @@ class Model:
                     "username": "",
                     "password": "",
                 }
-                data = yaml.dump(docker_image_details)
+                data = yaml.dump(docker_image_details).encode("utf-8")
             else:
                 p = Path(path)
-                data = p.read_text() if p.exists() else ""
+                data = p.read_bytes() if p.exists() else b""
 
             self._upload(data, path, application, name, resource_type, pending_id)
 
         return resource_map
 
-    def _upload(self, data, path, app_name, res_name, res_type, pending_id):
+    def _upload(
+        self,
+        data: bytes,
+        path: str | Path,
+        app_name: str,
+        res_name: str,
+        res_type: str,
+        pending_id: str,
+    ) -> None:
         conn, headers, path_prefix = self.connection().https_connection()
 
         query = f"?pendingid={pending_id}"
@@ -2235,8 +2243,8 @@ class Model:
             disp = f'form-data; filename="{path}"'
 
         headers["Content-Type"] = "application/octet-stream"
-        headers["Content-Length"] = len(data)
-        headers["Content-Sha384"] = hashlib.sha384(bytes(data, "utf-8")).hexdigest()
+        headers["Content-Length"] = str(len(data))
+        headers["Content-Sha384"] = hashlib.sha384(data).hexdigest()
         headers["Content-Disposition"] = disp
 
         conn.request("PUT", url, data, headers)
