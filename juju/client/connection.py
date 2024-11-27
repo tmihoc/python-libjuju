@@ -92,7 +92,7 @@ class Monitor:
                 and connection._receiver_task.cancelled()
             )
 
-        if stopped or not connection._ws.open:
+        if stopped or connection._ws.state is not websockets.protocol.State.OPEN:
             return self.ERROR
 
         # everything is fine!
@@ -357,8 +357,7 @@ class Connection:
             tasks_need_to_be_gathered.append(self._debug_log_task)
             self._debug_log_task.cancel()
 
-        if self._ws and not self._ws.closed:
-            await self._ws.close()
+        await self._ws.close()
 
         if not to_reconnect:
             try:

@@ -7,6 +7,7 @@ from collections import deque
 from unittest import mock
 
 import pytest
+import websockets
 from websockets.exceptions import ConnectionClosed
 
 from juju.client.connection import Connection
@@ -17,8 +18,7 @@ class WebsocketMock:
     def __init__(self, responses):
         super().__init__()
         self.responses = deque(responses)
-        self.open = True
-        self.closed = False
+        self.state = websockets.protocol.State.OPEN
 
     async def send(self, message):
         pass
@@ -30,8 +30,7 @@ class WebsocketMock:
         return json.dumps(self.responses.popleft())
 
     async def close(self):
-        self.open = False
-        self.closed = True
+        pass
 
 
 async def test_out_of_order():
