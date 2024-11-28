@@ -8,12 +8,6 @@ Bug reports: https://github.com/juju/python-libjuju/issues
 Documentation: https://pythonlibjuju.readthedocs.io/en/latest/
 
 
-Requirements
-------------
-
-* Python 3.9/3.10
-
-
 Design Notes
 ------------
 
@@ -46,10 +40,10 @@ Note : Pylibjuju requires an already bootstrapped Juju controller to connect to.
 
   #!/usr/bin/python3
 
+  import asyncio
   import logging
   import sys
 
-  from juju import jasyncio
   from juju.model import Model
 
 
@@ -71,7 +65,7 @@ Note : Pylibjuju requires an already bootstrapped Juju controller to connect to.
 
           if '--wait' in sys.argv:
               # optionally block until the application is ready
-              await model.wait_for_idle(status = 'active')
+              await model.wait_for_idle(status='active')
 
       finally:
           # Disconnect from the api server and cleanup.
@@ -87,7 +81,7 @@ Note : Pylibjuju requires an already bootstrapped Juju controller to connect to.
 
       # Run the deploy coroutine in an asyncio event loop, using a helper
       # that abstracts loop creation and teardown.
-      jasyncio.run(deploy())
+      asyncio.run(deploy())
 
 
   if __name__ == '__main__':
