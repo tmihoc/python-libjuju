@@ -1,6 +1,19 @@
 Changelog
 ---------
 
+3.6.0.0
+^^^^^^^
+
+Thursday 28th Nov 2024
+
+## What's Changed
+
+* correct parsing of storage constraints, can be specified as strings or dicts
+* enable attachment of binary files as charm resources
+* allow newest websockets dependency
+* better type hints, should be visible through pytest-operator in your integration tests
+* tested against Juju 3.5.5 and 3.6.0
+
 3.5.2.0
 ^^^^^^^
 
