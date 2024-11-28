@@ -39,3 +39,7 @@ Please see docs/CONTRIBUTING.md for the process for updating this file.
 3.5.2 (identical to 3.5.0)
 3.5.3 (identical to 3.5.0)
 3.5.4 (identical to 3.5.0)
+3.5.5
+
+# 3.6
+3.6.0
