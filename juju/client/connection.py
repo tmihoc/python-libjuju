@@ -108,8 +108,10 @@ class Connection:
 
     """
 
-    MAX_FRAME_SIZE = 2**22
-    "Maximum size for a single frame.  Defaults to 4MB."
+    # Juju 3.6 is limited by MongoDB transaction size limit, 16MB of BSON.
+    # Set the jRPC receive limit to 64MB of JSON to account for formatting differences.
+    MAX_FRAME_SIZE = 0x4_000_000
+    "Maximum size for a single frame, 64MB."
     facades: dict[str, int]
     _specified_facades: dict[str, Sequence[int]]
     bakery_client: Any
