@@ -18,7 +18,7 @@ target-version = ["py38"]
 [tool.ruff]
 line-length = 99
 select = ["E", "W", "F", "C", "N", "D", "I001"]
-extend-ignore = [
+lint.extend-ignore = [
     "D204",
     "D215",
     "D400",

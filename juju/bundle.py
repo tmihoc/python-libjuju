@@ -2,6 +2,7 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 from __future__ import annotations
 
+import asyncio
 import base64
 import io
 import logging
@@ -15,7 +16,7 @@ import requests
 import yaml
 from toposort import toposort_flatten
 
-from . import jasyncio, utils
+from . import utils
 from .client import client
 from .constraints import parse as parse_constraints
 from .errors import JujuError
@@ -156,7 +157,7 @@ class BundleHandler:
         if apps:
             # If we have apps to update, spawn all the coroutines concurrently
             # and wait for them to finish.
-            charm_urls = await jasyncio.gather(*[
+            charm_urls = await asyncio.gather(*[
                 self.model.add_local_charm_dir(*params) for params in args
             ])
 

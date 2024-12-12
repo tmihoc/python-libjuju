@@ -1,9 +1,9 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import asyncio
 import sys
 
-from juju import jasyncio
 from juju.controller import Controller
 
 
@@ -47,4 +47,4 @@ async def main(cloud_name, credential_name):
 
 if __name__ == "__main__":
     assert len(sys.argv) > 2, "Please provide a cloud and credential name"
-    jasyncio.run(main(sys.argv[1], sys.argv[2]))
+    asyncio.run(main(sys.argv[1], sys.argv[2]))

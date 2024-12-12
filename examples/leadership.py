@@ -9,7 +9,8 @@
 
 """
 
-from juju import jasyncio
+import asyncio
+
 from juju.model import Model
 
 
@@ -26,4 +27,4 @@ async def report_leadership():
 
 
 if __name__ == "__main__":
-    jasyncio.run(report_leadership())
+    asyncio.run(report_leadership())

@@ -13,7 +13,6 @@
 import asyncio
 import logging
 
-from juju import jasyncio
 from juju.controller import Controller
 
 
@@ -41,4 +40,4 @@ if __name__ == "__main__":
     logging.getLogger("juju.client.connection").setLevel(logging.INFO)
     # Run loop until the process is manually stopped (watch will loop
     # forever).
-    jasyncio.run(watch())
+    asyncio.run(watch())

@@ -5,9 +5,9 @@
 repository for information about a given charm.
 """
 
+import asyncio
 import logging
 
-from juju import jasyncio
 from juju.model import Model
 
 log = logging.getLogger(__name__)
@@ -29,4 +29,4 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    jasyncio.run(main())
+    asyncio.run(main())

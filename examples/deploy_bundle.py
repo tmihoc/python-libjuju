@@ -9,7 +9,8 @@
 
 """
 
-from juju import jasyncio
+import asyncio
+
 from juju.controller import Controller
 
 
@@ -59,4 +60,4 @@ async def deploy_and_wait_for_bundle(model, url, channel=None):
 
 
 if __name__ == "__main__":
-    jasyncio.run(main())
+    asyncio.run(main())

@@ -1,7 +1,8 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-from juju import jasyncio
+import asyncio
+
 from juju.model import Model
 
 
@@ -33,4 +34,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    jasyncio.run(main())
+    asyncio.run(main())

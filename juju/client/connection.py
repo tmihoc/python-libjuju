@@ -2,6 +2,7 @@
 # Licensed under the Apache V2, see LICENCE file for details.
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -18,7 +19,7 @@ import websockets
 from dateutil.parser import parse
 from typing_extensions import Self, TypeAlias, overload
 
-from juju import errors, jasyncio, tag, utils
+from juju import errors, tag, utils
 from juju.client import client
 from juju.utils import IdQueue
 from juju.version import CLIENT_VERSION
@@ -54,8 +55,8 @@ class Monitor:
 
     def __init__(self, connection: Connection):
         self.connection = weakref.ref(connection)
-        self.reconnecting = jasyncio.Lock()
-        self.close_called = jasyncio.Event()
+        self.reconnecting = asyncio.Lock()
+        self.close_called = asyncio.Event()
 
     @property
     def status(self):
@@ -364,8 +365,8 @@ class Connection:
         if not to_reconnect:
             try:
                 log.debug("Gathering all tasks for connection close")
-                await jasyncio.gather(*tasks_need_to_be_gathered)
-            except jasyncio.CancelledError:
+                await asyncio.gather(*tasks_need_to_be_gathered)
+            except asyncio.CancelledError:
                 pass
             except websockets.exceptions.ConnectionClosed:
                 pass
@@ -452,26 +453,26 @@ class Connection:
                     self.debug_log_shown_lines += number_of_lines_written
 
                     if self.debug_log_shown_lines >= self.debug_log_params["limit"]:
-                        jasyncio.create_task(self.close(), name="Task_Close")
+                        asyncio.create_task(self.close(), name="Task_Close")  # noqa: RUF006
                         return
 
         except KeyError as e:
             log.exception("Unexpected debug line -- %s" % e)
-            jasyncio.create_task(self.close(), name="Task_Close")
+            asyncio.create_task(self.close(), name="Task_Close")  # noqa: RUF006
             raise
-        except jasyncio.CancelledError:
-            jasyncio.create_task(self.close(), name="Task_Close")
+        except asyncio.CancelledError:
+            asyncio.create_task(self.close(), name="Task_Close")  # noqa: RUF006
             raise
         except websockets.exceptions.ConnectionClosed:
             log.warning("Debug Logger: Connection closed, reconnecting")
             # the reconnect has to be done as a task because the receiver will
             # be cancelled by the reconnect and we don't want the reconnect
             # to be aborted half-way through
-            jasyncio.ensure_future(self.reconnect())
+            asyncio.ensure_future(self.reconnect())  # noqa: RUF006
             return
         except Exception as e:
             log.exception("Error in debug logger : %s" % e)
-            jasyncio.create_task(self.close(), name="Task_Close")
+            asyncio.create_task(self.close(), name="Task_Close")  # noqa: RUF006
             raise
 
     async def _receiver(self):
@@ -485,7 +486,7 @@ class Connection:
                 if result is not None:
                     result = json.loads(result)
                     await self.messages.put(result["request-id"], result)
-        except jasyncio.CancelledError:
+        except asyncio.CancelledError:
             log.debug("Receiver: Cancelled")
             pass
         except websockets.exceptions.ConnectionClosed as e:
@@ -494,7 +495,7 @@ class Connection:
             # the reconnect has to be done as a task because the receiver will
             # be cancelled by the reconnect and we don't want the reconnect
             # to be aborted half-way through
-            jasyncio.ensure_future(self.reconnect())
+            asyncio.ensure_future(self.reconnect())  # noqa: RUF006
             return
         except Exception as e:
             log.exception("Error in receiver")
@@ -514,7 +515,7 @@ class Connection:
             try:
                 log.debug(f"Pinger {self._pinger_task}: pinging")
                 await pinger_facade.Ping()
-            except jasyncio.CancelledError:
+            except asyncio.CancelledError:
                 raise
 
         pinger_facade = client.PingerFacade.from_connection(self)
@@ -525,8 +526,8 @@ class Connection:
                 )
                 if self.monitor.close_called.is_set():
                     break
-                await jasyncio.sleep(10)
-        except jasyncio.CancelledError:
+                await asyncio.sleep(10)
+        except asyncio.CancelledError:
             log.debug("Pinger: Cancelled")
             pass
         except websockets.exceptions.ConnectionClosed:
@@ -583,7 +584,7 @@ class Connection:
                 # if it is triggered by the pinger, then this RPC call will
                 # be cancelled when the pinger is cancelled by the reconnect,
                 # and we don't want the reconnect to be aborted halfway through
-                await jasyncio.wait([jasyncio.create_task(self.reconnect())])
+                await asyncio.wait([asyncio.create_task(self.reconnect())])
                 if self.monitor.status != Monitor.CONNECTED:
                     # reconnect failed; abort and shutdown
                     log.error("RPC: Automatic reconnect failed")
@@ -715,7 +716,7 @@ class Connection:
                 self._build_facades(res.get("facades", {}))
                 if not self._pinger_task:
                     log.debug("reconnect: scheduling a pinger task")
-                    self._pinger_task = jasyncio.create_task(
+                    self._pinger_task = asyncio.create_task(
                         self._pinger(), name="Task_Pinger"
                     )
 
@@ -727,20 +728,20 @@ class Connection:
             endpoint, cacert, delay
         ) -> tuple[_WebSocket, str, str, str]:
             if delay:
-                await jasyncio.sleep(delay)
+                await asyncio.sleep(delay)
             return await self._open(endpoint, cacert)
 
         # Try all endpoints in parallel, with slight increasing delay (+100ms
         # for each subsequent endpoint); the delay allows us to prefer the
         # earlier endpoints over the latter. Use first successful connection.
         tasks = [
-            jasyncio.ensure_future(_try_endpoint(endpoint, cacert, 0.1 * i))
+            asyncio.ensure_future(_try_endpoint(endpoint, cacert, 0.1 * i))
             for i, (endpoint, cacert) in enumerate(endpoints)
         ]
         result: tuple[_WebSocket, str, str, str] | None = None
 
         for attempt in range(self._retries + 1):
-            for task in jasyncio.as_completed(tasks):
+            for task in asyncio.as_completed(tasks):
                 try:
                     result = await task
                     break
@@ -752,7 +753,7 @@ class Connection:
                     log.debug(
                         f"Retrying connection to endpoints: {_endpoints_str}; attempt {attempt + 1} of {self._retries + 1}"
                     )
-                    await jasyncio.sleep((attempt + 1) * self._retry_backoff)
+                    await asyncio.sleep((attempt + 1) * self._retry_backoff)
                     continue
                 else:
                     raise errors.JujuConnectionError(
@@ -775,7 +776,7 @@ class Connection:
         #  If this is a debug-log connection, and the _debug_log_task
         #  is not created yet, then go ahead and schedule it
         if self.is_debug_log_connection and not self._debug_log_task:
-            self._debug_log_task = jasyncio.create_task(
+            self._debug_log_task = asyncio.create_task(
                 self._debug_logger(), name="Task_Debug_Log"
             )
 
@@ -783,7 +784,7 @@ class Connection:
         #  receiver_task yet, then schedule a _receiver_task
         elif not self.is_debug_log_connection and not self._receiver_task:
             log.debug("_connect: scheduling a receiver task")
-            self._receiver_task = jasyncio.create_task(
+            self._receiver_task = asyncio.create_task(
                 self._receiver(), name="Task_Receiver"
             )
 
@@ -840,7 +841,7 @@ class Connection:
         self._build_facades(login_result.get("facades", {}))
         if not self._pinger_task:
             log.debug("_connect_with_redirect: scheduling a pinger task")
-            self._pinger_task = jasyncio.create_task(self._pinger(), name="Task_Pinger")
+            self._pinger_task = asyncio.create_task(self._pinger(), name="Task_Pinger")
 
     # _build_facades takes the facade list that comes from the connection with the controller,
     # validates that the client knows about them (client_facade_versions) and builds the facade list

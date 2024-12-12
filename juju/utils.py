@@ -15,7 +15,9 @@ import yaml
 from pyasn1.codec.der.encoder import encode
 from pyasn1.type import char, univ
 
-from . import errors, jasyncio, origin
+from juju import _jasyncio
+
+from . import errors, origin
 from .client import client
 from .errors import JujuError
 
@@ -124,7 +126,11 @@ class IdQueue:
             await queue.put(value)
 
 
-async def block_until(*conditions: Callable[[], bool], timeout: float | None = None, wait_period: float = 0.5):
+async def block_until(
+    *conditions: Callable[[], bool],
+    timeout: float | None = None,
+    wait_period: float = 0.5,
+):
     """Return only after all conditions are true.
 
     If a timeout occurs, it cancels the task and raises
@@ -139,7 +145,9 @@ async def block_until(*conditions: Callable[[], bool], timeout: float | None = N
 
 
 async def block_until_with_coroutine(
-    condition_coroutine: Callable[[], Coroutine[Any, Any, bool]], timeout: float | None = None, wait_period: float = 0.5
+    condition_coroutine: Callable[[], Coroutine[Any, Any, bool]],
+    timeout: float | None = None,
+    wait_period: float = 0.5,
 ):
     """Return only after the given coroutine returns True.
 
@@ -186,17 +194,17 @@ async def run_with_interrupt(task, *events: asyncio.Event, log=None):
     :param events: One or more `asyncio.Event`s which, if set, will interrupt
         `task` and cause it to be cancelled.
     """
-    task = jasyncio.create_task_with_handler(task, "tmp", log)
-    event_tasks = [jasyncio.ensure_future(event.wait()) for event in events]
-    done, pending = await jasyncio.wait(
-        [task, *event_tasks], return_when=jasyncio.FIRST_COMPLETED
+    task = _jasyncio.create_task_with_handler(task, "tmp", log)
+    event_tasks = [asyncio.ensure_future(event.wait()) for event in events]
+    done, pending = await asyncio.wait(
+        [task, *event_tasks], return_when=asyncio.FIRST_COMPLETED
     )
     for f in pending:
         f.cancel()  # cancel unfinished tasks
     for f in pending:
         try:
             await f
-        except jasyncio.CancelledError:
+        except asyncio.CancelledError:
             pass
     for f in done:
         f.exception()  # prevent "exception was not retrieved" errors
@@ -514,7 +522,11 @@ def user_requested(series_arg: str, supported_series: list[str], force: bool) ->
 
 
 def series_selector(
-    series_arg: str = "", charm_url=None, model_config=None, supported_series: list[str] = [], force: bool = False
+    series_arg: str = "",
+    charm_url=None,
+    model_config=None,
+    supported_series: list[str] = [],
+    force: bool = False,
 ) -> str:
     """Select series to deploy on.
 
@@ -561,7 +573,9 @@ def series_selector(
     return DEFAULT_SUPPORTED_LTS
 
 
-def should_upgrade_resource(available_resource: dict[str, str], existing_resources, arg_resources) -> bool:
+def should_upgrade_resource(
+    available_resource: dict[str, str], existing_resources, arg_resources
+) -> bool:
     """Determine if the given resource should be upgraded.
 
     Called in the context of upgrade_charm. Given a resource R, takes a look
