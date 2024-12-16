@@ -9,7 +9,7 @@ import textwrap
 import zipfile
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Callable, Coroutine
+from typing import Any, Awaitable, Callable
 
 import yaml
 from pyasn1.codec.der.encoder import encode
@@ -145,7 +145,7 @@ async def block_until(
 
 
 async def block_until_with_coroutine(
-    condition_coroutine: Callable[[], Coroutine[Any, Any, bool]],
+    condition_coroutine: Callable[[], Awaitable[bool]],
     timeout: float | None = None,
     wait_period: float = 0.5,
 ):
