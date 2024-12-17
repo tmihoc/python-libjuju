@@ -1,6 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -9,7 +10,7 @@ from typing import Dict, List, Optional, Union
 
 from typing_extensions import deprecated
 
-from . import jasyncio, model, tag, utils
+from . import model, tag, utils
 from .annotationhelper import _get_annotations, _set_annotations
 from .bundle import get_charm_series, is_local_charm
 from .client import _definitions, client
@@ -207,9 +208,8 @@ class Application(model.ModelEntity):
             attach_storage=attach_storage,
         )
 
-        return await jasyncio.gather(*[
-            jasyncio.ensure_future(self.model._wait_for_new("unit", unit_id))
-            for unit_id in result.units
+        return await asyncio.gather(*[
+            self.model._wait_for_new("unit", unit_id) for unit_id in result.units
         ])
 
     add_units = add_unit

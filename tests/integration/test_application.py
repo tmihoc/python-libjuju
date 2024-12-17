@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from juju import errors, jasyncio
+from juju import errors
 from juju.application import Application
 from juju.client import client
 from juju.url import URL, Schema
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 async def test_action():
     async with base.CleanModel() as model:
         app = await model.deploy("juju-qa-test")
-        await jasyncio.sleep(10)
+        await asyncio.sleep(10)
         actions = await app.get_actions(schema=True)
         assert "fortune" in actions
 

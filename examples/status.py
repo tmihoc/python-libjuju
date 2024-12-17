@@ -3,11 +3,11 @@
 
 """This example demonstrate how status works"""
 
+import asyncio
 import logging
 import sys
 from logging import getLogger
 
-from juju import jasyncio
 from juju.model import Model
 from juju.status import formatted_status
 
@@ -25,7 +25,7 @@ async def main():
         series="jammy",
         channel="stable",
     )
-    await jasyncio.sleep(10)
+    await asyncio.sleep(10)
     # Print the status to observe the evolution
     # during a minute
     for _ in range(12):
@@ -38,7 +38,7 @@ async def main():
             print(status)
         except Exception as e:
             print(e)
-        await jasyncio.sleep(5)
+        await asyncio.sleep(5)
 
     print("Removing ubuntu")
     await application.remove()
@@ -48,4 +48,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    jasyncio.run(main())
+    asyncio.run(main())

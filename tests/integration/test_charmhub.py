@@ -1,9 +1,10 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import asyncio
+
 import pytest
 
-from juju import jasyncio
 from juju.errors import JujuError
 
 from .. import base
@@ -103,11 +104,11 @@ async def test_subordinate_charm_zero_units():
     async with base.CleanModel() as model:
         # rsyslog-forwarder-ha is a subordinate charm
         app = await model.deploy("rsyslog-forwarder-ha")
-        await jasyncio.sleep(5)
+        await asyncio.sleep(5)
 
         assert len(app.units) == 0
         await app.destroy()
-        await jasyncio.sleep(5)
+        await asyncio.sleep(5)
 
         # note that it'll error if the user tries to use num_units
         with pytest.raises(JujuError):
@@ -116,7 +117,7 @@ async def test_subordinate_charm_zero_units():
         # (full disclosure: it'll quietly switch to 0 if user enters
         # num_units=1, instead of erroring)
         app2 = await model.deploy("rsyslog-forwarder-ha", num_units=1)
-        await jasyncio.sleep(5)
+        await asyncio.sleep(5)
         assert len(app2.units) == 0
 
 

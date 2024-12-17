@@ -13,7 +13,7 @@ import asyncio
 import uuid
 from logging import getLogger
 
-from juju import jasyncio, utils
+from juju import utils
 from juju.controller import Controller
 
 LOG = getLogger(__name__)
@@ -65,4 +65,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    jasyncio.run(main())
+    asyncio.run(main())

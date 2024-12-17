@@ -1,6 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
-
+import asyncio
 import http
 import logging
 import socket
@@ -11,7 +11,6 @@ from pathlib import Path
 import pytest
 import websockets
 
-from juju import jasyncio
 from juju.client import client
 from juju.client.connection import Connection
 from juju.client.jujudata import FileJujuData
@@ -46,7 +45,7 @@ async def test_monitor_catches_error():
                 await conn._ws.close()  # this could be racy with reconnect
                 # if auto-reconnect is not disabled by lock, force this
                 # test to fail by deferring to the reconnect task via sleep
-                await jasyncio.sleep(0.1)
+                await asyncio.sleep(0.1)
                 assert conn.monitor.status == "error"
         finally:
             await conn.close()
@@ -74,7 +73,7 @@ async def test_reconnect():
         kwargs = model.connection().connect_params()
         conn = await Connection.connect(**kwargs)
         try:
-            await jasyncio.sleep(0.1)
+            await asyncio.sleep(0.1)
             assert conn.is_open
             await conn._ws.close()
             assert not conn.is_open
@@ -133,12 +132,12 @@ async def test_redirect():
 class RedirectServer:
     def __init__(self, destination):
         self.destination = destination
-        self._start = jasyncio.Event()
-        self._stop = jasyncio.Event()
-        self._terminate = jasyncio.Event()
-        self.running = jasyncio.Event()
-        self.stopped = jasyncio.Event()
-        self.terminated = jasyncio.Event()
+        self._start = asyncio.Event()
+        self._stop = asyncio.Event()
+        self._terminate = asyncio.Event()
+        self.running = asyncio.Event()
+        self.stopped = asyncio.Event()
+        self.terminated = asyncio.Event()
         if hasattr(ssl, "PROTOCOL_TLS_SERVER"):
             # python 3.6+
             protocol = ssl.PROTOCOL_TLS_SERVER
@@ -148,7 +147,7 @@ class RedirectServer:
         self.ssl_context.load_cert_chain(str(crt_file), str(key_file))
         self.status = None
         self.port = None
-        self._task = jasyncio.create_task(self.run())
+        self._task = asyncio.create_task(self.run())
 
     def start(self, status):
         self.status = status
@@ -166,7 +165,7 @@ class RedirectServer:
     def exception(self):
         try:
             return self._task.exception()
-        except (jasyncio.CancelledError, jasyncio.InvalidStateError):
+        except (asyncio.CancelledError, asyncio.InvalidStateError):
             return None
 
     async def run(self):
@@ -192,16 +191,16 @@ class RedirectServer:
                         host="localhost",
                         port=self.port,
                         ssl=self.ssl_context,
-                        loop=jasyncio.get_running_loop(),
+                        loop=asyncio.get_running_loop(),
                     ):
                         self.stopped.clear()
                         self.running.set()
                         logger.debug("server: started")
                         while not self._stop.is_set():
-                            await run_with_interrupt(jasyncio.sleep(1), self._stop)
+                            await run_with_interrupt(asyncio.sleep(1), self._stop)
                             logger.debug("server: tick")
                         logger.debug("server: stopping")
-                except jasyncio.CancelledError:
+                except asyncio.CancelledError:
                     break
                 finally:
                     self.stopped.set()
@@ -209,7 +208,7 @@ class RedirectServer:
                     self.running.clear()
                     logger.debug("server: stopped")
             logger.debug("server: terminating")
-        except jasyncio.CancelledError:
+        except asyncio.CancelledError:
             pass
         finally:
             self._start.clear()

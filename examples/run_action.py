@@ -1,7 +1,8 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
-from juju import jasyncio
+import asyncio
+
 from juju.model import Model
 
 # logging.basicConfig(level='DEBUG')
@@ -38,4 +39,4 @@ async def _get_password():
 
 
 if __name__ == "__main__":
-    jasyncio.run(_get_password())
+    asyncio.run(_get_password())

@@ -6,12 +6,12 @@ description. For a similar solution using the FullStatus object
 check examples/fullstatus.py
 """
 
+import asyncio
 import logging
 import sys
 import tempfile
 from logging import getLogger
 
-from juju import jasyncio
 from juju.model import Model
 from juju.status import formatted_status
 
@@ -30,7 +30,7 @@ async def main():
         channel="stable",
     )
 
-    await jasyncio.sleep(10)
+    await asyncio.sleep(10)
     tmp = tempfile.NamedTemporaryFile(delete=False)  # noqa: SIM115
     LOG.info("status dumped to %s", tmp.name)
     with open(tmp.name, "w") as f:
@@ -40,10 +40,10 @@ async def main():
             # await formatted_status(model, target=sys.stdout)
             await formatted_status(model, target=f)
             f.write("-----------\n")
-            await jasyncio.sleep(1)
+            await asyncio.sleep(1)
     await application.remove()
     await model.disconnect()
 
 
 if __name__ == "__main__":
-    jasyncio.run(main())
+    asyncio.run(main())

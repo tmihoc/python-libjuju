@@ -1,12 +1,11 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import asyncio
 import tempfile
 from pathlib import Path
 
 import pytest
-
-from juju import jasyncio
 
 from .. import base
 
@@ -86,7 +85,7 @@ async def test_remove_saas():
             await model_2.consume(f"admin/{model_1.name}.ubuntu")
 
             await model_2.remove_saas("ubuntu")
-            await jasyncio.sleep(5)
+            await asyncio.sleep(5)
 
             status = await model_2.get_status()
             if "ubuntu" in status.remote_applications:
@@ -137,7 +136,7 @@ async def test_relate_with_offer():
                 raise Exception("Expected postgresql in saas")
 
             await model_2.remove_saas("postgresql")
-            await jasyncio.sleep(5)
+            await asyncio.sleep(5)
 
             status = await model_2.get_status()
             if "postgresql" in status.remote_applications:

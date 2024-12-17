@@ -1,6 +1,7 @@
 # Copyright 2023 Canonical Ltd.
 # Licensed under the Apache V2, see LICENCE file for details.
 
+import asyncio
 import datetime
 import unittest
 from unittest import mock
@@ -8,7 +9,6 @@ from unittest.mock import PropertyMock, patch
 
 import pytest
 
-from juju import jasyncio
 from juju.application import Application
 from juju.client.jujudata import FileJujuData
 from juju.errors import JujuConnectionError, JujuError
@@ -267,7 +267,7 @@ class TestModelWaitForIdle(unittest.IsolatedAsyncioTestCase):
 
     async def test_timeout(self):
         m = Model()
-        with self.assertRaises(jasyncio.TimeoutError) as cm:
+        with self.assertRaises(asyncio.TimeoutError) as cm:
             # no apps so should timeout after timeout period
             await m.wait_for_idle(apps=["nonexisting_app"])
         self.assertEqual(
@@ -351,7 +351,7 @@ class TestModelWaitForIdle(unittest.IsolatedAsyncioTestCase):
             mock_apps.return_value = apps
             m = Model()
 
-            with self.assertRaises(jasyncio.TimeoutError):
+            with self.assertRaises(asyncio.TimeoutError):
                 await m.wait_for_idle(apps=["dummy_app"], status="active")
 
         mock_apps.assert_called_with()

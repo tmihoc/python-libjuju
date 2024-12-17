@@ -10,7 +10,6 @@ packages=(
     juju.errors
     juju.exceptions
     juju.juju
-    juju.loop
     juju.machine
     juju.model
     juju.placement

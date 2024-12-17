@@ -13,7 +13,6 @@
 import asyncio
 import logging
 
-from juju import jasyncio
 from juju.model import Model, ModelObserver
 
 
@@ -120,4 +119,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     ws_logger = logging.getLogger("websockets.protocol")
     ws_logger.setLevel(logging.INFO)
-    jasyncio.run(main())
+    asyncio.run(main())

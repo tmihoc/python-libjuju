@@ -10,9 +10,9 @@
 
 """
 
+import asyncio
 from pathlib import Path
 
-from juju import jasyncio
 from juju.model import Model
 
 
@@ -46,4 +46,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    jasyncio.run(main())
+    asyncio.run(main())

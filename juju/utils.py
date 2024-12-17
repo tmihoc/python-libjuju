@@ -9,18 +9,20 @@ import textwrap
 import zipfile
 from collections import defaultdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 import yaml
 from pyasn1.codec.der.encoder import encode
 from pyasn1.type import char, univ
 
-from . import errors, jasyncio, origin
+from juju import _jasyncio
+
+from . import errors, origin
 from .client import client
 from .errors import JujuError
 
 
-async def execute_process(*cmd, log=None):
+async def execute_process(*cmd, log=None) -> bool:
     """Wrapper around asyncio.create_subprocess_exec."""
     p = await asyncio.create_subprocess_exec(
         *cmd,
@@ -38,7 +40,7 @@ async def execute_process(*cmd, log=None):
     return p.returncode == 0
 
 
-def juju_config_dir():
+def juju_config_dir() -> str:
     """Resolves and returns the path string to the juju configuration folder
     for the juju CLI tool. Of the following items, returns the first option
     that works (top to bottom):
@@ -60,7 +62,7 @@ def juju_config_dir():
     return str(config_dir.expanduser().resolve())
 
 
-def juju_ssh_key_paths():
+def juju_ssh_key_paths() -> tuple[str, str]:
     """Resolves and returns the path strings for public and private ssh keys
     for juju CLI.
     """
@@ -71,7 +73,7 @@ def juju_ssh_key_paths():
     return public_key_path, private_key_path
 
 
-def _read_ssh_key():
+def _read_ssh_key() -> str:
     """Inner function for read_ssh_key, suitable for passing to our
     Executor.
     """
@@ -82,7 +84,7 @@ def _read_ssh_key():
     return ssh_key
 
 
-async def read_ssh_key():
+async def read_ssh_key() -> str:
     """Attempt to read the local juju admin's public ssh key, so that it can be
     passed on to a model.
     """
@@ -124,7 +126,11 @@ class IdQueue:
             await queue.put(value)
 
 
-async def block_until(*conditions, timeout=None, wait_period=0.5):
+async def block_until(
+    *conditions: Callable[[], bool],
+    timeout: float | None = None,
+    wait_period: float = 0.5,
+):
     """Return only after all conditions are true.
 
     If a timeout occurs, it cancels the task and raises
@@ -139,7 +145,9 @@ async def block_until(*conditions, timeout=None, wait_period=0.5):
 
 
 async def block_until_with_coroutine(
-    condition_coroutine, timeout=None, wait_period=0.5
+    condition_coroutine: Callable[[], Awaitable[bool]],
+    timeout: float | None = None,
+    wait_period: float = 0.5,
 ):
     """Return only after the given coroutine returns True.
 
@@ -169,12 +177,12 @@ async def wait_for_bundle(model, bundle: str | Path, **kwargs) -> None:
             bundle = bundle_path / "bundle.yaml"
     except OSError:
         pass
-    content: dict[str, Any] = yaml.safe_load(textwrap.dedent(bundle).strip())
+    content: dict[str, Any] = yaml.safe_load(textwrap.dedent(str(bundle)).strip())
     apps = list(content.get("applications", content.get("services")).keys())
     await model.wait_for_idle(apps, **kwargs)
 
 
-async def run_with_interrupt(task, *events, log=None):
+async def run_with_interrupt(task, *events: asyncio.Event, log=None):
     """Awaits a task while allowing it to be interrupted by one or more
     `asyncio.Event`s.
 
@@ -186,17 +194,17 @@ async def run_with_interrupt(task, *events, log=None):
     :param events: One or more `asyncio.Event`s which, if set, will interrupt
         `task` and cause it to be cancelled.
     """
-    task = jasyncio.create_task_with_handler(task, "tmp", log)
-    event_tasks = [jasyncio.ensure_future(event.wait()) for event in events]
-    done, pending = await jasyncio.wait(
-        [task, *event_tasks], return_when=jasyncio.FIRST_COMPLETED
+    task = _jasyncio.create_task_with_handler(task, "tmp", log)
+    event_tasks = [asyncio.ensure_future(event.wait()) for event in events]
+    done, pending = await asyncio.wait(
+        [task, *event_tasks], return_when=asyncio.FIRST_COMPLETED
     )
     for f in pending:
         f.cancel()  # cancel unfinished tasks
     for f in pending:
         try:
             await f
-        except jasyncio.CancelledError:
+        except asyncio.CancelledError:
             pass
     for f in done:
         f.exception()  # prevent "exception was not retrieved" errors
@@ -228,7 +236,7 @@ class RegistrationInfo(univ.Sequence):
 
 
 def generate_user_controller_access_token(
-    username, controller_endpoints, secret_key, controller_name
+    username: str, controller_endpoints, secret_key: str, controller_name
 ):
     """Implement in python what is currently done in GO.
 
@@ -258,14 +266,12 @@ def generate_user_controller_access_token(
     return base64.urlsafe_b64encode(registration_string)
 
 
-def get_local_charm_data(path, yaml_file):
+def get_local_charm_data(path: str | Path, yaml_file: str) -> dict[str, Any]:
     """Retrieve Metadata of a Charm from its path.
 
-    :patam str path: Path of charm directory or .charm file :patam str
-    yaml_
-    file:
-    name of the yaml file, can be either    "metadata.yaml", or
-    "manifest.yaml", or "charmcraft.yaml"
+    :param str path: Path of charm directory or .charm file
+    :param str yaml_file: name of the yaml file, can be either
+    "metadata.yaml", or "manifest.yaml", or "charmcraft.yaml"
 
     :return: Object of charm metadata
     """
@@ -282,15 +288,15 @@ def get_local_charm_data(path, yaml_file):
     return metadata
 
 
-def get_local_charm_metadata(path):
+def get_local_charm_metadata(path: str | Path) -> dict[str, Any]:
     return get_local_charm_data(path, "metadata.yaml")
 
 
-def get_local_charm_manifest(path):
+def get_local_charm_manifest(path: str | Path) -> dict[str, Any]:
     return get_local_charm_data(path, "manifest.yaml")
 
 
-def get_local_charm_charmcraft_yaml(path):
+def get_local_charm_charmcraft_yaml(path: str | Path) -> dict[str, Any]:
     return get_local_charm_data(path, "charmcraft.yaml")
 
 
@@ -354,7 +360,7 @@ KUBERNETES_SERIES = {KUBERNETES: "kubernetes"}
 ALL_SERIES_VERSIONS = {**UBUNTU_SERIES, **KUBERNETES_SERIES}
 
 
-def get_series_version(series_name):
+def get_series_version(series_name: str) -> str:
     """get_series_version outputs the version of the OS based on the given
     series e.g. jammy -> 22.04, kubernetes -> kubernetes.
 
@@ -366,7 +372,7 @@ def get_series_version(series_name):
     return ALL_SERIES_VERSIONS[series_name]
 
 
-def get_version_series(version):
+def get_version_series(version: str) -> str:
     """get_version_series is the opposite of the get_series_version. It outputs
     the series based on given OS version.
 
@@ -378,7 +384,7 @@ def get_version_series(version):
     return list(UBUNTU_SERIES.keys())[list(UBUNTU_SERIES.values()).index(version)]
 
 
-def get_local_charm_base(series, charm_path, base_class):
+def get_local_charm_base(series: str, charm_path: str, base_class: type):
     """Deduce the base [channel/osname] of a local charm based on what we know
     already.
 
@@ -428,7 +434,7 @@ def get_local_charm_base(series, charm_path, base_class):
     return base_class(channel_for_base, os_name_for_base)
 
 
-def base_channel_to_series(channel):
+def base_channel_to_series(channel: str) -> str:
     """Returns the series string using the track inside the base channel.
 
     :param str channel: is track/risk (e.g. 20.04/stable)
@@ -437,7 +443,7 @@ def base_channel_to_series(channel):
     return get_version_series(origin.Channel.parse(channel).track)
 
 
-def parse_base_arg(base):
+def parse_base_arg(base: str) -> client.Base:
     """Parses a given base into a Client.Base object :param base str : The base
     to deploy a charm (e.g. ubuntu@22.04)
     """
@@ -463,7 +469,7 @@ def base_channel_from_series(track, risk, series):
     )
 
 
-def get_os_from_series(series):
+def get_os_from_series(series: str) -> str:
     if series in UBUNTU_SERIES:
         return "ubuntu"
     raise JujuError(f"os for the series {series} needs to be added")
@@ -479,7 +485,7 @@ def get_base_from_origin_or_channel(origin_or_channel, series=None):
     return client.Base(channel=channel, name=os_name)
 
 
-def series_for_charm(requested_series, supported_series):
+def series_for_charm(requested_series: str, supported_series: list[str]) -> str:
     """series_for_charm takes a requested series and a list of series supported
     by a charm and returns the series which is relevant.
 
@@ -506,7 +512,7 @@ def series_for_charm(requested_series, supported_series):
     )
 
 
-def user_requested(series_arg, supported_series, force):
+def user_requested(series_arg: str, supported_series: list[str], force: bool) -> str:
     series = series_for_charm(series_arg, supported_series)
     if force:
         series = series_arg
@@ -516,8 +522,12 @@ def user_requested(series_arg, supported_series, force):
 
 
 def series_selector(
-    series_arg="", charm_url=None, model_config=None, supported_series=[], force=False
-):
+    series_arg: str = "",
+    charm_url=None,
+    model_config=None,
+    supported_series: list[str] = [],
+    force: bool = False,
+) -> str:
     """Select series to deploy on.
 
     series_selector corresponds to the CharmSeries() in
@@ -563,7 +573,9 @@ def series_selector(
     return DEFAULT_SUPPORTED_LTS
 
 
-def should_upgrade_resource(available_resource, existing_resources, arg_resources):
+def should_upgrade_resource(
+    available_resource: dict[str, str], existing_resources, arg_resources
+) -> bool:
     """Determine if the given resource should be upgraded.
 
     Called in the context of upgrade_charm. Given a resource R, takes a look
@@ -571,11 +583,11 @@ def should_upgrade_resource(available_resource, existing_resources, arg_resource
 
     :param dict[str] available_resource: The dict representing the
     client.Resource coming from the charmhub api. We're considering if
-    we need to refresh this during upgrade_charm. :param dict[str]
-    existing_resources: The dict coming from
+    we need to refresh this during upgrade_charm.
+    :param dict[str] existing_resources: The dict coming from
     resources_facade.ListResources representing the resources of the
-    currently deployed charm. :param dict[str] arg_resources: user
-    provided resources to be refreshed
+    currently deployed charm.
+    :param dict[str] arg_resources: user provided resources to be refreshed
 
     :result bool: The decision to refresh the given resource
     """
