@@ -67,10 +67,10 @@ Description:
     .
     #!/usr/bin/python3
     .
+    import asyncio
     import logging
     import sys
     .
-    from juju import loop
     from juju.model import Model
     .
     .
@@ -107,9 +107,7 @@ Description:
         ws_logger = logging.getLogger('websockets.protocol')
         ws_logger.setLevel(logging.INFO)
     .
-        # Run the deploy coroutine in an asyncio event loop, using a helper
-        # that abstracts loop creation and teardown.
-        loop.run(deploy())
+        asyncio.run(deploy())
     .
     .
     if __name__ == '__main__':
